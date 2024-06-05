@@ -1,0 +1,1 @@
+Dieser beinhaltet alles bezüglich BACKEND, also NodeJS und Python (oder C++) Dateien etc.

@@ -1,0 +1,1 @@
+Dieser beinhaltet alles bezüglich FRONTEND, also HTML, CSS und JS Dateien etc.
