@@ -56,6 +56,9 @@ Beispiele:
  * Das ist        // Und das          /* Oder auch
  * erlaubt       // hier auch.        * sowas. */*/
 
+## Autoren
+Autoren müssen in jeder Klasse mit dem Tag '@Author' markiert werden.
+
 ## Refactoring
 - Um den Code lesbar zu halten, soll der Code vor allem **vor einer Feature Implementierung** refaktoriert werden.<br>
   Zum Refactoring gehören:
