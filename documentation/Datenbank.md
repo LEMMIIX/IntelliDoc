@@ -33,3 +33,7 @@ Zugriff auf DB mit pgAdmin:<br>
 IP: public server IP `192.168.xxx.xxx`<br>
 Port: `5432`<br>
 User: _username/pswd_<br>
+
+## Connection Code > DB
+
+Die JS `ConnectPostgres.js` dient der Verbindung vom Code zur DB. Die Daten sind mittels Variablen versteckt. Die login Daten befinden sich in einer .env Datei in `/dbLogin/` und wird mit .gitignore ignoriert.
