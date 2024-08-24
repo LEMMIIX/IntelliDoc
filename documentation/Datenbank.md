@@ -23,6 +23,12 @@ host    all             all             0.0.0.0/0               md5
 ```
 <br>
 
+Firewall für den Port anpassen, damit `5432` offen ist
+```
+sudo ufw allow 5432/tcp
+```
+<br>
+
 Zugriff auf DB mit pgAdmin:<br>
 IP: public server IP `192.168.xxx.xxx`<br>
 Port: `5432`<br>
