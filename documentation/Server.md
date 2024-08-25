@@ -50,4 +50,17 @@ Anpassen der Datei `/etc/nginx/sites-available/default`
 root /var/www/testprojekt
 ```
 <br>
-So werden alle Dateien die sich in `/home/student/testprojekt` befinden korrekt in `/var/www/testprojekt` angezeigt und können von NginX genutzt werden. Hallelulja.<br>
+So werden alle Dateien die sich in `/home/student/testprojekt` befinden korrekt in `/var/www/testprojekt` angezeigt und können von NginX genutzt werden. Hallelulja.<br><br>
+
+### Konfiguration mit dem IntelliDoc Repro
+
+```
+sudo ln -s /home/student/IntelliDoc/frontend/html /var/www/IntelliDoc
+sudo chgrp -R www-data /home/student/IntelliDoc/frontend/*
+sudo chmod 755 /home/student/IntelliDoc/*
+```
+
+Anpassen der Datei `/etc/nginx/sites-available/default`
+```
+root /var/www/IntelliDoc
+```
