@@ -64,3 +64,15 @@ Anpassen der Datei `/etc/nginx/sites-available/default`
 ```
 root /var/www/IntelliDoc
 ```
+
+## GitHub Konfig
+
+Das Projekt wird auf den Server mittels SSH gezogen.<br>
+
+SSH Anleitung --> https://stackoverflow.com/questions/8588768/how-do-i-avoid-the-specification-of-the-username-and-password-at-every-git-push <br>
+```
+* remote origin
+    Fetch URL: git+ssh://git@github.com/LEMMIIX/IntelliDoc.git
+    Push  URL: git+ssh://git@github.com/LEMMIIX/IntelliDoc.git
+    HEAD branch: main
+```
