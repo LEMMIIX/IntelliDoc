@@ -10,7 +10,14 @@ const client = new Client({
   port: process.env.PGPORT,
 });
 
-client.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
+
+const connectDB = () => {
+    client.connect()
+    .then(() => console.log('Connected to Postgres'))
+    .catch(err => console.error('connection error', err.stack))
+}
+
+module.exports = connectDB;
+
+
+
