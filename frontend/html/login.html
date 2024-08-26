@@ -18,16 +18,29 @@
         </nav>
 
         <main>
-            <p>Bitte einloggen, um auf ihre Dateien zugreifen zu können</p>
-            
-            <form action="/action_page.php">
-                <label for="fname">name:</label>
-                <input type="text" id="name" name="fname"><br><br>
-                <label for="lname">password:</label>
-                <input type="text" id="pwd" name="pws"><br><br>
-                <button class="btn btn-primary" id="continue">Einloggen</button><br>
-                <a href="LINK/ZU/KENNWORT/VERGESSEN/">Kennwort vergessen?</a>
-            </form>
+            <div class="main">
+                <input type="checkbox" id="chk" aria-hidden="true">
+    
+                <div class="signup">
+                    <form action="/register" method="POST">
+                        <label for="chk" aria-hidden="true">Sign up</label>
+                        <input type="text" name="txt" placeholder="User name" required="">
+                        <input type="email" name="email" placeholder="Email" required="">
+                        <input type="password" name="pswd" placeholder="Password" required="">
+                        <button>Sign up</button>
+                    </form>
+                </div>
+    
+                <div class="login">
+                    <form action="/login" method="POST">
+                        <label for="chk" aria-hidden="true">Login</label>
+                        <input type="email" name="email" placeholder="Email" required="">
+                        <input type="password" name="pswd" placeholder="Password" required="">
+                        <button>Login</button>
+                        <a href="/passwordReset" id="forgotLink">Passwort vergessen?</a>
+                    </form>
+                </div>
+            </div>
         </main>
     </body>
 
