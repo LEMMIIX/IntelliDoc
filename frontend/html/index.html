@@ -6,30 +6,23 @@
     </head>
     
     <body>
-        <div class="main">
-            <input type="checkbox" id="chk" aria-hidden="true">
+        <header>
+            <h1>Willkommen bei IntelliDoc</h1>
+        </header>
 
-            <div class="signup">
-                <form action="/register" method="POST">
-                    <label for="chk" aria-hidden="true">Sign up</label>
-                    <input type="text" name="txt" placeholder="User name" required="">
-                    <input type="email" name="email" placeholder="Email" required="">
-                    <input type="password" name="pswd" placeholder="Password" required="">
-                    <button>Sign up</button>
-                </form>
-            </div>
+        <!--Navigationsleiste-->
+        <nav>
+            <ul>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
 
-            <div class="login">
-                <form action="/login" method="POST">
-                    <label for="chk" aria-hidden="true">Login</label>
-                    <input type="email" name="email" placeholder="Email" required="">
-                    <input type="password" name="pswd" placeholder="Password" required="">
-                    <button>Login</button>
-                    <a href="/passwordReset" id="forgotLink">Passwort vergessen?</a>
-                </form>
-            </div>
-        </div>
-        </body>
+        <main>
+            <p>Bitte einloggen, um auf ihre Dateien zugreifen zu können</p>
+        </main>
+    </body>
+
+        <footer>
             <p>
                 Impressum:<br>
                 Belbaraka, Ayoub<br>
