@@ -38,6 +38,12 @@ User: _username/pswd_<br>
 
 Die JS `ConnectPostgres.js` dient der Verbindung vom Code zur DB. Die Daten sind mittels Variablen versteckt. Die login Daten befinden sich in einer .env Datei in `/dbLogin/` und wird mit .gitignore ignoriert.
 
+## User und Privilegien
+
+| User          | Privilegien                       | Schema |
+| student       | select,insert,usage,delete        | main |
+| s1            | all                               | main |
+
 ## Tables
 
 `intellidocdb > schemas > main > Tables`<br>

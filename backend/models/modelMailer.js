@@ -2,12 +2,12 @@ const nodemailer = require('nodemailer');
 
 // Create a transporter using SMTP
 const transporter = nodemailer.createTransport({
-  host: 'smtp.example.com', // Replace with your SMTP host
+  host: 'smtp.gmail.com',
   port: 587, // Replace with your SMTP port
   secure: false, // true for 465, false for other ports
   auth: {
-    user: 'your_username', // Replace with your email
-    pass: 'your_password' // Replace with your password
+    user: 'dev.intellidoc@gmail.com', // Replace with your email
+    pass: 'rdqs tfnt idfq unbr ' // Replace with your password
   }
 });
 
