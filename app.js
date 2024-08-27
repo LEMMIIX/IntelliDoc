@@ -16,9 +16,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Postgre Verbindung herstellen. 
 connectDB();
 
-// Sitzung starten f¸r einzelne Benutzer
+// Sitzung starten fÔøΩr einzelne Benutzer
 app.use(session({
-    secret: 'your_secret_key', // ƒndere das zu einem sicheren Schl¸ssel
+    secret: 'your_secret_key', // ÔøΩndere das zu einem sicheren SchlÔøΩssel
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false } // Setze auf true, wenn du HTTPS verwendest
@@ -43,5 +43,5 @@ app.use(session({
 
 
 app.listen(PORT, () => {
-    console.log(`Server l‰uft auf Port ${PORT}`);
+    console.log(`Server l√§uft auf Port ${PORT}`);
 });
