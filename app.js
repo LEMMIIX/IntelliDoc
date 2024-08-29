@@ -14,17 +14,37 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Postgre Verbindung herstellen. 
-connectDB();
+//connectDB();
 
-// Sitzung starten für einzelne Benutzer
+// Serve the HTML file
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend/html', 'login.html'));
+});
+
+// Sitzung starten fï¿½r einzelne Benutzer
 app.use(session({
-    secret: 'your_secret_key', // Ändere das zu einem sicheren Schlüssel
+    secret: 'your_secret_key', // ï¿½ndere das zu einem sicheren Schlï¿½ssel
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false } // Setze auf true, wenn du HTTPS verwendest
 }));
 
+// Handle registration
+app.post('/register', async (req, res) => {
+    const { username, email, password } = req.body;
 
+    try {
+        const userId = await modelUser.createUser(username, email, password);
+        res.status(201).json({ message: 'User registered successfully', userId });
+    } catch (error) {
+        console.error('Error registering user:', error);
+        if (error.message === 'Username or email already exists') {
+            res.status(400).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: 'Error registering user', error: error.message });
+        }
+    }
+});
 
 
 
@@ -43,5 +63,5 @@ app.use(session({
 
 
 app.listen(PORT, () => {
-    console.log(`Server läuft auf Port ${PORT}`);
+    console.log(`Server lï¿½uft auf Port ${PORT}`);
 });
