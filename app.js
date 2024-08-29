@@ -38,8 +38,10 @@ app.post('/register', async (req, res) => {
         console.error('Error registering user:', error);
         if (error.message === 'Username or email already exists') {
             res.status(400).json({ message: error.message });
+        } else if (error.message === 'Failed to insert user: No ID returned') {
+            res.status(500).json({ message: 'User was created but an error occurred. Please contact support.' });
         } else {
-            res.status(500).json({ message: 'Error registering user', error: error.message });
+            res.status(500).json({ message: 'An unexpected error occurred. Please try again later.' });
         }
     }
 });

@@ -47,12 +47,13 @@ const registerUser = async (username, email, password) => {
         const result = await db.query(query, values);
         console.log('Query executed. Result:', result);
 
-        if (result.rows && result.rows[0] && result.rows[0].id) {
-            console.log('User inserted into database with ID:', result.rows[0].id);
-            return result.rows[0].id;
+        if (result && result.rows && result.rows.length > 0) {
+            const userId = result.rows[0].id;
+            console.log('User inserted into database with ID:', userId);
+            return userId;
         } else {
             console.error('Unexpected query result structure:', result);
-            throw new Error('Failed to insert user: Unexpected query result');
+            throw new Error('Failed to insert user: No ID returned');
         }
     } catch (error) {
         console.error('Error in registerUser:', error);
