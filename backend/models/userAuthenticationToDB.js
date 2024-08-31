@@ -25,7 +25,7 @@ const authenticateUser = async (user_name, password_hash) => {
 
         if (isPasswordValid) {
             console.log('Password is valid. Authentication successful');
-            return { id: user.id, user_name: user.user_name, email: user.email };
+            return { id: user.user_id, user_name: user.user_name, email: user.email };
         } else {
             console.log('Invalid password_hash');
             return null;
