@@ -16,18 +16,9 @@
         <button id="uploadButton" class="upload-button">Dokumente Hochladen</button>
     </div>
 
-    <div id="uploadFormContainer" style="display: none;">
-        <form id="uploadForm" enctype="multipart/form-data">
-            <input type="file" id="fileInput" name="file" required>
-            <select id="folderSelect" name="folderId">
-                <option value="">Root</option>
-                <!-- Folders will be populated dynamically -->
-            </select>
-            <button type="submit">Upload</button>
-        </form>
-    </div>
+    <div id="error-container" style="display: none;"></div>
+    <div id="success-container" style="display: none;"></div>
 
     <script src="/js/folders.js"></script>
-    <script src="/js/upload.js"></script>
 </body>
 </html>

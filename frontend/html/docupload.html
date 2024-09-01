@@ -1,43 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IntelliDoc - Upload Document</title>
-    <link rel="stylesheet" href="/css/styles.css">
+    <title>Dokument hochladen</title>
+    <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
-    <header>
-        <h1>Upload Document</h1>
-        <nav>
-            <ul>
-                <li><a href="/dashboard">Home</a></li>
-                <li><a href="/docupload">Upload Document</a></li>
-                <li><a href="/logout">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
+    <h1>Dokument hochladen</h1>
+    <form id="uploadForm" action="/docupload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file" required>
+        <select name="folderId" id="folderSelect">
+            <option value="">Root</option>
+            <!-- Folders will be populated dynamically -->
+        </select>
+        <button type="submit">Hochladen</button>
+    </form>
 
-    <main>
-        <form id="upload-form" enctype="multipart/form-data">
-            <div>
-                <label for="file-input">Select File:</label>
-                <input type="file" id="file-input" name="file" required>
-            </div>
-            <div>
-                <label for="folder-select">Select Folder:</label>
-                <select id="folder-select" name="folderId">
-                    <option value="">Root</option>
-                    <!-- Folders will be populated dynamically -->
-                </select>
-            </div>
-            <button type="submit">Upload</button>
-        </form>
+    <div id="response"></div>
+    <div id="fileList"></div>
 
-        <div id="error-container" style="display: none;"></div>
-        <div id="success-container" style="display: none;"></div>
-    </main>
+    <div id="preview">
+        <div id="filePreview"></div>
+        <div class="actions">
+            <button id="downloadButton">Herunterladen</button>
+            <button id="deleteButton">Löschen</button>
+        </div>
+    </div>
 
-    <script src="/js/dashboardModel.js"></script>
+    <script src="../js/dashboardModel.js"></script>
 </body>
 </html>

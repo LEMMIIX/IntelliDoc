@@ -6,17 +6,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function fetchAndRenderFolderTree() {
         try {
-            const response = await fetch('/folders', {
-                method: 'GET',
-                credentials: 'include' // This ensures cookies (and thus session) are sent with the request
-            });
+            const response = await fetch('/folders');
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error('Failed to fetch folder tree');
             }
             const folderTree = await response.json();
             renderFolderTree(folderTree, folderTreeDiv);
         } catch (error) {
-            console.error('Error fetching folder tree:', error);
+            console.error('Error:', error);
             showErrorMessage('Failed to load folder structure. Please try again later.');
         }
     }
@@ -101,7 +98,25 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     function downloadFile(fileName) {
-        window.location.href = `/docupload/download/${fileName}`;
+        fetch(`/docupload/download/${encodeURIComponent(fileName)}`)
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.blob();
+            })
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Download error:', error);
+                showErrorMessage('Failed to download file. Please try again later.');
+            });
     }
 
     async function deleteFile(fileId) {
@@ -121,13 +136,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
-    const uploadButton = document.getElementById('uploadButton');
-    if (uploadButton) {
-        uploadButton.addEventListener('click', function() {
-            window.location.href = '/docupload';
-        });
-    }
-
     function showErrorMessage(message) {
         errorContainer.textContent = message;
         errorContainer.style.display = 'block';
@@ -142,6 +150,13 @@ document.addEventListener('DOMContentLoaded', async function() {
         setTimeout(() => {
             successContainer.style.display = 'none';
         }, 5000);
+    }
+
+    const uploadButton = document.getElementById('uploadButton');
+    if (uploadButton) {
+        uploadButton.addEventListener('click', function() {
+            window.location.href = '/docupload';
+        });
     }
 
     fetchAndRenderFolderTree();
