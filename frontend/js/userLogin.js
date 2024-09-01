@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Success:', data);
             alert('Login successful!');
             // Nutzer an "dashboard.html" weiterleiten
-            window.location.href = '/dashboard.html';
+            window.location.href = '../html/dashboard.html';
         })
         .catch((error) => {
             console.error('Error:', error);

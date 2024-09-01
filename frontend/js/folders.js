@@ -1,0 +1,148 @@
+document.addEventListener('DOMContentLoaded', async function() {
+    const folderTreeDiv = document.getElementById('folderTree');
+    const filePreviewDiv = document.getElementById('filePreview');
+    const errorContainer = document.getElementById('error-container');
+    const successContainer = document.getElementById('success-container');
+
+    async function fetchAndRenderFolderTree() {
+        try {
+            const response = await fetch('/folders', {
+                method: 'GET',
+                credentials: 'include' // This ensures cookies (and thus session) are sent with the request
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const folderTree = await response.json();
+            renderFolderTree(folderTree, folderTreeDiv);
+        } catch (error) {
+            console.error('Error fetching folder tree:', error);
+            showErrorMessage('Failed to load folder structure. Please try again later.');
+        }
+    }
+
+    function renderFolderTree(folders, container) {
+        container.innerHTML = '';
+        folders.forEach(folder => {
+            const folderElement = createFolderElement(folder);
+            container.appendChild(folderElement);
+        });
+    }
+
+    function createFolderElement(folder) {
+        const folderDiv = document.createElement('div');
+        folderDiv.className = 'folder';
+
+        const folderName = document.createElement('span');
+        folderName.textContent = folder.name;
+        folderName.className = 'folder-toggle';
+        folderName.addEventListener('click', () => toggleFolder(folderDiv));
+        folderDiv.appendChild(folderName);
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'folder-contents';
+        contentDiv.style.display = 'none';
+
+        folder.files.forEach(file => {
+            const fileElement = createFileElement(file);
+            contentDiv.appendChild(fileElement);
+        });
+
+        if (folder.children && folder.children.length > 0) {
+            const childrenContainer = document.createElement('div');
+            renderFolderTree(folder.children, childrenContainer);
+            contentDiv.appendChild(childrenContainer);
+        }
+
+        folderDiv.appendChild(contentDiv);
+        return folderDiv;
+    }
+
+    function createFileElement(file) {
+        const fileDiv = document.createElement('div');
+        fileDiv.className = 'file-item';
+
+        const fileName = document.createElement('span');
+        fileName.textContent = file.name;
+        fileName.addEventListener('click', () => previewFile(file.name));
+        fileDiv.appendChild(fileName);
+
+        const downloadBtn = document.createElement('button');
+        downloadBtn.textContent = 'Download';
+        downloadBtn.addEventListener('click', () => downloadFile(file.name));
+        fileDiv.appendChild(downloadBtn);
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.addEventListener('click', () => deleteFile(file.id));
+        fileDiv.appendChild(deleteBtn);
+
+        return fileDiv;
+    }
+
+    function toggleFolder(folderDiv) {
+        const contentDiv = folderDiv.querySelector('.folder-contents');
+        contentDiv.style.display = contentDiv.style.display === 'none' ? 'block' : 'none';
+    }
+
+    async function previewFile(fileName) {
+        try {
+            const response = await fetch(`/docupload/view/${fileName}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch file for preview');
+            }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            filePreviewDiv.innerHTML = `<iframe src="${url}" width="100%" height="600px"></iframe>`;
+        } catch (error) {
+            console.error('Error:', error);
+            showErrorMessage('Failed to preview file. Please try again later.');
+        }
+    }
+
+    function downloadFile(fileName) {
+        window.location.href = `/docupload/download/${fileName}`;
+    }
+
+    async function deleteFile(fileId) {
+        if (confirm('Are you sure you want to delete this file?')) {
+            try {
+                const response = await fetch(`/docupload/delete/${fileId}`, { method: 'DELETE' });
+                if (!response.ok) {
+                    throw new Error('Failed to delete file');
+                }
+                const data = await response.json();
+                showSuccessMessage(data.message);
+                fetchAndRenderFolderTree();
+            } catch (error) {
+                console.error('Error:', error);
+                showErrorMessage('Failed to delete file. Please try again later.');
+            }
+        }
+    }
+
+    const uploadButton = document.getElementById('uploadButton');
+    if (uploadButton) {
+        uploadButton.addEventListener('click', function() {
+            window.location.href = '/docupload';
+        });
+    }
+
+    function showErrorMessage(message) {
+        errorContainer.textContent = message;
+        errorContainer.style.display = 'block';
+        setTimeout(() => {
+            errorContainer.style.display = 'none';
+        }, 5000);
+    }
+
+    function showSuccessMessage(message) {
+        successContainer.textContent = message;
+        successContainer.style.display = 'block';
+        setTimeout(() => {
+            successContainer.style.display = 'none';
+        }, 5000);
+    }
+
+    fetchAndRenderFolderTree();
+});

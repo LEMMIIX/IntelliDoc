@@ -5,6 +5,8 @@ const path = require('path');
 const session = require('express-session');
 const { registerUser } = require('./backend/models/userRegistrationToDB');
 const { authenticateUser } = require('./backend/models/userAuthenticationToDB');
+const docUploadRoutes = require('./backend/routes/docUploadRoutes');
+const foldersRoutes = require('./backend/routes/foldersRoutes');
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -19,14 +21,27 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-        maxAge: 24 * 60 * 60 * 1000 // gültig für 24 Stunden
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // valid for 24 hours
     }
 }));
 
-// Serve the HTML file
+// Authentication middleware
+const authenticateMiddleware = (req, res, next) => {
+    if (req.session.userId) {
+        next();
+    } else {
+        res.status(401).json({ message: 'Unauthorized: Please log in' });
+    }
+};
+
+// Routes
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend', 'html', 'login.html'));
+});
+
+app.get('/api/current-user', authenticateMiddleware, (req, res) => {
+    res.json({ userId: req.session.userId });
 });
 
 // Registration Route
@@ -72,15 +87,14 @@ app.post('/login', async (req, res) => {
         res.status(500).json({ message: 'An error occurred during login' });
     }
 });
-
-/* Beispiel für eine geschützte Route mittels session ID ---WICHTIG ZU MERKEN---
-app.get('/protected', (req, res) => {
-    if (req.session.userId) {
-        res.json({ message: 'Access granted to protected resource', userId: req.session.userId });
-    } else {
-        res.status(401).json({ message: 'Unauthorized: Please log in' });
-    }
+/*
+app.get('/dashboard', authenticateMiddleware, (req, res) => {
+    res.sendFile(path.join(__dirname, 'frontend', 'html', 'dashboard.html'));
 });*/
+
+app.use('/docupload', authenticateMiddleware, docUploadRoutes);
+app.use('/folders', authenticateMiddleware, foldersRoutes);
+app.use('/docupload', authenticateMiddleware, docUploadRoutes);
 
 // Logout route
 app.post('/logout', (req, res) => {
@@ -97,3 +111,17 @@ app.post('/logout', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
+
+
+
+
+
+
+/* Beispiel für eine geschützte Route mittels session ID ---WICHTIG ZU MERKEN---
+app.get('/protected', (req, res) => {
+    if (req.session.userId) {
+        res.json({ message: 'Access granted to protected resource', userId: req.session.userId });
+    } else {
+        res.status(401).json({ message: 'Unauthorized: Please log in' });
+    }
+});*/

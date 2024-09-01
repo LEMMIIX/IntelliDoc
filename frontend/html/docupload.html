@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IntelliDoc - Upload Document</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <header>
+        <h1>Upload Document</h1>
+        <nav>
+            <ul>
+                <li><a href="/dashboard">Home</a></li>
+                <li><a href="/docupload">Upload Document</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <form id="upload-form" enctype="multipart/form-data">
+            <div>
+                <label for="file-input">Select File:</label>
+                <input type="file" id="file-input" name="file" required>
+            </div>
+            <div>
+                <label for="folder-select">Select Folder:</label>
+                <select id="folder-select" name="folderId">
+                    <option value="">Root</option>
+                    <!-- Folders will be populated dynamically -->
+                </select>
+            </div>
+            <button type="submit">Upload</button>
+        </form>
+
+        <div id="error-container" style="display: none;"></div>
+        <div id="success-container" style="display: none;"></div>
+    </main>
+
+    <script src="/js/dashboardModel.js"></script>
+</body>
+</html>
