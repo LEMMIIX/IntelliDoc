@@ -1,26 +1,39 @@
 const db = require('../../ConnectPostgres');
+const path = require('path');
 
-exports.renderUploadForm = async (req, res) => {
-    try {
-        const userId = req.session.userId;
-        const foldersQuery = 'SELECT folder_id, folder_name FROM main.folders WHERE user_id = $1';
-        const folders = await db.query(foldersQuery, [userId]);
-        res.render('docupload', { folders: folders.rows });
-    } catch (error) {
-        console.error('Error fetching folders:', error);
-        res.status(500).send('Error fetching folders');
-    }
+exports.renderUploadForm = (req, res) => {
+    // Liefere die statische HTML-Datei aus
+    res.sendFile(path.join(__dirname, '../../frontend/html/docupload.html'));
 };
 
 exports.uploadFile = async (req, res) => {
     try {
-        const { filename, mimetype } = req.file;
+        // Überprüfen, ob req.file tatsächlich vorhanden ist
+        if (!req.file) {
+            return res.status(400).send('No file uploaded');
+        }
+
+        const { originalname, mimetype, buffer } = req.file; // Benutze originalname statt filename
         const { folderId } = req.body;
         const userId = req.session.userId;
-        
+
+        // Konvertiere folderId in eine Ganzzahl, wenn möglich
+        const folderIdInt = parseInt(folderId, 10);
+        // Falls folderId leer ist oder keine gültige Zahl ist, auf NULL setzen
+        const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
+
+        // Überprüfe die Werte für Debugging-Zwecke
+        console.log('File Name:', originalname); // Ändere filename zu originalname
+        console.log('File Type:', mimetype);
+        console.log('File Buffer:', buffer);
+        console.log('Folder ID:', folderIdToUse);
+
+        // SQL-Query zum Einfügen der Datei
         const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id) VALUES ($1, $2, $3, $4, $5) RETURNING file_id';
-        const values = [userId, filename, mimetype, req.file.buffer, folderId];
-        
+        const values = [userId, originalname, mimetype, buffer, folderIdToUse]; // Verwende originalname statt filename
+
+        console.log('Query Values:', values); // Debugging-Zwecke
+
         const result = await db.query(query, values);
         res.status(201).json({ message: 'File uploaded successfully', fileId: result.rows[0].file_id });
     } catch (error) {
@@ -28,6 +41,7 @@ exports.uploadFile = async (req, res) => {
         res.status(500).send('Error uploading file');
     }
 };
+
 
 exports.downloadFile = async (req, res) => {
     try {

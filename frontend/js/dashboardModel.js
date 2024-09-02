@@ -12,13 +12,25 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error fetching folders:', error));
 
     function populateFolderSelect(folders) {
-        folderSelect.innerHTML = '<option value="">Root</option>';
-        folders.forEach(folder => {
-            const option = document.createElement('option');
-            option.value = folder.folder_id;
-            option.textContent = folder.folder_name;
-            folderSelect.appendChild(option);
-        });
+        folderSelect.innerHTML = ''; // Clear existing options
+
+        // Helper function to build options recursively
+        function buildOptions(folders, parentId = null, depth = 0) {
+            folders.forEach(folder => {
+                // Create option element for each folder
+                const option = document.createElement('option');
+                option.value = folder.id;
+                option.textContent = ' '.repeat(depth * 2) + folder.name; // Indent to show hierarchy
+                folderSelect.appendChild(option);
+
+                // Recursively add children folders
+                if (folder.children && folder.children.length > 0) {
+                    buildOptions(folder.children, folder.id, depth + 1);
+                }
+            });
+        }
+
+        buildOptions(folders);
     }
 
     if (uploadForm) {
@@ -43,6 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-
+  
     // Add any other dashboard functionality here
 });

@@ -21,12 +21,11 @@ const registerUser = async (user_name, email, password_hash) => {
         }
         throw error;
     }
-};
+}; */
 
 module.exports = {
     registerUser,
 };
-*/
 
 const registerUser = async (user_name, email, password_hash) => {
     console.log('registerUser function called with:', { user_name, email, password_hash: password_hash ? '[REDACTED]' : undefined });
