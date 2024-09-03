@@ -83,17 +83,21 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     async function previewFile(fileName) {
+        const filePreview = document.getElementById('filePreview');
+
         try {
-            const response = await fetch(`/docupload/view/${fileName}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch file for preview');
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                filePreview.innerHTML = `<img src="/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
+
+            } else if (['pdf'].includes(fileExtension)) {
+                filePreview.innerHTML = `<iframe src="/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
+            } else {
+                filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
             }
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            filePreviewDiv.innerHTML = `<iframe src="${url}" width="100%" height="600px"></iframe>`;
+            filePreview.style.display = 'block'; // Vorschau sichtbar machen
         } catch (error) {
-            console.error('Error:', error);
-            showErrorMessage('Failed to preview file. Please try again later.');
+            console.error('Fehler beim Laden der Datei:', error);
         }
     }
 

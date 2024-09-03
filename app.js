@@ -94,7 +94,6 @@ app.get('/dashboard', authenticateMiddleware, (req, res) => {
 
 app.use('/docupload', authenticateMiddleware, docUploadRoutes);
 app.use('/folders', authenticateMiddleware, foldersRoutes);
-app.use('/docupload', authenticateMiddleware, docUploadRoutes);
 
 // Logout route
 app.post('/logout', (req, res) => {

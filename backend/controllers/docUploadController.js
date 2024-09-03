@@ -13,9 +13,10 @@ exports.uploadFile = async (req, res) => {
             return res.status(400).send('No file uploaded');
         }
 
-        const { originalname, mimetype, buffer } = req.file; // Benutze originalname statt filename
+        const { originalname, buffer } = req.file;
         const { folderId } = req.body;
         const userId = req.session.userId;
+        const mimetype = path.extname(req.file.originalname).substring(1);
 
         // Konvertiere folderId in eine Ganzzahl, wenn möglich
         const folderIdInt = parseInt(folderId, 10);
@@ -83,5 +84,31 @@ exports.deleteFile = async (req, res) => {
     } catch (error) {
         console.error('Error deleting file:', error);
         res.status(500).json({ message: 'Error deleting file' });
+    }
+};
+
+exports.viewFile = async (req, res) => {
+    try {
+        const fileName = req.params.filename;
+
+        const result = await db.query('SELECT file_name, file_type, file_data FROM main.files WHERE file_name = $1', [fileName]);
+
+        console.log('Reached after query');
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'File not found' });
+        }
+
+        const document = result.rows[0];
+        if (document.file_type === 'pdf') {
+            res.setHeader('Content-Type', 'application/pdf');
+        } else {
+            res.setHeader('Content-Type', document.file_type);
+        }
+        
+        res.send(document.file_data);
+        console.log('File sent successfully');
+    } catch (err) {
+        console.error('Error fetching document:', err.stack);
+        res.status(500).json({ error: 'Error fetching document', details: err.stack });
     }
 };
