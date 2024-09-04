@@ -1,23 +1,39 @@
-require('dotenv').config({ path: './dbLogin/.env' });
+const { Pool } = require('pg');
 
-const { Client } = require('pg')
-
-const client = new Client({
-  user: process.env.PGUSER,
-  host: process.env.PGHOST,
-  database: process.env.PGDATABASE,
-  password: process.env.PGPASSWORD,
-  port: process.env.PGPORT,
+const pool = new Pool({
+    user: 'postgres',
+    host: 'localhost',
+    database: 'IntelliDoc',
+    password: 'postgres',
+    port: 5432,
 });
 
+// Establish a connection immediately
+pool.connect((err, client, release) => {
+  if (err) {
+      console.error('Error connecting to the database:', err);
+  } else {
+      console.log('Connected to the PostgreSQL database, branch postgres_fix');
+      release(); // Release the client back to the pool
+  }
+});
 
-const connectDB = () => {
-    client.connect()
-    .then(() => console.log('Connected to Postgres'))
-    .catch(err => console.error('connection error', err.stack))
-}
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
+  process.exit(-1);
+});
 
-module.exports = connectDB;
-
-
-
+module.exports = {
+  query: (text, params) => {
+      console.log('Executing database query:', { text, params: params.map((p, i) => i === 2 ? '[REDACTED]' : p) });
+      return pool.query(text, params)
+          .then(res => {
+              console.log('Query executed successfully. Rows affected:', res.rowCount);
+              return res;
+          })
+          .catch(err => {
+              console.error('Error executing query:', err);
+              throw err;
+          });
+  },
+};
