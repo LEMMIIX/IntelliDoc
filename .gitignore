@@ -124,3 +124,6 @@ out/
 
 # Netlify files
 .netlify/
+
+# Postgres DB Verbindung
+ConnectPostgres.js

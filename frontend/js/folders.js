@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function fetchAndRenderFolderTree() {
         try {
-            const response = await fetch('/folders');
+            const response = await fetch('/api/folders');
             if (!response.ok) {
                 throw new Error('Failed to fetch folder tree');
             }
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     function downloadFile(fileName) {
-        fetch(`/docupload/download/${encodeURIComponent(fileName)}`)
+        fetch(`/api/docupload/download/${encodeURIComponent(fileName)}`)
             .then(response => {
                 if (!response.ok) throw new Error('Network response was not ok');
                 return response.blob();
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     async function deleteFile(fileId) {
         if (confirm('Are you sure you want to delete this file?')) {
             try {
-                const response = await fetch(`/docupload/delete/${fileId}`, { method: 'DELETE' });
+                const response = await fetch(`/api/docupload/delete/${fileId}`, { method: 'DELETE' });
                 if (!response.ok) {
                     throw new Error('Failed to delete file');
                 }
