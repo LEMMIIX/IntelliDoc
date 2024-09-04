@@ -1,2 +1,0 @@
-Verzeichnis für .env Datei.
-  Diese dient dem Login zur DB im Code. Die Login daten sind somit nicht öffentlich im github zu sehen.

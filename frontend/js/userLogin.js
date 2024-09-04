@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const password = document.getElementById('loginPassword').value;
 
         // Daten an Server senden
-        fetch('/login', { 
+        fetch('/api/login', { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
