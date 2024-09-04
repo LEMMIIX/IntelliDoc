@@ -88,10 +88,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             const fileExtension = fileName.split('.').pop().toLowerCase();
             if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                filePreview.innerHTML = `<img src="/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
+                filePreview.innerHTML = `<img src="/api/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
 
             } else if (['pdf'].includes(fileExtension)) {
-                filePreview.innerHTML = `<iframe src="/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
+                filePreview.innerHTML = `<iframe src="/api/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
             } else {
                 filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
             }
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const uploadButton = document.getElementById('uploadButton');
     if (uploadButton) {
         uploadButton.addEventListener('click', function() {
-            window.location.href = '/docupload';
+            window.location.href = '/api/docupload';
         });
     }
 
