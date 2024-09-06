@@ -10,15 +10,20 @@
         <h1>Ordnerstruktur</h1>
         <div id="folderTree"></div>
         <div id="filePreview"></div>
-    </div>
+        <div class="navbar">
+            <button id="uploadButton" class="upload-button">Dokumente Hochladen</button>
+        </div>
 
-    <div class="navbar">
-        <button id="uploadButton" class="upload-button">Dokumente Hochladen</button>
-    </div>
+        <!-- OCR Image Form -->
+        <h2>OCR Bilderkennung</h2>
+        <form id="ocrForm" enctype="multipart/form-data">
+            <input type="file" id="ocrInput" name="image" style="display:none;" />
+            <button type="button" class="button" id="chooseFileButton">Datei wählen</button>
+            <button type="button" class="button" id="readOcrButton" disabled>Bilder mit OCR lesen</button>
+        </form>
 
-    <div id="error-container" style="display: none;"></div>
-    <div id="success-container" style="display: none;"></div>
+        <script src="/js/folders.js"></script>
+        <script src="/js/ocr.js"></script>
 
-    <script src="/js/folders.js"></script>
 </body>
 </html>
