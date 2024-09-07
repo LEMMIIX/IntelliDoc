@@ -103,10 +103,8 @@ exports.viewFile = async (req, res) => {
             res.setHeader('Content-Type', 'application/pdf');
         } else {
             res.setHeader('Content-Type', document.file_type);
+            res.send(document.file_data);
         }
-        
-        res.send(document.file_data);
-        console.log('File sent successfully');
     } catch (err) {
         console.error('Error fetching document:', err.stack);
         res.status(500).json({ error: 'Error fetching document', details: err.stack });
