@@ -124,3 +124,19 @@ out/
 
 # Netlify files
 .netlify/
+
+# Visual Studio
+.vs/
+*.vsix
+*.suo
+*.user
+*.userosscache
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.pdb
+*.dbmdl
+*.bak
+*.log
+*.DS_Store
