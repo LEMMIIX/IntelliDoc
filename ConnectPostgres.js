@@ -1,19 +1,34 @@
 const { Pool } = require('pg');
+const { execSync } = require('child_process');
 
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'IntelliDoc',
-    password: 'postgres',
+    database: 'postgres',
+    password: 'pgres',
     port: 5432,
 });
+
+// Git debug, derzeitigen branch anzeigen lassen
+function getGitBranch() {
+  try {
+      // Execute Git command to get the branch name
+      const branchName = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+      return branchName;
+  } catch (error) {
+      console.error("Error fetching Git branch:", error);
+      return null;
+  }
+}
 
 // Establish a connection immediately
 pool.connect((err, client, release) => {
   if (err) {
       console.error('Error connecting to the database:', err);
   } else {
-      console.log('Connected to the PostgreSQL database, branch postgres_fix');
+      const branch = getGitBranch();
+      console.log('Connected to the PostgreSQL database.');
+      console.log(`Git on branch: ${branch}`);
       release(); // Release the client back to the pool
   }
 });
