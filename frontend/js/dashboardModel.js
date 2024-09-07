@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const folderSelect = document.getElementById('folderSelect');
 
     // Fetch folders and populate the select element
-    fetch('/folders')
+    fetch('/folders/tree')
         .then(response => response.json())
         .then(folders => {
             populateFolderSelect(folders);

@@ -1,6 +1,8 @@
+// @Autor Luca Neumann
 const db = require('../../ConnectPostgres');
 
-exports.getFolders = async (req, res) => {
+// Funktion um Ordnerstruktur auszugeben
+exports.getFolderTree = async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ message: 'Unauthorized: User not logged in' });
     }
@@ -53,3 +55,126 @@ exports.getFolders = async (req, res) => {
         res.status(500).json({ message: 'Error fetching folders' });
     }
 };
+
+// Funktion zum Erstellen eines neuen Ordners
+exports.createFolder = async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ message: 'Unauthorized: User not logged in' });
+    }
+
+    const userId = parseInt(req.session.userId, 10);
+    const { folderName, parentFolderId } = req.body;
+
+    if (!folderName) {
+        return res.status(400).json({ message: 'Folder name is required' });
+    }
+
+    try {
+        // Falls parentFolderId nicht angegeben oder ungültig ist, auf NULL setzen
+        const parentFolderIdToUse = parentFolderId ? parseInt(parentFolderId, 10) : null;
+
+        // SQL-Query zum Erstellen des neuen Ordners
+        const query = `
+            INSERT INTO main.folders (user_id, folder_name, parent_folder_id) 
+            VALUES ($1, $2, $3) RETURNING folder_id
+        `;
+        const values = [userId, folderName, parentFolderIdToUse];
+
+        const result = await db.query(query, values);
+
+        res.status(201).json({ message: 'Folder created successfully', folderId: result.rows[0].folder_id });
+    } catch (error) {
+        console.error('Error creating folder:', error);
+        res.status(500).json({ message: 'Error creating folder' });
+    }
+};
+
+// Funktion zum Abrufen aller Ordner des Benutzers
+exports.getFolders = async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ message: 'Unauthorized: User not logged in' });
+    }
+
+    const userId = parseInt(req.session.userId, 10);
+
+    if (isNaN(userId)) {
+        return res.status(400).json({ message: 'Invalid user ID' });
+    }
+
+    try {
+        const query = `
+            SELECT folder_id, folder_name
+            FROM main.folders
+            WHERE user_id = $1 
+        `;
+        const result = await db.query(query, [userId]);
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching folders:', error);
+        res.status(500).json({ message: 'Error fetching folders' });
+    }
+};
+
+// Funktion zum Löschen eines Ordners und seiner Unterordner inklusive der enthaltenen Datein
+exports.deleteFolder = async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ message: 'Unauthorized: User not logged in' });
+    }
+
+    const userId = parseInt(req.session.userId, 10);
+    const { folderId } = req.params; // Ordner-ID wird als Parameter erwartet
+
+    if (isNaN(userId) || isNaN(folderId)) {
+        return res.status(400).json({ message: 'Invalid user ID or folder ID' });
+    }
+
+    try {
+        // Überprüfen, ob der Ordner existiert und dem Benutzer gehört
+        const checkQuery = `
+            SELECT folder_id FROM main.folders 
+            WHERE folder_id = $1 AND user_id = $2
+        `;
+        const checkResult = await db.query(checkQuery, [folderId, userId]);
+
+        if (checkResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Folder not found or not authorized' });
+        }
+
+        // Rekursiv alle Unterordner des Ordners finden und die Datein darin löschen
+        const recursiveDeleteFilesQuery = `
+            WITH RECURSIVE subfolders AS (
+                SELECT folder_id FROM main.folders WHERE folder_id = $1
+                UNION
+                SELECT f.folder_id
+                FROM main.folders f
+                INNER JOIN subfolders sf ON f.parent_folder_id = sf.folder_id
+            )
+            DELETE FROM main.files WHERE folder_id IN (SELECT folder_id FROM subfolders);
+        `;
+
+        // Löschen der Dateien in allen Unterordnern
+        await db.query(recursiveDeleteFilesQuery, [folderId]);
+
+        // Rekursiv alle Unterordner des Ordners löschen
+        const recursiveDeleteFoldersQuery = `
+            WITH RECURSIVE subfolders AS (
+                SELECT folder_id FROM main.folders WHERE folder_id = $1
+                UNION
+                SELECT f.folder_id
+                FROM main.folders f
+                INNER JOIN subfolders sf ON f.parent_folder_id = sf.folder_id
+            )
+            DELETE FROM main.folders WHERE folder_id IN (SELECT folder_id FROM subfolders);
+        `;
+
+        // Löschen der Unterordner
+        await db.query(recursiveDeleteFoldersQuery, [folderId]);
+
+        res.status(200).json({ message: 'Folder and its subfolders deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting folder and its subfolders:', error);
+        res.status(500).json({ message: 'Error deleting folder and its subfolders' });
+    }
+};
+
