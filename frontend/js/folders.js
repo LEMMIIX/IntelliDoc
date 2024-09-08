@@ -161,65 +161,76 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // @Autor Miray-Eren Kilic
-    async function previewFile(fileName) {
-        const filePreview = document.getElementById('filePreview');
-    
-        try {
-            const fileExtension = fileName.split('.').pop().toLowerCase();
-            
-            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                // Bildvorschau
-                filePreview.innerHTML = `<img src="/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
-    
-            } else if (['pdf'].includes(fileExtension)) {
-                // PDF-Vorschau
-                filePreview.innerHTML = `<iframe src="/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
-    
-            } else if (fileExtension === 'txt') {
-                // Textdatei-Vorschau
-                const response = await fetch(`/docupload/view/${encodeURIComponent(fileName)}`);
-                const textContent = await response.text();
-                
-                // Textinhalt in ein div einfügen und Zeilenumbrüche beibehalten
-                filePreview.innerHTML = `
-                    <div style="white-space: pre-wrap; background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
-                        ${textContent}
-                    </div>
-                `;
-            } else {
-                // Vorschau für andere Dateitypen
-                filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
-            }
-    
-            filePreview.style.display = 'block'; // Vorschau sichtbar machen
-        } catch (error) {
-            console.error('Fehler beim Laden der Datei:', error);
-        }
-    }
-    
-    
+    let lastOpenedFile = null; // Variable um den zuletzt geöffneten Dateinamen zu speichern
 
-    function downloadFile(fileName) {
-        fetch(`/docupload/download/${encodeURIComponent(fileName)}`)
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.blob();
-            })
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(error => {
-                console.error('Download error:', error);
-                showErrorMessage('Failed to download file. Please try again later.');
-            });
+async function previewFile(fileName) {
+    const filePreview = document.getElementById('filePreview');
+    
+    // Wenn dieselbe Datei erneut geklickt wird, Vorschau ausblenden und Rückkehr
+    if (lastOpenedFile === fileName) {
+        filePreview.style.display = 'none'; // Vorschau ausblenden
+        lastOpenedFile = null; // Zurücksetzen, da Vorschau jetzt geschlossen ist
+        return;
     }
+
+    lastOpenedFile = fileName; // Speichere die aktuell geöffnete Datei
+    
+    try {
+        const fileExtension = fileName.split('.').pop().toLowerCase();
+        
+        if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+            // Bildvorschau
+            filePreview.innerHTML = `<img src="/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
+    
+        } else if (['pdf'].includes(fileExtension)) {
+            // PDF-Vorschau
+            filePreview.innerHTML = `<iframe src="/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
+    
+        } else if (['txt'].includes(fileExtension)) {
+            // Textdatei-Vorschau
+            const response = await fetch(`/docupload/view/${encodeURIComponent(fileName)}`);
+            const textContent = await response.text();
+            
+            // Textinhalt in ein div einfügen und Zeilenumbrüche beibehalten
+            filePreview.innerHTML = `
+                <div style="white-space: pre-wrap; background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
+                    ${textContent}
+                </div>
+            `;
+        } else {
+            // Vorschau für andere Dateitypen
+            filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
+        }
+
+        filePreview.style.display = 'block'; // Vorschau sichtbar machen
+    } catch (error) {
+        console.error('Fehler beim Laden der Datei:', error);
+    }
+}
+
+
+    
+function downloadFile(fileName) {
+        fetch(`/docupload/download/${encodeURIComponent(fileName)}`)
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.blob();
+        })
+        .then(blob => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+                a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+        })
+        .catch(error => {
+            console.error('Download error:', error);
+            showErrorMessage('Failed to download file. Please try again later.');
+        });
+}
 
     async function deleteFile(fileId) {
         if (confirm('Are you sure you want to delete this file?')) {
