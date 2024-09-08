@@ -107,7 +107,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         contentDiv.style.display = contentDiv.style.display === 'none' ? 'block' : 'none';
     }
 
-<<<<<<< HEAD
     // Funktion zum Löschen eines Ordners
     async function deleteFolder(folderId) {
         if (confirm('Are you sure you want to delete this folder?')) {
@@ -122,25 +121,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             } catch (error) {
                 console.error('Error deleting folder:', error);
                 showErrorMessage('Failed to delete folder. Please try again later.');
-=======
-    async function previewFile(fileName) {
-        const filePreview = document.getElementById('filePreview');
-
-        try {
-            const fileExtension = fileName.split('.').pop().toLowerCase();
-            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                filePreview.innerHTML = `<img src="/api/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
-
-            } else if (['pdf'].includes(fileExtension)) {
-                filePreview.innerHTML = `<iframe src="/api/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
-            } else {
-                filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
->>>>>>> main
             }
         }
     }
 
-<<<<<<< HEAD
+
     function createFolderElement(folder) {
         const folderDiv = document.createElement('div');
         folderDiv.className = 'folder';
@@ -174,28 +159,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     
         folderDiv.appendChild(contentDiv);
         return folderDiv;
-=======
-    function downloadFile(fileName) {
-        fetch(`/api/docupload/download/${encodeURIComponent(fileName)}`)
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.blob();
-            })
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(error => {
-                console.error('Download error:', error);
-                showErrorMessage('Failed to download file. Please try again later.');
-            });
->>>>>>> main
     }
 
     // @Autor Miray-Eren Kilic
@@ -246,8 +209,6 @@ async function previewFile(fileName) {
     }
 }
 
-
-    
 function downloadFile(fileName) {
         fetch(`/docupload/download/${encodeURIComponent(fileName)}`)
         .then(response => {
