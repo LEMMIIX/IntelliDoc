@@ -15,7 +15,7 @@ exports.uploadFile = async (req, res) => {
             return res.status(400).send('No file uploaded');
         }
 
-        const { originalname, buffer, mimetype } = req.file;
+        const { originalname, mimetype, buffer } = req.file;
         const { folderId } = req.body;
         const userId = req.session.userId;
 
@@ -37,8 +37,7 @@ exports.uploadFile = async (req, res) => {
         const result = await db.query(query, values);
         const fileId = result.rows[0].file_id;
 
-        console.log('File uploaded to database. File ID:', fileId);
-
+        // Überprüfung auf 
         if (mimetype === 'image/png' || mimetype === 'image/jpeg') {
             console.log('Image file detected. Starting OCR process...');
             const ocrResult = await performOCR(buffer, originalname);
