@@ -140,3 +140,6 @@ out/
 *.bak
 *.log
 *.DS_Store
+
+# Postgres DB Verbindung
+ConnectPostgres.js

@@ -46,7 +46,7 @@ app.get('/api/current-user', authenticateMiddleware, (req, res) => {
 });
 
 // Registration Route
-app.post('/register', async (req, res) => {
+app.post('/api/register', async (req, res) => {
     console.log('Received registration request:', req.body);
     const { username, email, password } = req.body;
 
@@ -67,7 +67,7 @@ app.post('/register', async (req, res) => {
 });
 
 // Login Route
-app.post('/login', async (req, res) => {
+app.post('/api/login', async (req, res) => {
     console.log('Received login request:', { ...req.body, password: '[REDACTED]' });
     const { username, password } = req.body;
 
@@ -93,11 +93,11 @@ app.get('/dashboard', authenticateMiddleware, (req, res) => {
     res.sendFile(path.join(__dirname, 'frontend', 'html', 'dashboard.html'));
 });*/
 
-app.use('/docupload', authenticateMiddleware, docUploadRoutes);
-app.use('/folders', authenticateMiddleware, foldersRoutes);
+app.use('/api/docupload', authenticateMiddleware, docUploadRoutes);
+app.use('/api/folders', authenticateMiddleware, foldersRoutes);
 
 // Logout route
-app.post('/logout', (req, res) => {
+app.post('/api/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
             console.error('Error destroying session:', err);
