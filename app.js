@@ -7,6 +7,7 @@ const { registerUser } = require('./backend/models/userRegistrationToDB');
 const { authenticateUser } = require('./backend/models/userAuthenticationToDB');
 const docUploadRoutes = require('./backend/routes/docUploadRoutes');
 const foldersRoutes = require('./backend/routes/foldersRoutes');
+
 const PORT = process.env.PORT || 3000;
 
 // Middleware

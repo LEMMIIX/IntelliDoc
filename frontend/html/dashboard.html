@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IntelliDoc Dashboard</title>
 </head>
+
 <body>
     <div class="main-content">
         <h1>Ordnerstruktur</h1>
@@ -18,7 +20,18 @@
 
     <div id="error-container" style="display: none;"></div>
     <div id="success-container" style="display: none;"></div>
+    
+    <!-- Form zur Ordnererstellung -->
+    <form id="createFolderForm">
+        <input type="text" id="folderNameInput" placeholder="Ordnername" required>
+        <select id="parentFolderSelect">
+            <option value="">Kein übergeordneter Ordner</option>
+            <!-- Optionen werden dynamisch mit Ordnern gefüllt -->
+        </select>
+        <button type="submit">Ordner erstellen</button>
+    </form>
 
-    <script src="/js/folders.js"></script>
+    <script src="../js/folders.js"></script>
 </body>
+
 </html>
