@@ -1,0 +1,9 @@
+{
+  "input": [
+    {
+      "text": "These changes accomplish the following:\n\n1. The OCR functionality is now separated into its own service file ( ocrService. js ) for\nbetter modularity.\n\n2.The docUploadController.js file now only handles the file upload process and calls\nthe OCR service when necessary.\n\n3. Debug information is only displayed in the terminal, not on the frontend.\n\n4. The frontend code has been simplified to only handle the basic file upload process.\n\n5. The OCR result route has been removed as it's no longer needed for this\nimplementation.\n"
+    }
+  ],
+  "model": "llama3",
+  "task_type": "embedding"
+}
