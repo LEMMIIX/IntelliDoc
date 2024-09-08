@@ -7,7 +7,6 @@ const { registerUser } = require('./backend/models/userRegistrationToDB');
 const { authenticateUser } = require('./backend/models/userAuthenticationToDB');
 const docUploadRoutes = require('./backend/routes/docUploadRoutes');
 const foldersRoutes = require('./backend/routes/foldersRoutes');
-const ocrRoutes = require('./backend/routes/ocrRoutes'); // Importiere die OCR-Routes
 
 const PORT = process.env.PORT || 3000;
 
@@ -96,7 +95,6 @@ app.get('/dashboard', authenticateMiddleware, (req, res) => {
 
 app.use('/docupload', authenticateMiddleware, docUploadRoutes);
 app.use('/folders', authenticateMiddleware, foldersRoutes);
-app.use('/Ocr', authenticateMiddleware, ocrRoutes);
 
 // Logout route
 app.post('/logout', (req, res) => {
