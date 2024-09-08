@@ -1,5 +1,6 @@
 const db = require('../../ConnectPostgres');
 const path = require('path');
+const { performOCR } = require('../models/modelOcr');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -13,7 +14,7 @@ exports.uploadFile = async (req, res) => {
             return res.status(400).send('No file uploaded');
         }
 
-        const { originalname, mimetype, buffer } = req.file;
+        const { originalname, buffer, mimetype } = req.file;
         const { folderId } = req.body;
         const userId = req.session.userId;
 
@@ -23,19 +24,33 @@ exports.uploadFile = async (req, res) => {
         const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
 
         // Überprüfe die Werte für Debugging-Zwecke
-        console.log('File Name:', originalname); // Ändere filename zu originalname
+        console.log('File Name:', originalname); //ändere file Name zu originalem Namen
         console.log('File Type:', mimetype);
-        console.log('File Buffer:', buffer);
         console.log('Folder ID:', folderIdToUse);
 
         // SQL-Query zum Einfügen der Datei
         const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id) VALUES ($1, $2, $3, $4, $5) RETURNING file_id';
         const values = [userId, originalname, mimetype, buffer, folderIdToUse]; // Verwende originalname statt filename
-
-        console.log('Query Values:', values); // Debugging-Zwecke
-
+        
         const result = await db.query(query, values);
-        res.status(201).json({ message: 'File uploaded successfully', fileId: result.rows[0].file_id });
+        const fileId = result.rows[0].file_id;
+        
+        console.log('File uploaded to database. File ID:', fileId);
+
+        // OCR bei Upload von JPG oder PNG Dateien
+        if (mimetype === 'image/png' || mimetype === 'image/jpeg') {
+            console.log('Image file detected. Starting OCR process...');
+            try {
+                const ocrResult = await performOCR(buffer, originalname);
+                console.log('OCR Result:', ocrResult.success ? 'Success' : 'Failed', ocrResult);
+            } catch (ocrError) {
+                console.error('Error during OCR process:', ocrError);
+            }
+        } else {
+            console.log('Not an image file. Skipping OCR.');
+        }
+        
+        res.status(201).json({ message: 'File uploaded successfully', fileId: fileId });
     } catch (error) {
         console.error('Error uploading file:', error);
         res.status(500).send('Error uploading file');
