@@ -13,10 +13,9 @@ exports.uploadFile = async (req, res) => {
             return res.status(400).send('No file uploaded');
         }
 
-        const { originalname, buffer } = req.file;
+        const { originalname, mimetype, buffer } = req.file;
         const { folderId } = req.body;
         const userId = req.session.userId;
-        const mimetype = path.extname(req.file.originalname).substring(1);
 
         // Konvertiere folderId in eine Ganzzahl, wenn möglich
         const folderIdInt = parseInt(folderId, 10);
@@ -99,12 +98,10 @@ exports.viewFile = async (req, res) => {
         }
 
         const document = result.rows[0];
-        if (document.file_type === 'pdf') {
-            res.setHeader('Content-Type', 'application/pdf');
-        } else {
-            res.setHeader('Content-Type', document.file_type);
-            res.send(document.file_data);
-        }
+
+        res.setHeader('Content-Type', document.file_type);
+        res.send(document.file_data);
+
     } catch (err) {
         console.error('Error fetching document:', err.stack);
         res.status(500).json({ error: 'Error fetching document', details: err.stack });
