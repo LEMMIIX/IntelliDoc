@@ -31,7 +31,7 @@ async function performOCR(imageBuffer, filename) {
         await fs.writeJson(jsonFilename, llamaJsonResult, { spaces: 2 });
 
         console.log(`OCR performed successfully for ${filename}. Llama 3 JSON saved at: ${jsonFilename}`);
-        return { success: true, jsonPath: jsonFilename, metadataPath: metadataFilename };
+        return { success: true, jsonPath: jsonFilename};
     } catch (error) {
         console.error('Error performing OCR:', error);
         return { success: false, error: error.message };
