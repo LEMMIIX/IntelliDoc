@@ -1,6 +1,7 @@
 const db = require('../../ConnectPostgres');
 const path = require('path');
 const mammoth = require('mammoth');
+const { performOCR } = require('../models/modelOcr');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -14,7 +15,7 @@ exports.uploadFile = async (req, res) => {
             return res.status(400).send('No file uploaded');
         }
 
-        const { originalname, mimetype, buffer } = req.file;
+        const { originalname, buffer, mimetype } = req.file;
         const { folderId } = req.body;
         const userId = req.session.userId;
 
@@ -33,9 +34,19 @@ exports.uploadFile = async (req, res) => {
         const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id) VALUES ($1, $2, $3, $4, $5) RETURNING file_id';
         const values = [userId, originalname, mimetype, buffer, folderIdToUse]; // Verwende originalname statt filename
 
-        console.log('Query Values:', values); // Debugging-Zwecke
-
         const result = await db.query(query, values);
+        const fileId = result.rows[0].file_id;
+
+        console.log('File uploaded to database. File ID:', fileId);
+
+        if (mimetype === 'image/png' || mimetype === 'image/jpeg') {
+            console.log('Image file detected. Starting OCR process...');
+            const ocrResult = await performOCR(buffer, originalname);
+            console.log('OCR Result:', ocrResult.success ? 'Success' : 'Failed', ocrResult);
+        } else {
+            console.log('Not an image file. Skipping OCR.');
+        }
+
         res.status(201).json({ message: 'File uploaded successfully', fileId: result.rows[0].file_id });
     } catch (error) {
         console.error('Error uploading file:', error);

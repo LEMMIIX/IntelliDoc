@@ -44,10 +44,8 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
+                console.log('File upload response:', data);
                 responseDiv.textContent = data.message;
-                if (data.fileId) {
-                    // Optionally, you can update the file list or preview here
-                }
             })
             .catch(error => {
                 console.error('Error:', error);
