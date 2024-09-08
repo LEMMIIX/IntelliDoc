@@ -1,5 +1,6 @@
 const db = require('../../ConnectPostgres');
 const path = require('path');
+const mammoth = require('mammoth');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -98,10 +99,67 @@ exports.viewFile = async (req, res) => {
         }
 
         const document = result.rows[0];
-
-        res.setHeader('Content-Type', document.file_type);
-        res.send(document.file_data);
-
+        
+        if (document.file_type === 'pdf') {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.send(document.file_data);
+        } else if (document.file_type === 'text/plain') {
+            res.setHeader('Content-Type', 'text/html');
+            res.send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>View Text File</title>
+                    <style>
+                        .file-content {
+                            background-color: #f4f4f4;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            margin-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${document.file_name}</h1>
+                    <div class="file-content">${document.file_data.toString()}</div>
+                </body>
+                </html>
+            `);
+        } else if (document.file_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            // Use mammoth to convert the DOCX file_data buffer to HTML
+            const docxBuffer = Buffer.from(document.file_data);
+            const { value: htmlContent } = await mammoth.convertToHtml({ buffer: docxBuffer });
+            
+            // Send the generated HTML content
+            res.setHeader('Content-Type', 'text/html');
+            res.send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>View DOCX File</title>
+                    <style>
+                        .file-content {
+                            background-color: #f4f4f4;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            margin-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${document.file_name}</h1>
+                    <div class="file-content">${htmlContent}</div>
+                </body>
+                </html>
+            `);
+        } else {
+            res.setHeader('Content-Type', document.file_type);
+            res.send(document.file_data);
+        }
     } catch (err) {
         console.error('Error fetching document:', err.stack);
         res.status(500).json({ error: 'Error fetching document', details: err.stack });
