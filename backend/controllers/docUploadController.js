@@ -1,16 +1,16 @@
 const db = require('../../ConnectPostgres');
 const path = require('path');
 const mammoth = require('mammoth');
-const { performOCR } = require('../models/modelOcr');
+// E/F: Added new imports for text extraction and embedding generation
+const { extractTextContent } = require('../models/modelFileReader');
+const modelEmbedding = require('../models/modelEmbedding');
 
 exports.renderUploadForm = (req, res) => {
-    // Liefere die statische HTML-Datei aus
     res.sendFile(path.join(__dirname, '../../frontend/html/docupload.html'));
 };
 
 exports.uploadFile = async (req, res) => {
     try {
-        // Überprüfen, ob req.file tatsächlich vorhanden ist
         if (!req.file) {
             return res.status(400).send('No file uploaded');
         }
@@ -19,41 +19,31 @@ exports.uploadFile = async (req, res) => {
         const { folderId } = req.body;
         const userId = req.session.userId;
 
-        // Konvertiere folderId in eine Ganzzahl, wenn möglich
         const folderIdInt = parseInt(folderId, 10);
-        // Falls folderId leer ist oder keine gültige Zahl ist, auf NULL setzen
         const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
 
-        // Überprüfe die Werte für Debugging-Zwecke
-        console.log('File Name:', originalname); // Ändere filename zu originalname
-        console.log('File Type:', mimetype);
-        console.log('File Buffer:', buffer);
-        console.log('Folder ID:', folderIdToUse);
+        try {
+            const textContent = await extractTextContent(buffer, mimetype, originalname);
+            const embedding = await modelEmbedding.generateEmbedding(textContent);
 
-        // SQL-Query zum Einfügen der Datei
-        const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id) VALUES ($1, $2, $3, $4, $5) RETURNING file_id';
-        const values = [userId, originalname, mimetype, buffer, folderIdToUse]; // Verwende originalname statt filename
+            const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding) VALUES ($1, $2, $3, $4, $5, $6) RETURNING file_id';
+            const values = [userId, originalname, mimetype, buffer, folderIdToUse, embedding];
 
-        const result = await db.query(query, values);
-        const fileId = result.rows[0].file_id;
+            const result = await db.query(query, values);
+            const fileId = result.rows[0].file_id;
 
-        console.log('File uploaded to database. File ID:', fileId);
+            console.log('File uploaded to database with embedding. File ID:', fileId);
 
-        if (mimetype === 'image/png' || mimetype === 'image/jpeg') {
-            console.log('Image file detected. Starting OCR process...');
-            const ocrResult = await performOCR(buffer, originalname);
-            console.log('OCR Result:', ocrResult.success ? 'Success' : 'Failed', ocrResult);
-        } else {
-            console.log('Not an image file. Skipping OCR.');
+            res.status(201).json({ message: 'File uploaded successfully', fileId: fileId });
+        } catch (error) {
+            console.error('Error processing file:', error);
+            res.status(422).json({ message: 'Error processing file', error: error.message });
         }
-
-        res.status(201).json({ message: 'File uploaded successfully', fileId: result.rows[0].file_id });
     } catch (error) {
         console.error('Error uploading file:', error);
         res.status(500).send('Error uploading file');
     }
 };
-
 
 exports.downloadFile = async (req, res) => {
     try {
@@ -139,11 +129,9 @@ exports.viewFile = async (req, res) => {
                 </html>
             `);
         } else if (document.file_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-            // Use mammoth to convert the DOCX file_data buffer to HTML
             const docxBuffer = Buffer.from(document.file_data);
             const { value: htmlContent } = await mammoth.convertToHtml({ buffer: docxBuffer });
             
-            // Send the generated HTML content
             res.setHeader('Content-Type', 'text/html');
             res.send(`
                 <!DOCTYPE html>
