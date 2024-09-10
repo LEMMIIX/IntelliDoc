@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const folderSelect = document.getElementById('folderSelect');
 
     // Fetch folders and populate the select element
-    fetch('/folders/tree')
+    fetch('/api/folders/tree')       // ---- fetch('/folders/tree')  ????
         .then(response => response.json())
         .then(folders => {
             populateFolderSelect(folders);
@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             const formData = new FormData(uploadForm);
 
-            fetch('/docupload', {
+            fetch('/api/docupload', {
                 method: 'POST',
                 body: formData
             })

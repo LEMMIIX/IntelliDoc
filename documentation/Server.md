@@ -12,20 +12,41 @@ server {
     listen 80 default_server;
     listen [::]:80 default_server;
 
-    # ermöglicht durch einen symbolic link:
-    root /var/www/testprojekt;
+    root /home/student/IntelliDoc/frontend;
 
-    # Add index.php to the list if you are using PHP
-    index index.html index.htm index.nginx-debian.html;
+    index index.html;
 
     server_name _;
+
+    # Serve HTML files from /html/ directory
     location / {
-        try_files $uri $uri/ =404;
+        try_files /html$uri /html$uri/index.html /html/index.html;
+    }
+
+    # Explicitly handle requests to /html/
+    location /html/ {
+        try_files $uri $uri/index.html =404;
+    }
+
+    # Serve static files from /js/ directory
+    location /js/ {
+        try_files $uri =404;
+    }
+
+    # Proxy requests to /api to the Node.js application
+    location /api/ {
+        proxy_pass http://localhost:3000;  # Assume Node.js is running on port 3000
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
     }
 }
 ```
 <br>
 
+Frontend->Server calls müssen für NginX über die "/api/" Route geroutet werden. Im Code müssen also alle Client-Server Verbindungen über "/api/" laufen.<br>
 Nginx kann (aus Sicherheitsgründen) nur auf Dateien unter `/var/www` zugreifen. Dort müssen alle html Dateien abgelegt werden.<br>
 Damit aber die html Dateien nicht händisch aus dem Git repro dort hingeschoben werden müssen, wird ein symbolic link eingerichtet, der auf das html Verzeichnis unseres Projekts zeigt.<br>
 Hierzu mussten Rechte angepasst werden.<br>

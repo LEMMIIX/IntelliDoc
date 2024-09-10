@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // @Autor Luca Neumann
     async function fetchAndRenderFolderTree() {
         try {
-            const response = await fetch('/folders/tree');
+            const response = await fetch('/api/folders/tree');
             if (!response.ok) {
                 throw new Error('Failed to fetch folder tree');
             }
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function populateFolderSelect() {
         try {
-            const response = await fetch('/folders/');
+            const response = await fetch('/api/folders/');
             console.log('Response Status:', response.status); // Debugging
             const parentFolders = await response.json();
             console.log('Parent Folders:', parentFolders); // Debugging
@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     async function deleteFolder(folderId) {
         if (confirm('Are you sure you want to delete this folder?')) {
             try {
-                const response = await fetch(`/folders/${folderId}`, { method: 'DELETE' });
+                const response = await fetch(`/api/folders/${folderId}`, { method: 'DELETE' });
                 if (!response.ok) {
                     throw new Error('Failed to delete folder');
                 }
@@ -183,15 +183,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             
             if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
                 // Bildvorschau
-                filePreview.innerHTML = `<img src="/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
+                filePreview.innerHTML = `<img src="/api/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
     
             } else if (['pdf'].includes(fileExtension)) {
                 // PDF-Vorschau
-                filePreview.innerHTML = `<iframe src="/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
+                filePreview.innerHTML = `<iframe src="/api/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
     
             } else if (fileExtension === 'txt') {
                 // Textdatei-Vorschau
-                const response = await fetch(`/docupload/view/${encodeURIComponent(fileName)}`);
+                const response = await fetch(`/api/docupload/view/${encodeURIComponent(fileName)}`);
                 const textContent = await response.text();
                 
                 // Textinhalt in ein div einfügen und Zeilenumbrüche beibehalten
@@ -202,7 +202,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 `;
             } else if (fileExtension === 'docx') {
                 // DOCX-Vorschau
-                const response = await fetch(`/docupload/view/${encodeURIComponent(fileName)}`);
+                const response = await fetch(`/api/docupload/view/${encodeURIComponent(fileName)}`);
                 const docxContent = await response.text(); // Der Server liefert HTML zurück
                 
                 // DOCX-Inhalt im HTML-Format anzeigen
@@ -225,7 +225,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     
 function downloadFile(fileName) {
-        fetch(`/docupload/download/${encodeURIComponent(fileName)}`)
+        fetch(`/api/docupload/download/${encodeURIComponent(fileName)}`)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.blob();
@@ -249,7 +249,7 @@ function downloadFile(fileName) {
     async function deleteFile(fileId) {
         if (confirm('Are you sure you want to delete this file?')) {
             try {
-                const response = await fetch(`/docupload/delete/${fileId}`, { method: 'DELETE' });
+                const response = await fetch(`/api/docupload/delete/${fileId}`, { method: 'DELETE' });
                 if (!response.ok) {
                     throw new Error('Failed to delete file');
                 }
@@ -285,7 +285,7 @@ function downloadFile(fileName) {
     const uploadButton = document.getElementById('uploadButton');
     if (uploadButton) {
         uploadButton.addEventListener('click', function() {
-            window.location.href = '/docupload';
+            window.location.href = '/api/docupload';
         });
     }
 
@@ -307,7 +307,7 @@ if (createFolderForm) {
         console.log('Folder Name Input Value:', folderName);  // Debugging: Überprüfe den eingegebenen Ordnernamen
         console.log('Parent Folder Select Value:', parentFolderId);  // Debugging: Überprüfe den Wert des ausgewählten Elternordners
 
-        fetch('/folders/create', {  // Überprüfe den Endpunkt (angepasst für POST-Route)
+        fetch('/api/folders/create', {  // Überprüfe den Endpunkt (angepasst für POST-Route)
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
