@@ -22,26 +22,30 @@ exports.uploadFile = async (req, res) => {
         const folderIdInt = parseInt(folderId, 10);
         const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
 
-        try {
-            const textContent = await extractTextContent(buffer, mimetype, originalname);
-            const embedding = await modelEmbedding.generateEmbedding(textContent);
+        console.log('Extracting text content...');
+        const textContent = await extractTextContent(buffer, mimetype, originalname);
+        
+        console.log('Generating embedding...');
+        const embedding = await modelEmbedding.generateEmbedding(textContent);
 
-            const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding) VALUES ($1, $2, $3, $4, $5, $6) RETURNING file_id';
-            const values = [userId, originalname, mimetype, buffer, folderIdToUse, embedding];
+        console.log('Inserting into database...');
+        // Format the embedding as a PostgreSQL array
+        const formattedEmbedding = `[${embedding.join(',')}]`;
 
-            const result = await db.query(query, values);
-            const fileId = result.rows[0].file_id;
+        const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding) VALUES ($1, $2, $3, $4, $5, $6) RETURNING file_id';
+        const values = [userId, originalname, mimetype, buffer, folderIdToUse, formattedEmbedding];
 
-            console.log('File uploaded to database with embedding. File ID:', fileId);
+        console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
 
-            res.status(201).json({ message: 'File uploaded successfully', fileId: fileId });
-        } catch (error) {
-            console.error('Error processing file:', error);
-            res.status(422).json({ message: 'Error processing file', error: error.message });
-        }
+        const result = await db.query(query, values);
+        const fileId = result.rows[0].file_id;
+
+        console.log('File uploaded to database with embedding. File ID:', fileId);
+
+        res.status(201).json({ message: 'File uploaded successfully', fileId: fileId });
     } catch (error) {
-        console.error('Error uploading file:', error);
-        res.status(500).send('Error uploading file');
+        console.error('Error processing file:', error);
+        res.status(422).json({ message: 'Error processing file', error: error.message });
     }
 };
 

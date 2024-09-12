@@ -143,3 +143,7 @@ out/
 *.bak
 *.log
 *.DS_Store
+
+# embedding model
+/embed_models/
+backend/embed_models/
