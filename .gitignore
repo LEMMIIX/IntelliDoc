@@ -85,6 +85,9 @@ Desktop.ini
 .yarn/install-state.gz
 .pnp.*
 
+# node
+node_modules/
+
 # Package lock files
 package-lock.json
 yarn.lock
@@ -140,3 +143,7 @@ out/
 *.bak
 *.log
 *.DS_Store
+
+# embedding model
+/embed_models/
+backend/embed_models/
