@@ -14,13 +14,29 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (!response.ok) {
                 throw new Error('Failed to fetch folder tree');
             }
-            const folderTree = await response.json();
+    
+            const { folderTree, unassignedFiles } = await response.json();
+    
             renderFolderTree(folderTree, folderTreeDiv);
+    
+            // Datein ohne Ordner rendern
+            if (unassignedFiles.length > 0) {
+                const unassignedFilesContainer = document.createElement('div');
+                unassignedFilesContainer.innerHTML = '<h3>Datein ohne Ordner:</h3>';
+    
+                unassignedFiles.forEach(file => {
+                    const fileElement = createFileElement(file);
+                    unassignedFilesContainer.appendChild(fileElement);
+                });
+    
+                folderTreeDiv.appendChild(unassignedFilesContainer);
+            }
         } catch (error) {
             console.error('Error:', error);
             showErrorMessage('Failed to load folder structure. Please try again later.');
         }
     }
+    
 
     async function populateFolderSelect() {
         try {
@@ -108,8 +124,11 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     // Funktion zum Löschen eines Ordners
-    async function deleteFolder(folderId) {
-        if (confirm('Are you sure you want to delete this folder?')) {
+    async function deleteFolder(folderId, folderName) {
+        // Bestätigungsnachricht mit Ordnernamen
+        const confirmationMessage = `Bist du sicher, dass du den Ordner "${folderName}" löschen möchtest? Alle darin enthaltenen Unterordner und Dateien werden ebenfalls unwiderruflich gelöscht.`;
+        
+        if (confirm(confirmationMessage)) {
             try {
                 const response = await fetch(`/api/folders/${folderId}`, { method: 'DELETE' });
                 if (!response.ok) {
@@ -124,6 +143,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
         }
     }
+    
 
     function createFolderElement(folder) {
         const folderDiv = document.createElement('div');
@@ -138,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         // Löschen-Schaltfläche hinzufügen
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete Folder';
-        deleteBtn.addEventListener('click', () => deleteFolder(folder.id));
+        deleteBtn.addEventListener('click', () => deleteFolder(folder.id, folder.name));
         folderDiv.appendChild(deleteBtn);
     
         const contentDiv = document.createElement('div');
@@ -159,6 +179,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         folderDiv.appendChild(contentDiv);
         return folderDiv;
     }
+    
 
     // @Autor Miray-Eren Kilic
     let currentlyPreviewedFile = null;
@@ -247,7 +268,7 @@ function downloadFile(fileName) {
 }
 
     async function deleteFile(fileId) {
-        if (confirm('Are you sure you want to delete this file?')) {
+        if (confirm('Bist du sicher, dass du diese Datei löschen möchtest?')) {
             try {
                 const response = await fetch(`/api/docupload/delete/${fileId}`, { method: 'DELETE' });
                 if (!response.ok) {
@@ -294,7 +315,6 @@ fetchAndRenderFolderTree();
 // @Autor Luca Neumann
 // Ordner abrufen und Dropdown Menü damit ausfüllen
 await populateFolderSelect();
-
 
 if (createFolderForm) {
     createFolderForm.addEventListener('submit', function(e) {

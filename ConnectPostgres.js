@@ -4,8 +4,8 @@ const { execSync } = require('child_process');
 const pool = new Pool({
     user: 'postgres',
     host: 'localhost',
-    database: 'postgres',
-    password: 'pgres',
+    database: 'IntelliDoc',
+    password: 'IntelliDoc',
     port: 5432,
 });
 
