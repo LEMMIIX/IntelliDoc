@@ -99,6 +99,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         deleteBtn.addEventListener('click', () => deleteFile(file.id));
         fileDiv.appendChild(deleteBtn);
 
+        const renameBtn = document.createElement('button');
+        renameBtn.textContent = 'Rename';
+        renameBtn.addEventListener('click', () => renameDocument(file.id, file.name));
+        fileDiv.appendChild(renameBtn);
+
         return fileDiv;
     }
 
@@ -245,6 +250,36 @@ function downloadFile(fileName) {
             showErrorMessage('Failed to download file. Please try again later.');
         });
 }
+    function renameDocument(documentId, oldFilename) {
+        const newFilename = prompt("Geben Sie einen neuen Dateinamen ein:", oldFilename);
+        if (newFilename) {
+            fetch('/folders/rename', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ documentId, newFilename })
+            })
+                .then(async response => {
+                    if (!response.ok) {
+                        // Handle HTTP error responses like 400, 500
+                        const errorMessage = await response.text(); // Get error message from server
+                        throw new Error(`Error ${response.status}: ${errorMessage}`);
+                    }
+                    return response.json(); // Parse successful response
+                })
+                .then(data => {
+                    // If rename was successful, notify the user and refresh the folder structure
+                    alert('Dokument erfolgreich umbenannt');
+                    fetchAndRenderFolderTree(); // Reload folder structure
+                })
+                .catch(error => {
+                    console.error('Error renaming document:', error);
+                    alert(`Fehler beim Umbenennen des Dokuments: ${error.message}`);
+                });
+        }
+    }
+
 
     async function deleteFile(fileId) {
         if (confirm('Are you sure you want to delete this file?')) {

@@ -63,10 +63,28 @@ const getDocumentsByUserId = async (userId) => {
         throw error;
     }
 };
+//rename
+const renameDocumentById = async (documentId, newFilename) => {
+    const queryText = `
+        UPDATE main.files 
+        SET file_name = $1 
+        WHERE file_id = $2
+        RETURNING *;
+    `;
+    const values = [newFilename, documentId];
 
+    try {
+        const result = await db.query(queryText, values);
+        return result.rows[0]; // Gibt das umbenannte Dokument zurück
+    } catch (error) {
+        console.error('Fehler beim Umbenennen des Dokuments:', error);
+        throw error;
+    }
+};
 module.exports = {
     createDocument,
     getDocumentById,
     deleteDocumentById,
-    getDocumentsByUserId
+    getDocumentsByUserId,
+    renameDocumentById
 };
