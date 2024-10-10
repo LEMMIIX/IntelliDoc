@@ -35,7 +35,7 @@ exports.uploadFile = async (req, res) => {
         const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding) VALUES ($1, $2, $3, $4, $5, $6) RETURNING file_id';
         const values = [userId, originalname, mimetype, buffer, folderIdToUse, formattedEmbedding];
 
-        console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
+        //console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
 
         const result = await db.query(query, values);
         const fileId = result.rows[0].file_id;

@@ -8,29 +8,41 @@
 </head>
 
 <body>
-    <div class="main-content">
-        <h1>Ordnerstruktur</h1>
-        <div id="folderTree"></div>
-        <div id="filePreview"></div>
-    </div>
+    <main>
+        <div class="main-content">
+            <h1>Ordnerstruktur</h1>
+            <div id="folderTree"></div>
+            <div id="filePreview"></div>
+        </div>
+    
+        <div class="navbar">
+            <button id="uploadButton" class="upload-button">Dokumente Hochladen</button>
+        </div>
+    
+        <div id="error-container" style="display: none;"></div>
+        <div id="success-container" style="display: none;"></div>
+        <!-- Form zur Ordnererstellung -->
+        <form id="createFolderForm">
+            <input type="text" id="folderNameInput" placeholder="Ordnername" required>
+            <select id="parentFolderSelect">
+                <option value="">Kein übergeordneter Ordner</option>
+                <!-- Optionen werden dynamisch mit Ordnern gefüllt -->
+            </select>
+            <button type="submit">Ordner erstellen</button>
+        </form>
 
-    <div class="navbar">
-        <button id="uploadButton" class="upload-button">Dokumente Hochladen</button>
-    </div>
+        <!-- Add search form -->
+        <form id="searchForm">
+            <input type="text" id="searchInput" placeholder="Enter search query">
+            <button type="submit">Search</button>
+        </form>
 
-    <div id="error-container" style="display: none;"></div>
-    <div id="success-container" style="display: none;"></div>
-    <!-- Form zur Ordnererstellung -->
-    <form id="createFolderForm">
-        <input type="text" id="folderNameInput" placeholder="Ordnername" required>
-        <select id="parentFolderSelect">
-            <option value="">Kein übergeordneter Ordner</option>
-            <!-- Optionen werden dynamisch mit Ordnern gefüllt -->
-        </select>
-        <button type="submit">Ordner erstellen</button>
-    </form>
+        <!-- Add search results area -->
+        <div id="searchResults"></div>
+    </main>
 
     <script src="../js/folders.js"></script>
+    <script src="../js/semanticSearch.js"></script>
 </body>
 
 </html>

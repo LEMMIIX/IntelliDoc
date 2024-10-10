@@ -7,6 +7,8 @@ const { registerUser } = require('./backend/models/userRegistrationToDB');
 const { authenticateUser } = require('./backend/models/userAuthenticationToDB');
 const docUploadRoutes = require('./backend/routes/docUploadRoutes');
 const foldersRoutes = require('./backend/routes/foldersRoutes');
+const semanticSearchRoutes = require('./backend/routes/semanticSearchRoutes');
+process.env.NODE_ENV = 'UTF-8';
 
 const PORT = process.env.PORT || 3000;
 
@@ -95,6 +97,7 @@ app.get('/dashboard', authenticateMiddleware, (req, res) => {
 
 app.use('/api/docupload', authenticateMiddleware, docUploadRoutes);
 app.use('/api/folders', authenticateMiddleware, foldersRoutes);
+app.use('/api/search', authenticateMiddleware, semanticSearchRoutes);
 
 // Logout route
 app.post('/api/logout', (req, res) => {
