@@ -9,6 +9,8 @@ router.post('/create', foldersController.createFolder); //Route zum erstellen ei
 router.get('/', foldersController.getFolders); //Route zum Ausgeben aller Ordner des Benutzers
 router.delete('/:folderId', foldersController.deleteFolder); // Route zum Löschen eines Ordners
 
+// @Autor Ilyass Dablaq
+
 // Route zum Umbenennen eines Dokuments
 router.post('/rename', async (req, res) => {
     const { documentId, newFilename } = req.body;
@@ -27,15 +29,15 @@ router.post('/rename', async (req, res) => {
 
         // Prüfen, ob das Dokument tatsächlich existiert und umbenannt wurde
         if (!updatedDocument) {
-            return res.status(404).send('Dokument nicht gefunden');
+            return res.status(404).json({ message: 'Dokument nicht gefunden' });
         }
 
-        // Erfolgsmeldung senden
-        res.send('Dokument erfolgreich umbenannt');
+        // Erfolgsmeldung senden, jetzt als JSON
+        res.json({ message: 'Dokument erfolgreich umbenannt' });
     } catch (error) {
         // Fehlerbehandlung und Loggen von Fehlern
         console.error(`Fehler beim Umbenennen des Dokuments: ${error}`);
-        res.status(500).send('Fehler beim Umbenennen des Dokuments');
+        res.status(500).json({ message: 'Fehler beim Umbenennen des Dokuments' });
     }
 });
 
