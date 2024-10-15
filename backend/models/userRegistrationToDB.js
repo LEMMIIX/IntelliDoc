@@ -18,22 +18,22 @@ const registerUser = async (user_name, email, password_hash) => {
         const hashedPassword = await bcrypt.hash(password_hash, 10);
         console.log('Password hashed successfully');
 
-        // Query zum Einfügen des neuen Benutzers in die Datenbank
+        // Query zum Einfï¿½gen des neuen Benutzers in die Datenbank
         const query = 'INSERT INTO main.users (user_name, email, password_hash, verification_Key) VALUES ($1, $2, $3, $4) RETURNING user_id';
         const values = [user_name, email, hashedPassword, verification_Key];
 
-        console.log('Executing query:', query);
+        //console.log('Executing query:', query);
         console.log('Query values:', values.map((v, i) => i === 2 ? '[REDACTED]' : v));
 
-        // Führt die Query aus
+        // Fï¿½hrt die Query aus
         const result = await db.query(query, values);
-        console.log('Query executed. Result:', result);
+        //console.log('Query executed. Result:', result);
 
         if (result && result.rows && result.rows.length > 0) {
             const userId = result.rows[0].user_id;
             console.log('User inserted into database with ID:', userId);
 
-            // Sende die Bestätigungs-E-Mail
+            // Sende die Bestï¿½tigungs-E-Mail
             await sendVerificationEmail(email, verification_Key,user_name);
             return userId;
         } else {

@@ -273,7 +273,7 @@ function downloadFile(fileName) {
     function renameDocument(documentId, oldFilename) {
         const newFilename = prompt("Geben Sie einen neuen Dateinamen ein:", oldFilename);
         if (newFilename) {
-            fetch('/folders/rename', {
+            fetch('/api/folders/rename', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -290,7 +290,7 @@ function downloadFile(fileName) {
                 })
                 .then(data => {
                     // If rename was successful, notify the user and refresh the folder structure
-                    alert('Dokument erfolgreich umbenannt');
+                    //alert('Dokument erfolgreich umbenannt');
                     fetchAndRenderFolderTree(); // Reload folder structure
                 })
                 .catch(error => {
