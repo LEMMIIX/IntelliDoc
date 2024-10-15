@@ -40,7 +40,7 @@ exports.uploadFile = async (req, res) => {
         const result = await db.query(query, values);
         const fileId = result.rows[0].file_id;
 
-        console.log('File uploaded to database with embedding. File ID:', fileId);
+        //console.log('File uploaded to database with embedding. File ID:', fileId);
 
         res.status(201).json({ message: 'File uploaded successfully', fileId: fileId });
     } catch (error) {

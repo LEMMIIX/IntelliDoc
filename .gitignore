@@ -147,3 +147,10 @@ out/
 # embedding model
 /embed_models/
 backend/embed_models/
+
+ConnectPostgres.js
+
+# Meld Merge tool spezifische ignores
+.meld/*
+.meld/
+*.orig
