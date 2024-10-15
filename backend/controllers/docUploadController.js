@@ -29,7 +29,6 @@ exports.uploadFile = async (req, res) => {
         console.log('Extracting text content...');
         const textContent = await extractTextContent(buffer, mimetype, originalname);
         
-        console.log('Generating embedding...');
         const embedding = await modelEmbedding.generateEmbedding(textContent);
 
         console.log('Inserting into database...');
@@ -39,6 +38,7 @@ exports.uploadFile = async (req, res) => {
         const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding) VALUES ($1, $2, $3, $4, $5, $6) RETURNING file_id';
         const values = [userId, originalname, mimetype, buffer, folderIdToUse, formattedEmbedding];
 
+        console.log('Insertion complete.');
         //console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
 
         const result = await db.query(query, values);
@@ -103,7 +103,7 @@ exports.viewFile = async (req, res) => {
 
         const result = await db.query('SELECT file_name, file_type, file_data FROM main.files WHERE file_name = $1', [fileName]);
 
-        console.log('Reached after query');
+        //console.log('Reached after query');
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'File not found' });
         }

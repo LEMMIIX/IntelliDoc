@@ -98,7 +98,7 @@ async function extractTextContent(buffer, mimetype, filename) {
 
     const endTime = performance.now();
     const processingTime = (endTime - startTime).toFixed(2);
-    console.log(`Total processing time: ${processingTime} ms`);
+    console.log(`Reading file time: ${processingTime} ms`);
 
     return textContent;
 }

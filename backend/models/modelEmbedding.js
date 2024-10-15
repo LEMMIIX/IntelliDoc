@@ -37,9 +37,7 @@ async function generateEmbedding(text) {
   
   const endTime = performance.now();
   const processingTime = (endTime - startTime).toFixed(2);
-  console.log(`Embedding processing time: ${processingTime} ms`);
-  
-  console.log('Embedding generated successfully');
+  console.log(`Embedding processing time: ${processingTime} ms\nEmbedding successfull.`);
   return Array.from(output.data);
 }
 
