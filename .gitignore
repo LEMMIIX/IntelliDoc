@@ -85,6 +85,9 @@ Desktop.ini
 .yarn/install-state.gz
 .pnp.*
 
+# node
+node_modules/
+
 # Package lock files
 package-lock.json
 yarn.lock
@@ -141,5 +144,14 @@ out/
 *.log
 *.DS_Store
 
+# embedding model
+/embed_models/
+backend/embed_models/
+
 # Postgres DB Verbindung
 ConnectPostgres.js
+
+# Meld Merge tool spezifische ignores
+.meld/*
+.meld/
+*.orig

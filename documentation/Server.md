@@ -46,6 +46,7 @@ server {
 ```
 <br>
 
+Frontend->Server calls müssen für NginX über die "/api/" Route geroutet werden. Im Code müssen also alle Client-Server Verbindungen über "/api/" laufen.<br>
 Nginx kann (aus Sicherheitsgründen) nur auf Dateien unter `/var/www` zugreifen. Dort müssen alle html Dateien abgelegt werden.<br>
 Damit aber die html Dateien nicht händisch aus dem Git repro dort hingeschoben werden müssen, wird ein symbolic link eingerichtet, der auf das html Verzeichnis unseres Projekts zeigt.<br>
 Damit Nginx die client->backend calls richtig routen kann, musste ein proxy hinzugefügt werden. Alle client->backend routen laufen über `/api/`<br>

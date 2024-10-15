@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // @Autor Luca Neumann
     async function fetchAndRenderFolderTree() {
         try {
-            const response = await fetch('/api/folders');
+            const response = await fetch('/api/folders/tree');
             if (!response.ok) {
                 throw new Error('Failed to fetch folder tree');
             }
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     async function populateFolderSelect() {
         try {
-            const response = await fetch('/folders/');
+            const response = await fetch('/api/folders/');
             console.log('Response Status:', response.status); // Debugging
             const parentFolders = await response.json();
             console.log('Parent Folders:', parentFolders); // Debugging
@@ -107,12 +107,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         contentDiv.style.display = contentDiv.style.display === 'none' ? 'block' : 'none';
     }
 
-<<<<<<< HEAD
     // Funktion zum Löschen eines Ordners
     async function deleteFolder(folderId) {
         if (confirm('Are you sure you want to delete this folder?')) {
             try {
-                const response = await fetch(`/folders/${folderId}`, { method: 'DELETE' });
+                const response = await fetch(`/api/folders/${folderId}`, { method: 'DELETE' });
                 if (!response.ok) {
                     throw new Error('Failed to delete folder');
                 }
@@ -122,25 +121,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             } catch (error) {
                 console.error('Error deleting folder:', error);
                 showErrorMessage('Failed to delete folder. Please try again later.');
-=======
-    async function previewFile(fileName) {
-        const filePreview = document.getElementById('filePreview');
-
-        try {
-            const fileExtension = fileName.split('.').pop().toLowerCase();
-            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                filePreview.innerHTML = `<img src="/api/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
-
-            } else if (['pdf'].includes(fileExtension)) {
-                filePreview.innerHTML = `<iframe src="/api/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
-            } else {
-                filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
->>>>>>> main
             }
         }
     }
 
-<<<<<<< HEAD
     function createFolderElement(folder) {
         const folderDiv = document.createElement('div');
         folderDiv.className = 'folder';
@@ -174,82 +158,73 @@ document.addEventListener('DOMContentLoaded', async function() {
     
         folderDiv.appendChild(contentDiv);
         return folderDiv;
-=======
-    function downloadFile(fileName) {
-        fetch(`/api/docupload/download/${encodeURIComponent(fileName)}`)
-            .then(response => {
-                if (!response.ok) throw new Error('Network response was not ok');
-                return response.blob();
-            })
-            .then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none';
-                a.href = url;
-                a.download = fileName;
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            })
-            .catch(error => {
-                console.error('Download error:', error);
-                showErrorMessage('Failed to download file. Please try again later.');
-            });
->>>>>>> main
     }
 
     // @Autor Miray-Eren Kilic
-    let lastOpenedFile = null; // Variable um den zuletzt geöffneten Dateinamen zu speichern
+    let currentlyPreviewedFile = null;
 
-async function previewFile(fileName) {
-    const filePreview = document.getElementById('filePreview');
+    async function previewFile(fileName) {
+        const filePreview = document.getElementById('filePreview');
     
-    // Wenn dieselbe Datei erneut geklickt wird, Vorschau ausblenden und Rückkehr
-    if (lastOpenedFile === fileName) {
-        filePreview.style.display = 'none'; // Vorschau ausblenden
-        lastOpenedFile = null; // Zurücksetzen, da Vorschau jetzt geschlossen ist
-        return;
-    }
-
-    lastOpenedFile = fileName; // Speichere die aktuell geöffnete Datei
-    
-    try {
-        const fileExtension = fileName.split('.').pop().toLowerCase();
-        
-        if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-            // Bildvorschau
-            filePreview.innerHTML = `<img src="/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
-    
-        } else if (['pdf'].includes(fileExtension)) {
-            // PDF-Vorschau
-            filePreview.innerHTML = `<iframe src="/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
-    
-        } else if (['txt'].includes(fileExtension)) {
-            // Textdatei-Vorschau
-            const response = await fetch(`/docupload/view/${encodeURIComponent(fileName)}`);
-            const textContent = await response.text();
-            
-            // Textinhalt in ein div einfügen und Zeilenumbrüche beibehalten
-            filePreview.innerHTML = `
-                <div style="white-space: pre-wrap; background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
-                    ${textContent}
-                </div>
-            `;
-        } else {
-            // Vorschau für andere Dateitypen
-            filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
+        // Überprüfen, ob die Vorschau gerade die Datei anzeigt, auf die geklickt wurde
+        if (currentlyPreviewedFile === fileName) {
+            // Vorschau ausblenden, wenn dieselbe Datei erneut geklickt wird
+            filePreview.innerHTML = '';
+            filePreview.style.display = 'none'; // Vorschau unsichtbar machen
+            currentlyPreviewedFile = null; // Datei-Tracking zurücksetzen
+            return;
         }
-
-        filePreview.style.display = 'block'; // Vorschau sichtbar machen
-    } catch (error) {
-        console.error('Fehler beim Laden der Datei:', error);
+    
+        // Neue Datei wird angeklickt, also Vorschau aktualisieren
+        currentlyPreviewedFile = fileName;
+    
+        try {
+            const fileExtension = fileName.split('.').pop().toLowerCase();
+            
+            if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                // Bildvorschau
+                filePreview.innerHTML = `<img src="/api/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
+    
+            } else if (['pdf'].includes(fileExtension)) {
+                // PDF-Vorschau
+                filePreview.innerHTML = `<iframe src="/api/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
+    
+            } else if (fileExtension === 'txt') {
+                // Textdatei-Vorschau
+                const response = await fetch(`/api/docupload/view/${encodeURIComponent(fileName)}`);
+                const textContent = await response.text();
+                
+                // Textinhalt in ein div einfügen und Zeilenumbrüche beibehalten
+                filePreview.innerHTML = `
+                    <div style="background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
+                        ${textContent}
+                    </div>
+                `;
+            } else if (fileExtension === 'docx') {
+                // DOCX-Vorschau
+                const response = await fetch(`/api/docupload/view/${encodeURIComponent(fileName)}`);
+                const docxContent = await response.text(); // Der Server liefert HTML zurück
+                
+                // DOCX-Inhalt im HTML-Format anzeigen
+                filePreview.innerHTML = `
+                    <div style="background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
+                        ${docxContent}
+                    </div>
+                `;
+            } else {
+                // Vorschau für andere Dateitypen
+                filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
+            }
+    
+            filePreview.style.display = 'block'; // Vorschau sichtbar machen
+        } catch (error) {
+            console.error('Fehler beim Laden der Datei:', error);
+        }
     }
-}
-
 
     
 function downloadFile(fileName) {
-        fetch(`/docupload/download/${encodeURIComponent(fileName)}`)
+        fetch(`/api/docupload/download/${encodeURIComponent(fileName)}`)
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.blob();
@@ -279,6 +254,9 @@ function downloadFile(fileName) {
                 }
                 const data = await response.json();
                 showSuccessMessage(data.message);
+                filePreview.innerHTML = '';
+                filePreview.style.display = 'none'; 
+                currentlyPreviewedFile = null;
                 fetchAndRenderFolderTree();
             } catch (error) {
                 console.error('Error:', error);
@@ -328,7 +306,7 @@ if (createFolderForm) {
         console.log('Folder Name Input Value:', folderName);  // Debugging: Überprüfe den eingegebenen Ordnernamen
         console.log('Parent Folder Select Value:', parentFolderId);  // Debugging: Überprüfe den Wert des ausgewählten Elternordners
 
-        fetch('/folders/create', {  // Überprüfe den Endpunkt (angepasst für POST-Route)
+        fetch('/api/folders/create', {  // Überprüfe den Endpunkt (angepasst für POST-Route)
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

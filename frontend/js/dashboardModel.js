@@ -4,7 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const folderSelect = document.getElementById('folderSelect');
 
     // Fetch folders and populate the select element
-    fetch('/api/folders')
+    fetch('/api/folders/tree')       // ---- fetch('/folders/tree')  ????
         .then(response => response.json())
         .then(folders => {
             populateFolderSelect(folders);
@@ -53,6 +53,4 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-  
-    // Add any other dashboard functionality here
 });

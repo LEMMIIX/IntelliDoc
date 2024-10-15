@@ -1,18 +1,21 @@
 const db = require('../../ConnectPostgres'); // Importiere den `pg`-Pool
+const embeddingService = require('./modelEmbedding');
 
 // Funktion, um ein neues Dokument zu erstellen
-const createDocument = async (userId, filename, contentType, fileData) => {
+const createDocument = async (userId, filename, contentType, fileData, textContent) => {
+    const embedding = await embeddingService.generateEmbedding(textContent);            // ruft das Embedding auf
+
     const queryText = `
-        INSERT INTO documents (user_id, filename, content_type, file_data)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO documents (user_id, filename, content_type, file_data, embedding)
+        VALUES ($1, $2, $3, $4, $5)
         RETURNING *;
     `;
 
-    const values = [userId, filename, contentType, fileData];
+    const values = [userId, filename, contentType, fileData, embedding];
 
     try {
         const result = await db.query(queryText, values);
-        return result.rows[0]; // Das erstellte Dokument zurückgeben
+        return result.rows[0]; // Das erstellte Dokument zurï¿½ckgeben
     } catch (error) {
         console.error('Fehler beim Erstellen des Dokuments:', error);
         throw error;
@@ -34,7 +37,7 @@ const getDocumentById = async (documentId) => {
     }
 };
 
-// Funktion, um ein Dokument nach ID zu löschen
+// Funktion, um ein Dokument nach ID zu lï¿½schen
 const deleteDocumentById = async (documentId) => {
     const queryText = `
         DELETE FROM documents WHERE id = $1 RETURNING *;
@@ -44,7 +47,7 @@ const deleteDocumentById = async (documentId) => {
         const result = await db.query(queryText, [documentId]);
         return result.rows[0];
     } catch (error) {
-        console.error('Fehler beim Löschen des Dokuments:', error);
+        console.error('Fehler beim Lï¿½schen des Dokuments:', error);
         throw error;
     }
 };
