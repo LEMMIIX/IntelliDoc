@@ -87,6 +87,7 @@ Desktop.ini
 
 # node
 node_modules/
+package.json
 
 # Package lock files
 package-lock.json
