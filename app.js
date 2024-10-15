@@ -97,7 +97,7 @@ app.get('/dashboard', authenticateMiddleware, (req, res) => {
 app.use('/api/docupload', authenticateMiddleware, docUploadRoutes);
 app.use('/api/folders', authenticateMiddleware, foldersRoutes);
 
-app.use('/passwordReset', passwordResetRoutes);
+app.use('/api/passwordReset', passwordResetRoutes);
 
 // Logout route
 app.post('/api/logout', (req, res) => {

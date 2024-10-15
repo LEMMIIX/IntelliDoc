@@ -3,31 +3,6 @@ const db = require('../../ConnectPostgres');
 const User = require('./modelUser');
 const { sendVerificationEmail } = require('../controllers/modelMailer.js');
 
-/**
-const registerUser = async (user_name, email, password_hash) => {
-    const user = new User(user_name, email, password_hash);
-    user.validate();
-
-    try {
-        const hashedPassword = await bcrypt.hash(password_hash, 10);
-        const query = 'INSERT INTO public.users (user_name, email, password_hash) VALUES ($1, $2, $3) RETURNING id';
-        const values = [user_name, email, hashedPassword];
-
-        const result = await db.query(query, values);
-        console.log('User inserted into database with ID:', result.rows[0].id);
-        return result.rows[0].id;
-    } catch (error) {
-        console.error('Error in registerUser:', error);
-        if (error.code === '23505') { // unique_violation error code
-            throw new Error('Username or email already exists');
-        }
-        throw error;
-    }
-}; 
-
-module.exports = {
-    registerUser,
-}; */
 
 const registerUser = async (user_name, email, password_hash) => {
     console.log('registerUser function called with:', { user_name, email, password_hash: password_hash ? '[REDACTED]' : undefined });
