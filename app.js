@@ -7,6 +7,7 @@ const { registerUser } = require('./backend/models/userRegistrationToDB');
 const { authenticateUser } = require('./backend/models/userAuthenticationToDB');
 const docUploadRoutes = require('./backend/routes/docUploadRoutes');
 const foldersRoutes = require('./backend/routes/foldersRoutes');
+const passwordResetRoutes = require('./backend/models/passwordReset');
 
 const PORT = process.env.PORT || 3000;
 
@@ -95,6 +96,8 @@ app.get('/dashboard', authenticateMiddleware, (req, res) => {
 
 app.use('/api/docupload', authenticateMiddleware, docUploadRoutes);
 app.use('/api/folders', authenticateMiddleware, foldersRoutes);
+
+app.use('/passwordReset', passwordResetRoutes);
 
 // Logout route
 app.post('/api/logout', (req, res) => {
