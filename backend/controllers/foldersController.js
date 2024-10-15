@@ -99,12 +99,15 @@ exports.createFolder = async (req, res) => {
         // Generiere das Embedding für den Ordnernamen
         const embedding = await generateEmbedding(folderName);
 
+        // Embedding für Postgres Syntax formatieren
+        const formattedEmbedding = `[${embedding.join(',')}]`;
+
         // SQL-Query zum Erstellen des neuen Ordners
         const query = `
             INSERT INTO main.folders (user_id, folder_name, parent_folder_id, embedding) 
             VALUES ($1, $2, $3, $4) RETURNING folder_id
         `;
-        const values = [userId, folderName, parentFolderIdToUse, embedding];
+        const values = [userId, folderName, parentFolderIdToUse, formattedEmbedding];
 
         const result = await db.query(query, values);
 
