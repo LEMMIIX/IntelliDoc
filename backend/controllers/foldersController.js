@@ -78,6 +78,8 @@ exports.getFolderTree = async (req, res) => {
 
 
 // Funktion zum Erstellen eines neuen Ordners
+const { generateEmbedding } = require('../models/modelEmbedding'); // Importiere die Funktion zum Generieren von Embeddings
+
 exports.createFolder = async (req, res) => {
     if (!req.session.userId) {
         return res.status(401).json({ message: 'Unauthorized: User not logged in' });
@@ -94,12 +96,15 @@ exports.createFolder = async (req, res) => {
         // Falls parentFolderId nicht angegeben oder ungültig ist, auf NULL setzen
         const parentFolderIdToUse = parentFolderId ? parseInt(parentFolderId, 10) : null;
 
+        // Generiere das Embedding für den Ordnernamen
+        const embedding = await generateEmbedding(folderName);
+
         // SQL-Query zum Erstellen des neuen Ordners
         const query = `
-            INSERT INTO main.folders (user_id, folder_name, parent_folder_id) 
-            VALUES ($1, $2, $3) RETURNING folder_id
+            INSERT INTO main.folders (user_id, folder_name, parent_folder_id, embedding) 
+            VALUES ($1, $2, $3, $4) RETURNING folder_id
         `;
-        const values = [userId, folderName, parentFolderIdToUse];
+        const values = [userId, folderName, parentFolderIdToUse, embedding];
 
         const result = await db.query(query, values);
 
