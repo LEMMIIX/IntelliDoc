@@ -4,18 +4,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const folderSelect = document.getElementById('folderSelect');
 
     // Fetch folders and populate the select element
-    fetch('/api/folders')
+    fetch('/api/folders/tree')       // ---- fetch('/folders/tree')  ????
         .then(response => response.json())
-        .then(folders => {
-            populateFolderSelect(folders);
+        .then(data => {
+            console.log('Fetched data:', data); // Protokolliere die gesamte Antwort
+            if (data && Array.isArray(data.folderTree)) {
+                populateFolderSelect(data.folderTree);
+            } else {
+                console.error('Expected folderTree to be an array but received:', data.folderTree);
+            }
         })
         .catch(error => console.error('Error fetching folders:', error));
 
     function populateFolderSelect(folders) {
         folderSelect.innerHTML = ''; // Clear existing options
 
+        // Add "No Folder" option
+        const noFolderOption = document.createElement('option');
+        noFolderOption.value = '';
+        noFolderOption.textContent = 'No Folder';
+        folderSelect.appendChild(noFolderOption);
+
         // Helper function to build options recursively
         function buildOptions(folders, parentId = null, depth = 0) {
+            if (!Array.isArray(folders)) {
+                console.error('Expected folders to be an array but received:', folders);
+                return;
+            }
+
             folders.forEach(folder => {
                 // Create option element for each folder
                 const option = document.createElement('option');
@@ -37,6 +53,14 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadForm.addEventListener('submit', function(e) {
             e.preventDefault();
             const formData = new FormData(uploadForm);
+            const selectedFolder = folderSelect.value;
+
+            // If no folder is selected, handle accordingly
+            if (!selectedFolder) {
+                formData.append('folderId', ''); // Optionally pass an empty folder ID or handle accordingly
+            } else {
+                formData.append('folderId', selectedFolder);
+            }
 
             fetch('/api/docupload', {
                 method: 'POST',
@@ -53,6 +77,4 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
-  
-    // Add any other dashboard functionality here
 });

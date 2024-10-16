@@ -7,6 +7,9 @@ const { registerUser } = require('./backend/models/userRegistrationToDB');
 const { authenticateUser } = require('./backend/models/userAuthenticationToDB');
 const docUploadRoutes = require('./backend/routes/docUploadRoutes');
 const foldersRoutes = require('./backend/routes/foldersRoutes');
+const semanticSearchRoutes = require('./backend/routes/semanticSearchRoutes');
+process.env.NODE_ENV = 'UTF-8';
+const passwordResetRoutes = require('./backend/models/passwordReset');
 
 const PORT = process.env.PORT || 3000;
 
@@ -47,7 +50,7 @@ app.get('/api/current-user', authenticateMiddleware, (req, res) => {
 
 // Registration Route
 app.post('/api/register', async (req, res) => {
-    console.log('Received registration request:', req.body);
+    //console.log('Received registration request:', req.body);
     const { username, email, password } = req.body;
 
     try {
@@ -68,7 +71,7 @@ app.post('/api/register', async (req, res) => {
 
 // Login Route
 app.post('/api/login', async (req, res) => {
-    console.log('Received login request:', { ...req.body, password: '[REDACTED]' });
+    //console.log('Received login request:', { ...req.body, password: '[REDACTED]' });
     const { username, password } = req.body;
 
     try {
@@ -77,7 +80,7 @@ app.post('/api/login', async (req, res) => {
             /////// user_id wird in der session gespeichert/genutzt, nach erfolgreicher Authentifizierung
             req.session.userId = user.id;
             ///////
-            console.log('User logged in successfully with user_id:', user.id);
+            //console.log('User logged in successfully with user_id:', user.id);
             res.status(200).json({ message: 'Login successful', userId: user.id });
         } else {
             console.log('Login failed: Invalid credentials');
@@ -95,6 +98,8 @@ app.get('/dashboard', authenticateMiddleware, (req, res) => {
 
 app.use('/api/docupload', authenticateMiddleware, docUploadRoutes);
 app.use('/api/folders', authenticateMiddleware, foldersRoutes);
+app.use('/api/search', authenticateMiddleware, semanticSearchRoutes);
+app.use('/api/passwordReset', passwordResetRoutes);
 
 // Logout route
 app.post('/api/logout', (req, res) => {

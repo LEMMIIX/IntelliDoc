@@ -1,6 +1,9 @@
 const db = require('../../ConnectPostgres');
 const path = require('path');
-const { performOCR } = require('../models/modelOcr');
+const mammoth = require('mammoth');
+// E/F: Added new imports for text extraction and embedding generation
+const { extractTextContent } = require('../models/modelFileReader');
+const modelEmbedding = require('../models/modelEmbedding');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -23,37 +26,30 @@ exports.uploadFile = async (req, res) => {
         // Falls folderId leer ist oder keine gültige Zahl ist, auf NULL setzen
         const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
 
-        // Überprüfe die Werte für Debugging-Zwecke
-        console.log('File Name:', originalname); //ändere file Name zu originalem Namen
-        console.log('File Type:', mimetype);
-        console.log('Folder ID:', folderIdToUse);
-
-        // SQL-Query zum Einfügen der Datei
-        const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id) VALUES ($1, $2, $3, $4, $5) RETURNING file_id';
-        const values = [userId, originalname, mimetype, buffer, folderIdToUse]; // Verwende originalname statt filename
+        console.log('Extracting text content...');
+        const textContent = await extractTextContent(buffer, mimetype, originalname);
         
+        const embedding = await modelEmbedding.generateEmbedding(textContent);
+
+        console.log('Inserting into database...');
+        // Format the embedding as a PostgreSQL array
+        const formattedEmbedding = `[${embedding.join(',')}]`;
+
+        const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding) VALUES ($1, $2, $3, $4, $5, $6) RETURNING file_id';
+        const values = [userId, originalname, mimetype, buffer, folderIdToUse, formattedEmbedding];
+
+        console.log('Insertion complete.');
+        //console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
+
         const result = await db.query(query, values);
         const fileId = result.rows[0].file_id;
-        
-        console.log('File uploaded to database. File ID:', fileId);
 
-        // OCR bei Upload von JPG oder PNG Dateien
-        if (mimetype === 'image/png' || mimetype === 'image/jpeg') {
-            console.log('Image file detected. Starting OCR process...');
-            try {
-                const ocrResult = await performOCR(buffer, originalname);
-                console.log('OCR Result:', ocrResult.success ? 'Success' : 'Failed', ocrResult);
-            } catch (ocrError) {
-                console.error('Error during OCR process:', ocrError);
-            }
-        } else {
-            console.log('Not an image file. Skipping OCR.');
-        }
-        
+        //console.log('File uploaded to database with embedding. File ID:', fileId);
+
         res.status(201).json({ message: 'File uploaded successfully', fileId: fileId });
     } catch (error) {
-        console.error('Error uploading file:', error);
-        res.status(500).send('Error uploading file');
+        console.error('Error processing file:', error);
+        res.status(422).json({ message: 'Error processing file', error: error.message });
     }
 };
 
@@ -107,16 +103,71 @@ exports.viewFile = async (req, res) => {
 
         const result = await db.query('SELECT file_name, file_type, file_data FROM main.files WHERE file_name = $1', [fileName]);
 
-        console.log('Reached after query');
+        //console.log('Reached after query');
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'File not found' });
         }
 
         const document = result.rows[0];
-
-        res.setHeader('Content-Type', document.file_type);
-        res.send(document.file_data);
-
+        
+        if (document.file_type === 'pdf') {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.send(document.file_data);
+        } else if (document.file_type === 'text/plain') {
+            res.setHeader('Content-Type', 'text/html');
+            res.send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>View Text File</title>
+                    <style>
+                        .file-content {
+                            background-color: #f4f4f4;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            margin-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${document.file_name}</h1>
+                    <div class="file-content">${document.file_data.toString()}</div>
+                </body>
+                </html>
+            `);
+        } else if (document.file_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            const docxBuffer = Buffer.from(document.file_data);
+            const { value: htmlContent } = await mammoth.convertToHtml({ buffer: docxBuffer });
+            
+            res.setHeader('Content-Type', 'text/html');
+            res.send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>View DOCX File</title>
+                    <style>
+                        .file-content {
+                            background-color: #f4f4f4;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            margin-top: 20px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${document.file_name}</h1>
+                    <div class="file-content">${htmlContent}</div>
+                </body>
+                </html>
+            `);
+        } else {
+            res.setHeader('Content-Type', document.file_type);
+            res.send(document.file_data);
+        }
     } catch (err) {
         console.error('Error fetching document:', err.stack);
         res.status(500).json({ error: 'Error fetching document', details: err.stack });

@@ -1,22 +1,22 @@
 const bcrypt = require('bcrypt');
 const db = require('../../ConnectPostgres');
 
-const authenticateUser = async (user_name, password_hash) => {
-    console.log('authenticateUser function called with:', { user_name, password_hash: password_hash ? '[REDACTED]' : undefined });
+const authenticateUser = async (email, password_hash) => {
+    //console.log('authenticateUser function called with:', { email, password_hash: password_hash ? '[REDACTED]' : undefined });
     
     try {
-        // Query to fetch user by user_name
-        const query = 'SELECT * FROM main.users WHERE user_name = $1';
-        const values = [user_name];
+        // Query to fetch user by email
+        const query = 'SELECT * FROM main.users WHERE email = $1';
+        const values = [email];
 
-        console.log('Executing query:', query);
-        console.log('Query values:', values);
+        //console.log('Executing query:', query);
+        //console.log('Query values:', values);
 
         const result = await db.query(query, values);
-        console.log('Query executed. Rows returned:', result.rows.length);
+        //console.log('Query executed. Rows returned:', result.rows.length);
 
         if (result.rows.length === 0) {
-            console.log('No user found with the given user_name');
+            console.log('No user found with the given email');
             return null;
         }
 

@@ -1,0 +1,9 @@
+{
+  "input": [
+    {
+      "text": "fahige Stiftung des biirgerlichen Rechts. Urspriinglich hatte sie den\nZweck, ein Rettungsdorf fir verhaltensauffallige oder straffallig gewor-\ndene arme Hamburger Kinder zu unterhalten, die man im damaligen\nSprachgebrauch als ,sittlich verwahrlost\" bezeichnete. Im Rettungsdorf\nFamilienprinzip in Wohngruppen und wurden auf eine Lehre im Hand-\nals Dienstmadchen vorbereitet. Die Stiftung ist heute mit verschie-\ngruppen und Stadtteilbiiros im Raum Hamburg vertreten und betreut\n\n> Familien, alte Menschen, geistig Behinderte und psychisch Kranke.\nallgemeinbildende evangelische Wichern-Schule, die Evangelische\n\nit & Diakonie und die Evangelische Berufsschule fur Pflege. — Zum\n"
+    }
+  ],
+  "model": "llama3",
+  "task_type": "embedding"
+}

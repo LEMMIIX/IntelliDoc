@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         })
         .then(data => {
-            console.log('Success:', data);
-            alert('Login successful!');
+            //console.log('Success:', data);
+            //alert('Login successful!');
             // Nutzer an "dashboard.html" weiterleiten
             window.location.href = '../html/dashboard.html';
         })
