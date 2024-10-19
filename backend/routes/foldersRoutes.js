@@ -21,7 +21,7 @@ router.post('/rename', async (req, res) => {
     }
 
     // Loggen, welche Operation ausgeführt wird, zur besseren Nachverfolgung
-    console.log(`Umbenennen des Dokuments mit ID ${documentId} in ${newFilename}`);
+    //console.log(`Umbenennen des Dokuments mit ID ${documentId} in ${newFilename}`);
 
     try {
         // Benutze die Funktion, um das Dokument umzubenennen

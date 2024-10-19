@@ -41,9 +41,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     async function populateFolderSelect() {
         try {
             const response = await fetch('/api/folders/');
-            console.log('Response Status:', response.status); // Debugging
+            //('Response Status:', response.status); // Debugging
             const parentFolders = await response.json();
-            console.log('Parent Folders:', parentFolders); // Debugging
+            //console.log('Parent Folders:', parentFolders); // Debugging
     
             parentFolderSelect.innerHTML = '<option value="">Kein übergeordneter Ordner</option>';
             
@@ -353,13 +353,13 @@ await populateFolderSelect();
 if (createFolderForm) {
     createFolderForm.addEventListener('submit', function(e) {
         e.preventDefault();  // Verhindert das Standardverhalten des Formulars (Neuladen der Seite)
-        console.log('Form submit event fired');  // Debugging: Bestätige, dass das Submit-Event gefeuert wird
+        //console.log('Form submit event fired');  // Debugging: Bestätige, dass das Submit-Event gefeuert wird
 
         const folderName = document.getElementById('folderNameInput').value;
         const parentFolderId = document.getElementById('parentFolderSelect').value;
 
-        console.log('Folder Name Input Value:', folderName);  // Debugging: Überprüfe den eingegebenen Ordnernamen
-        console.log('Parent Folder Select Value:', parentFolderId);  // Debugging: Überprüfe den Wert des ausgewählten Elternordners
+        //console.log('Folder Name Input Value:', folderName);  // Debugging: Überprüfe den eingegebenen Ordnernamen
+        //console.log('Parent Folder Select Value:', parentFolderId);  // Debugging: Überprüfe den Wert des ausgewählten Elternordners
 
         fetch('/api/folders/create', {  // Überprüfe den Endpunkt (angepasst für POST-Route)
             method: 'POST',
@@ -369,11 +369,11 @@ if (createFolderForm) {
             body: JSON.stringify({ folderName, parentFolderId })
         })
         .then(response => {
-            console.log('Fetch response:', response);  // Debugging: Überprüfe die Response vom Server
+            //console.log('Fetch response:', response);  // Debugging: Überprüfe die Response vom Server
             return response.json();
         })
         .then(data => {
-            console.log('Response Data:', data);  // Debugging: Überprüfe die Daten, die vom Server zurückgegeben werden
+            //console.log('Response Data:', data);  // Debugging: Überprüfe die Daten, die vom Server zurückgegeben werden
             if (data.folderId) {
                 alert('Folder created successfully');
                 location.reload(); // Seite neu laden, um die neue Ordnerstruktur anzuzeigen

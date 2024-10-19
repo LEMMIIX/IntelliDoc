@@ -11,15 +11,15 @@ router.get('/', (req, res) => {
 });
 router.post('/request-verification', async (req, res) => {
 	const { email } = req.body;
-	console.log('Passwort zurücksetzen für E-Mail:', email);
+	//console.log('Passwort zurï¿½cksetzen fï¿½r E-Mail:', email);
 
  //const resetPassword = async (email) => {
 
 	try {
-		//überprüfen ob die angegeben Email in der Datenbank existiert
+		//ï¿½berprï¿½fen ob die angegeben Email in der Datenbank existiert
 		const result = await db.query('SELECT * FROM main.users WHERE email = $1', [email]);
 		if (result.rows.length > 0) {
-			console.log('Email Adresse gefunden');
+			//console.log('Email Adresse gefunden');
 			const verfication_Key = Math.floor(Math.random() * (999999 - 100000 + 1)) + 100000;
 
 			await db.query('UPDATE main.users SET verification_key = $1 WHERE email = $2', [verfication_Key, email]);
@@ -31,7 +31,7 @@ router.post('/request-verification', async (req, res) => {
 			return null;
 		}
 	} catch (error) {
-		console.error('Fehler beim zurücksetzten des Passworts', error);
+		console.error('Fehler beim zurï¿½cksetzten des Passworts', error);
 		throw error;
 	}
 	

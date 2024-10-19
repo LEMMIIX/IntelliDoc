@@ -86,7 +86,7 @@ function semanticSearch(options = {}) {
     async function provideFeedback(queryId, documentId, isRelevant) {
         if (relevanceFeedbackEnabled) {
             // Implement relevance feedback logic here
-            console.log(`Feedback received for query ${queryId}, document ${documentId}: ${isRelevant}`);
+            //console.log(`Feedback received for query ${queryId}, document ${documentId}: ${isRelevant}`);
         }
     }
 

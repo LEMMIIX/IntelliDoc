@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', function() {
     fetch('/api/folders/tree')       // ---- fetch('/folders/tree')  ????
         .then(response => response.json())
         .then(data => {
-            console.log('Fetched data:', data); // Protokolliere die gesamte Antwort
+            //console.log('Fetched data:', data); // Protokolliere die gesamte Antwort
             if (data && Array.isArray(data.folderTree)) {
                 populateFolderSelect(data.folderTree);
             } else {
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log('File upload response:', data);
+                //console.log('File upload response:', data);
                 responseDiv.textContent = data.message;
             })
             .catch(error => {

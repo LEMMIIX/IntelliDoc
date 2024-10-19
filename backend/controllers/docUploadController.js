@@ -31,7 +31,7 @@ exports.uploadFile = async (req, res) => {
         
         const embedding = await modelEmbedding.generateEmbedding(textContent);
 
-        console.log('Inserting into database...');
+        //console.log('Inserting into database...');
         // Format the embedding as a PostgreSQL array
         const formattedEmbedding = `[${embedding.join(',')}]`;
 

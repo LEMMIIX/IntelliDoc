@@ -5,7 +5,7 @@ const { sendVerificationEmail } = require('../controllers/modelMailer.js');
 
 
 const registerUser = async (user_name, email, password_hash) => {
-    console.log('registerUser function called with:', { user_name, email, password_hash: password_hash ? '[REDACTED]' : undefined });
+    //console.log('registerUser function called with:', { user_name, email, password_hash: password_hash ? '[REDACTED]' : undefined });
 
     try {
         // Generiert einen Verification Key
@@ -13,17 +13,17 @@ const registerUser = async (user_name, email, password_hash) => {
 
         const user = new User(user_name, email, password_hash, verification_Key);
         user.validate();
-        console.log('User validation passed');
+        //console.log('User validation passed');
 
         const hashedPassword = await bcrypt.hash(password_hash, 10);
-        console.log('Password hashed successfully');
+        //console.log('Password hashed successfully');
 
         // Query zum Einf�gen des neuen Benutzers in die Datenbank
         const query = 'INSERT INTO main.users (user_name, email, password_hash, verification_Key) VALUES ($1, $2, $3, $4) RETURNING user_id';
         const values = [user_name, email, hashedPassword, verification_Key];
 
         //console.log('Executing query:', query);
-        console.log('Query values:', values.map((v, i) => i === 2 ? '[REDACTED]' : v));
+        //console.log('Query values:', values.map((v, i) => i === 2 ? '[REDACTED]' : v));
 
         // F�hrt die Query aus
         const result = await db.query(query, values);
