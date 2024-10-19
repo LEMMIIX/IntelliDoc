@@ -1,4 +1,5 @@
-const express = require('express');
+const cors = require("cors");
+const express = require("express");
 const app = express();
 const bodyParser = require('body-parser');
 const path = require('path');
@@ -14,6 +15,14 @@ const passwordResetRoutes = require('./backend/models/passwordReset');
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["POST", "PUT", "GET", "DELETE", "OPTIONS", "HEAD"],
+    credentials: true,
+  })
+);
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'frontend')));

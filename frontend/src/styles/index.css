@@ -1,0 +1,234 @@
+:root {
+  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 400;
+  --primary-color: #8BC6EC;
+  --secondary-color: #3b43db;
+  --text-color: #ffffff;
+  --accent-color: #4d47ff;
+}
+
+*,
+::after,
+::before {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+ul {
+  list-style: none;
+}
+
+body {
+  min-height: 100vh;
+}
+
+/* reusable  start */
+.button {     
+    background-image: linear-gradient(to right, #0575E6 0%, var(--secondary-color)  51%, #0575E6  100%);
+    margin: 16px auto;
+    padding: 15px 45px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: 0.5s;
+    cursor: pointer;
+    background-size: 200% auto;
+    color: white;            
+    border-radius: 16px;
+    display: block;
+    text-decoration: none;
+
+    letter-spacing: 2px;
+    border: none;
+}
+ .button:hover {
+    background-position: right center; 
+    color: #fff;
+    text-decoration: none;
+  }
+/* reusable  end */
+
+/* Home style start */
+.home_main {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-color);
+  background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  padding: 20px;
+  text-align: center;
+}
+
+.home_title {
+  font-size: 2.5rem;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+  color: var(--text-color);
+  margin-bottom: 20px;
+  text-shadow: 2px 2px 6px rgba(0, 0, 100, 0.2);
+  letter-spacing: 2px;
+}
+
+.home_login_container {
+  background-color: rgba(255, 255, 255, 0.1);
+  padding: 30px;
+  border-radius: 12px;
+}
+
+.home_login_container p {
+  font-size: 1.2rem;
+  color: var(--text-color);
+  font-weight: 600;
+  margin-bottom: 20px;
+  
+}
+
+.home_login_link {
+  text-decoration: none;
+  background-color: var(--accent-color);
+  color: white;
+  border-radius: 16px;
+  font-size: 1.2rem;
+  padding: 10px 20px;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-weight: 600;
+}
+
+.home_login_link:hover {
+  background-color: #4d2fff;
+  transform: scale(1.05);
+}
+
+.home_members {
+  margin-top: 40px;
+  color: var(--text-color);
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 500;
+  letter-spacing: 1px;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 10px;
+}
+
+.home_members li:first-child {
+  grid-column: span 2;
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+/* Home style end */
+
+/* login style start */
+
+/* Base styles */
+.login_page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-color);
+  background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  padding: 20px;
+  text-align: center;
+}
+
+.login_container {
+  background-color: white;
+  padding: 24px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 500px; 
+  position: relative;
+}
+
+.logo {
+  width: 80px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 10px;
+}
+
+.login_homepage_link {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  color: var(--secondary-color);
+  gap: 4px;
+  font-weight: 600;
+}
+.homepage_icon {
+  width: 32px;
+  border: 1px solid #777;
+  padding:4px ;
+  border-radius: 50%;
+    transition: transform 0.5s ;
+}
+.homepage_icon:hover {
+  transform: scale(1.1);
+
+  
+}
+
+.login_input_container {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.login_input_label {
+  font-size: 12px;
+  text-align: left;
+  color: #777;
+}
+
+.login_input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+.login_input:focus {
+  box-shadow: 0px 0px 1px rgba(0, 0, 255);
+  border-color: #00f;
+  outline: none;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .login_container {
+    width: 90%; 
+    padding:20px 16px; 
+  }
+
+  .logo {
+    width: 60px; 
+  }
+
+  .login_input_label {
+    font-size: 14px; 
+  }
+}
+
+@media (max-width: 400px) {
+  .login_input {
+    padding: 10px; 
+  }
+
+  .login_input_label {
+    font-size: 16px; 
+  }
+}
+
+.login_signup_question {
+  display: flex; 
+  justify-content: center;
+  gap: 4px;
+  
+}
