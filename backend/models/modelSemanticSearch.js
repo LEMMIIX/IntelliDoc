@@ -4,10 +4,45 @@ const db = require('../../ConnectPostgres');
 function semanticSearch(options = {}) {
     const {
         cacheEnabled = false,
-        relevanceFeedbackEnabled = false
+        relevanceFeedbackEnabled = false,
+        maxCacheSize = 1000,  // Maximum number of cached queries
+        cacheExpiryMs = 1000 * 60 * 60 // 1 hour cache expiry
     } = options;
 
-    const cache = new Map(); // Simple in-memory cache
+    const cache = new Map();
+    const cacheTimestamps = new Map();
+
+    function addToCache(key, results) {
+        // Clear old entries if cache is too large
+        if (cache.size >= maxCacheSize) {
+            const oldestKey = cache.keys().next().value;
+            cache.delete(oldestKey);
+            cacheTimestamps.delete(oldestKey);
+        }
+
+        cache.set(key, results);
+        cacheTimestamps.set(key, Date.now());
+    }
+
+    function getFromCache(key) {
+        const timestamp = cacheTimestamps.get(key);
+        if (!timestamp) return null;
+
+        // Check if cache entry has expired
+        if (Date.now() - timestamp > cacheExpiryMs) {
+            cache.delete(key);
+            cacheTimestamps.delete(key);
+            return null;
+        }
+
+        return cache.get(key);
+    }
+
+    function clearCache() {
+        cache.clear();
+        cacheTimestamps.clear();
+        console.log('Search cache cleared');
+    }
 
     async function executeSearch(query, options = {}) {
         const {
@@ -42,30 +77,56 @@ function semanticSearch(options = {}) {
 
     async function dbQuery(queryEmbedding, limit, filters, userId) {
         const filterConditions = buildFilterConditions(filters);
-        
-        // Convert the JavaScript array to a PostgreSQL vector string
         const vectorString = '[' + queryEmbedding.join(',') + ']';
-        
-        // Always include user_id in the WHERE clause
         const whereClause = `WHERE user_id = $3 ${filterConditions ? `AND ${filterConditions}` : ''}`;
         
+        const expandedLimit = Math.min(limit * 3, 30);
+        
         const query = `
-            SELECT file_id, file_name, file_type, 
-                   1 - (embedding <=> $1::vector) AS similarity
-            FROM main.files
-            ${whereClause}
-            ORDER BY similarity DESC
+            WITH similarity_scores AS (
+                SELECT 
+                    file_id, 
+                    file_name, 
+                    file_type,
+                    1 - (embedding <=> $1::vector) AS cosine_similarity,
+                    1 - (embedding <-> $1::vector) AS euclidean_similarity,
+                    (embedding <#> $1::vector) AS inner_product,
+                    -- Normalize inner product to 0-1 range within the result set
+                    (embedding <#> $1::vector) / NULLIF(MAX(embedding <#> $1::vector) OVER (), 0) AS normalized_inner
+                FROM main.files
+                ${whereClause}
+            )
+            SELECT 
+                file_id,
+                file_name,
+                file_type,
+                cosine_similarity,
+                euclidean_similarity,
+                inner_product,
+                -- Combined similarity score
+                (
+                    0.5 * cosine_similarity + 
+                    0.4 * euclidean_similarity +
+                    0.1 * normalized_inner
+                ) AS final_similarity
+            FROM similarity_scores
+            ORDER BY final_similarity DESC
             LIMIT $2
         `;
         
-        const queryParams = [vectorString, limit, userId];
+        const queryParams = [vectorString, expandedLimit, userId];
         
         const result = await db.query(query, queryParams);
         return result.rows.map(row => ({
             id: row.file_id,
             name: row.file_name,
             type: row.file_type,
-            distance: 1 - row.similarity
+            distance: 1 - row.final_similarity,
+            metrics: {
+                cosine: row.cosine_similarity,
+                euclidean: row.euclidean_similarity,
+                innerProduct: row.inner_product
+            }
         }));
     }
 
@@ -73,14 +134,6 @@ function semanticSearch(options = {}) {
         return Object.entries(filters)
             .map(([key, value]) => `${key} = '${value}'`)
             .join(' AND ');
-    }
-
-    function getFromCache(key) {
-        return cache.get(key);
-    }
-
-    function addToCache(key, results) {
-        cache.set(key, results);
     }
 
     async function provideFeedback(queryId, documentId, isRelevant) {
@@ -92,7 +145,8 @@ function semanticSearch(options = {}) {
 
     return {
         executeSearch,
-        provideFeedback
+        provideFeedback,
+        clearCache
     };
 }
 

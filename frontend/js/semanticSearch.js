@@ -40,14 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
             searchResults.innerHTML = '<p>No results found.</p>';
             return;
         }
-    
-        // Sort results by similarity (1 - distance) in descending order
-        results.sort((a, b) => (1 - b.distance) - (1 - a.distance));
-    
+     
+        // Sort by distance ascending (highest relevance first)
+        results.sort((a, b) => b.distance - a.distance);
+     
         const ul = document.createElement('ul');
         results.forEach(result => {
             const li = document.createElement('li');
-            const relevance = (1 - result.distance).toFixed(4);
+            const relevance = result.distance.toFixed(4); // Remove 1 - conversion
             li.innerHTML = `
                 <span class="file-name">${result.name}</span> 
                 (${result.type}) - Relevance: ${relevance}
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ul.appendChild(li);
         });
         searchResults.appendChild(ul);
-    }
+     }
 
     let currentlyPreviewedFile = null;
 
