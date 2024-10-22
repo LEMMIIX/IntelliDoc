@@ -128,12 +128,13 @@ exports.viewFile = async (req, res) => {
                             padding: 10px;
                             border: 1px solid #ddd;
                             margin-top: 20px;
+                            white-space: pre-wrap; /* sorgt dafür, dass auch Umbrüche in langen Zeilen erhalten bleiben */
                         }
                     </style>
                 </head>
                 <body>
                     <h1>${document.file_name}</h1>
-                    <div class="file-content">${document.file_data.toString()}</div>
+                    <pre class="file-content">${document.file_data.toString()}</pre>
                 </body>
                 </html>
             `);

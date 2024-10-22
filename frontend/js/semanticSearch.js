@@ -41,22 +41,22 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
      
-        // Sort by distance ascending (highest relevance first)
+        // Sort by distance descending (highest relevance first)
         results.sort((a, b) => b.distance - a.distance);
      
         const ul = document.createElement('ul');
         results.forEach(result => {
+            const relevance = result.distance.toFixed(2); // Relevance is already in the range of 0 to 100
             const li = document.createElement('li');
-            const relevance = result.distance.toFixed(4); // Remove 1 - conversion
             li.innerHTML = `
                 <span class="file-name">${result.name}</span> 
-                (${result.type}) - Relevance: ${relevance}
+                (${result.type}) - Relevance: ${relevance}%
             `;
             li.querySelector('.file-name').addEventListener('click', () => previewFile(result.name));
             ul.appendChild(li);
         });
         searchResults.appendChild(ul);
-     }
+    } 
 
     let currentlyPreviewedFile = null;
 

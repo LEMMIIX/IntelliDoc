@@ -88,11 +88,12 @@ function semanticSearch(options = {}) {
                     file_id, 
                     file_name, 
                     file_type,
-                    1 - (embedding <=> $1::vector) AS cosine_similarity,
-                    1 - (embedding <-> $1::vector) AS euclidean_similarity,
-                    (embedding <#> $1::vector) AS inner_product,
-                    -- Normalize inner product to 0-1 range within the result set
-                    (embedding <#> $1::vector) / NULLIF(MAX(embedding <#> $1::vector) OVER (), 0) AS normalized_inner
+                    -- Calculate cosine similarity (in range 0-1)
+                    (1 - (embedding <=> $1::vector)) AS cosine_similarity,
+                    -- Calculate euclidean distance and normalize to 0-1 range
+                    1 - (embedding <-> $1::vector) / NULLIF(MAX(embedding <-> $1::vector) OVER (), 1) AS normalized_euclidean_similarity,
+                    -- Inner product to measure relevance (normalized using sigmoid to 0-1 range)
+                    1 / (1 + EXP(-(embedding <#> $1::vector))) AS sigmoid_inner_product
                 FROM main.files
                 ${whereClause}
             )
@@ -101,13 +102,13 @@ function semanticSearch(options = {}) {
                 file_name,
                 file_type,
                 cosine_similarity,
-                euclidean_similarity,
-                inner_product,
-                -- Combined similarity score
+                normalized_euclidean_similarity,
+                sigmoid_inner_product,
+                -- Combined similarity score with optimized weights for semantic search
                 (
-                    0.5 * cosine_similarity + 
-                    0.4 * euclidean_similarity +
-                    0.1 * normalized_inner
+                    (0.7 * cosine_similarity + 
+                    0.2 * normalized_euclidean_similarity +
+                    0.1 * sigmoid_inner_product) * 100
                 ) AS final_similarity
             FROM similarity_scores
             ORDER BY final_similarity DESC
@@ -121,15 +122,15 @@ function semanticSearch(options = {}) {
             id: row.file_id,
             name: row.file_name,
             type: row.file_type,
-            distance: 1 - row.final_similarity,
+            distance: row.final_similarity,
             metrics: {
                 cosine: row.cosine_similarity,
-                euclidean: row.euclidean_similarity,
-                innerProduct: row.inner_product
+                euclidean: row.normalized_euclidean_similarity,
+                innerProduct: row.sigmoid_inner_product
             }
         }));
     }
-
+    
     function buildFilterConditions(filters) {
         return Object.entries(filters)
             .map(([key, value]) => `${key} = '${value}'`)
