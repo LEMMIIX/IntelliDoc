@@ -128,7 +128,7 @@ exports.viewFile = async (req, res) => {
                             padding: 10px;
                             border: 1px solid #ddd;
                             margin-top: 20px;
-                            white-space: pre-wrap; /* sorgt dafür, dass auch Umbrüche in langen Zeilen erhalten bleiben */
+                            white-space: pre-wrap;
                         }
                     </style>
                 </head>
@@ -156,6 +156,7 @@ exports.viewFile = async (req, res) => {
                             padding: 10px;
                             border: 1px solid #ddd;
                             margin-top: 20px;
+                            white-space: pre-wrap;
                         }
                     </style>
                 </head>
