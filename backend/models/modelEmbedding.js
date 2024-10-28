@@ -1,5 +1,6 @@
 const path = require('path');
 const { performance } = require('perf_hooks');
+const db = require('../../ConnectPostgres');
 
 let model;
 let pipeline;
@@ -41,4 +42,14 @@ async function generateEmbedding(text) {
   return Array.from(output.data);
 }
 
-module.exports = { generateEmbedding };
+
+async function getAllEmbeddings() {
+  const query = 'SELECT embedding, file_id FROM main.files';
+  const result = await db.query(query);
+  return result.rows.map(row => ({
+      embedding: row.embedding,
+      fileId: row.file_id
+  }));
+}
+
+module.exports = { generateEmbedding, getAllEmbeddings };

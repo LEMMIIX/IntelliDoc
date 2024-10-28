@@ -4,6 +4,7 @@ const mammoth = require('mammoth');
 // E/F: Added new imports for text extraction and embedding generation
 const { extractTextContent } = require('../models/modelFileReader');
 const modelEmbedding = require('../models/modelEmbedding');
+const modelClustering = require('../models/modelClustering');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -12,7 +13,6 @@ exports.renderUploadForm = (req, res) => {
 
 exports.uploadFile = async (req, res) => {
     try {
-        // Überprüfen, ob req.file tatsächlich vorhanden ist
         if (!req.file) {
             return res.status(400).send('No file uploaded');
         }
@@ -21,30 +21,61 @@ exports.uploadFile = async (req, res) => {
         const { folderId } = req.body;
         const userId = req.session.userId;
 
-        // Konvertiere folderId in eine Ganzzahl, wenn möglich
         const folderIdInt = parseInt(folderId, 10);
-        // Falls folderId leer ist oder keine gültige Zahl ist, auf NULL setzen
         const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
 
         console.log('Extracting text content...');
         const textContent = await extractTextContent(buffer, mimetype, originalname);
         
+        // Log the length of extracted text
+        console.log(`Extracted text length: ${textContent.length} characters`);
+        
         const embedding = await modelEmbedding.generateEmbedding(textContent);
+        
+        // Verify embedding format
+        console.log(`Embedding dimensions: ${embedding.length}`);
+        console.log(`Embedding sample (first 5 values):`, embedding.slice(0, 5));
 
-        //console.log('Inserting into database...');
-        // Format the embedding as a PostgreSQL array
         const formattedEmbedding = `[${embedding.join(',')}]`;
 
         const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding) VALUES ($1, $2, $3, $4, $5, $6) RETURNING file_id';
         const values = [userId, originalname, mimetype, buffer, folderIdToUse, formattedEmbedding];
 
-        console.log('Insertion complete.');
-        //console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
-
         const result = await db.query(query, values);
         const fileId = result.rows[0].file_id;
 
-        //console.log('File uploaded to database with embedding. File ID:', fileId);
+        // Get all embeddings and log their format
+        const allEmbeddings = await modelEmbedding.getAllEmbeddings();
+        console.log(`Total documents for clustering: ${allEmbeddings.length}`);
+        
+        // Extract and verify embeddings
+        const existingEmbeddings = allEmbeddings.map(item => {
+            let emb = item.embedding;
+            if (typeof emb === 'string') {
+                emb = emb.replace(/[\[\]]/g, '').split(',').map(Number);
+            }
+            // Verify embedding format
+            if (!Array.isArray(emb) || emb.length !== 768) {
+                console.warn(`Warning: Invalid embedding format for file ID ${item.fileId}. Length: ${emb.length}`);
+            }
+            return emb;
+        });
+
+        // Add new embedding
+        existingEmbeddings.push(embedding);
+
+        // Run clustering with debug info
+        console.log('Starting clustering process...');
+        const clusterLabels = await modelClustering.runClustering(existingEmbeddings);
+        console.log('Clustering complete. Results:', clusterLabels);
+
+        // Update cluster labels
+        for (let i = 0; i < clusterLabels.length; i++) {
+            const updateQuery = 'UPDATE main.files SET cluster_label = $1 WHERE file_id = $2';
+            const fileIdToUpdate = allEmbeddings[i]?.fileId || fileId;
+            await db.query(updateQuery, [clusterLabels[i], fileIdToUpdate]);
+            console.log(`Updated cluster label for file ${fileIdToUpdate}: ${clusterLabels[i]}`);
+        }
 
         res.status(201).json({ message: 'File uploaded successfully', fileId: fileId });
     } catch (error) {
