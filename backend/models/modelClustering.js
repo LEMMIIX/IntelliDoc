@@ -3,20 +3,30 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-async function runClustering(embeddings) {
+/**
+ * @typedef {Object} ClusteringConfig
+ * @property {number} [minClusterSize=3] - Minimum size for a cluster
+ * @property {number} [minSamples=2] - Number of samples in neighborhood for core points
+ * @property {string} [clusterSelectionMethod='eom'] - Method for cluster selection ('eom' or 'leaf')
+ * @property {number} [clusterSelectionEpsilon=0.0] - Distance threshold for expanding clusters
+ */
+
+/**
+ * Run clustering on embeddings with optional configuration
+ * @param {Array} embeddings - Array of embeddings to cluster
+ * @param {ClusteringConfig} [config] - Optional clustering configuration
+ * @returns {Promise<Array>} Array of cluster labels
+ */
+async function runClustering(embeddings, config = {}) {
     return new Promise((resolve, reject) => {
-        // Ensure embeddings are properly formatted arrays
+        // Format embeddings
         const formattedEmbeddings = embeddings.map(emb => {
-            // If the embedding is from PostgreSQL, it might be in string format
             if (typeof emb === 'string') {
-                // Remove brackets and split into numbers
                 return emb.replace(/[\[\]]/g, '').split(',').map(Number);
             }
-            // If it's already an array, ensure all elements are numbers
             if (Array.isArray(emb)) {
                 return emb.map(Number);
             }
-            // If it's an object with embedding property
             if (emb.embedding) {
                 if (typeof emb.embedding === 'string') {
                     return emb.embedding.replace(/[\[\]]/g, '').split(',').map(Number);
@@ -26,16 +36,21 @@ async function runClustering(embeddings) {
             throw new Error('Invalid embedding format');
         });
 
-        // Save formatted embeddings to temporary file
-        const tempFilePath = path.join(os.tmpdir(), `embeddings_${Date.now()}.json`);
-        fs.writeFileSync(tempFilePath, JSON.stringify(formattedEmbeddings));
+        // Create temporary files for embeddings and config
+        const tempEmbeddingsPath = path.join(os.tmpdir(), `embeddings_${Date.now()}.json`);
+        const tempConfigPath = path.join(os.tmpdir(), `config_${Date.now()}.json`);
+        
+        // Save embeddings and config to temporary files
+        fs.writeFileSync(tempEmbeddingsPath, JSON.stringify(formattedEmbeddings));
+        fs.writeFileSync(tempConfigPath, JSON.stringify(config));
 
         const scriptPath = path.join(__dirname, '../models/cluster.py');
 
-        // Execute Python script with temporary file path
-        exec(`python ${scriptPath} ${tempFilePath}`, (error, stdout, stderr) => {
-            // Clean up temporary file
-            fs.unlinkSync(tempFilePath);
+        // Execute Python script with both file paths
+        exec(`python ${scriptPath} ${tempEmbeddingsPath} ${tempConfigPath}`, (error, stdout, stderr) => {
+            // Clean up temporary files
+            fs.unlinkSync(tempEmbeddingsPath);
+            fs.unlinkSync(tempConfigPath);
 
             if (error) {
                 console.error(`Error executing clustering script: ${error}`);

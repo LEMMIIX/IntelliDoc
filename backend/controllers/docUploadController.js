@@ -18,7 +18,7 @@ exports.uploadFile = async (req, res) => {
         }
 
         const { originalname, buffer, mimetype } = req.file;
-        const { folderId } = req.body;
+        const { folderId, clusteringParams } = req.body;  // Add clusteringParams to body
         const userId = req.session.userId;
 
         const folderIdInt = parseInt(folderId, 10);
@@ -26,25 +26,19 @@ exports.uploadFile = async (req, res) => {
 
         console.log('Extracting text content...');
         const textContent = await extractTextContent(buffer, mimetype, originalname);
-        
-        // Log the length of extracted text
         console.log(`Extracted text length: ${textContent.length} characters`);
         
         const embedding = await modelEmbedding.generateEmbedding(textContent);
-        
-        // Verify embedding format
-        console.log(`Embedding dimensions: ${embedding.length}`);
-        console.log(`Embedding sample (first 5 values):`, embedding.slice(0, 5));
-
         const formattedEmbedding = `[${embedding.join(',')}]`;
 
+        // Insert new file
         const query = 'INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding) VALUES ($1, $2, $3, $4, $5, $6) RETURNING file_id';
         const values = [userId, originalname, mimetype, buffer, folderIdToUse, formattedEmbedding];
 
         const result = await db.query(query, values);
         const fileId = result.rows[0].file_id;
 
-        // Get all embeddings and log their format
+        // Get all embeddings
         const allEmbeddings = await modelEmbedding.getAllEmbeddings();
         console.log(`Total documents for clustering: ${allEmbeddings.length}`);
         
@@ -54,7 +48,6 @@ exports.uploadFile = async (req, res) => {
             if (typeof emb === 'string') {
                 emb = emb.replace(/[\[\]]/g, '').split(',').map(Number);
             }
-            // Verify embedding format
             if (!Array.isArray(emb) || emb.length !== 768) {
                 console.warn(`Warning: Invalid embedding format for file ID ${item.fileId}. Length: ${emb.length}`);
             }
@@ -64,20 +57,41 @@ exports.uploadFile = async (req, res) => {
         // Add new embedding
         existingEmbeddings.push(embedding);
 
-        // Run clustering with debug info
-        console.log('Starting clustering process...');
-        const clusterLabels = await modelClustering.runClustering(existingEmbeddings);
+        // Clustering parameters
+        const defaultParams = {
+            minClusterSize: 3,
+            minSamples: 3,
+            clusterSelectionMethod: 'eom',
+            clusterSelectionEpsilon: 0.1
+        };
+
+        // Merge default parameters with any provided parameters
+        const clusteringConfig = {
+            ...defaultParams,
+            ...JSON.parse(clusteringParams || '{}')  // Parse provided params or use empty object
+        };
+
+        // Run clustering with parameters and debug info
+        console.log('Starting clustering process with parameters:', clusteringConfig);
+        const clusterLabels = await modelClustering.runClustering(existingEmbeddings, clusteringConfig);
         console.log('Clustering complete. Results:', clusterLabels);
 
         // Update cluster labels
         for (let i = 0; i < clusterLabels.length; i++) {
             const updateQuery = 'UPDATE main.files SET cluster_label = $1 WHERE file_id = $2';
-            const fileIdToUpdate = allEmbeddings[i]?.fileId || fileId;
+            const fileIdToUpdate = i < allEmbeddings.length ? allEmbeddings[i].fileId : fileId;
             await db.query(updateQuery, [clusterLabels[i], fileIdToUpdate]);
-            console.log(`Updated cluster label for file ${fileIdToUpdate}: ${clusterLabels[i]}`);
         }
 
-        res.status(201).json({ message: 'File uploaded successfully', fileId: fileId });
+        res.status(201).json({ 
+            message: 'File uploaded successfully', 
+            fileId: fileId,
+            clusteringResults: {
+                totalDocuments: allEmbeddings.length + 1,
+                uniqueClusters: [...new Set(clusterLabels)].length,
+                assignedCluster: clusterLabels[clusterLabels.length - 1]
+            }
+        });
     } catch (error) {
         console.error('Error processing file:', error);
         res.status(422).json({ message: 'Error processing file', error: error.message });

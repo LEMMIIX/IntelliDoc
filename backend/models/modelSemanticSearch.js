@@ -7,18 +7,16 @@ function semanticSearch(options = {}) {
         cacheEnabled = false,
         maxCacheSize = 1000,
         cacheExpiryMs = 1000 * 60 * 60,
-        clusterBoostEnabled = true  // Toggle for cluster boosting
+        clusterBoostEnabled = true
     } = options;
 
     const cache = new Map();
     const cacheTimestamps = new Map();
     let clusterCache = null;
     let clusterCacheTimestamp = null;
-    const clusterCacheExpiry = 1000 * 60 * 15; // 15 minutes cluster cache
+    const clusterCacheExpiry = 1000 * 60 * 15;
 
     async function executeSearch(query, options = {}) {
-        console.log('Starting search execution for query:', query);
-        
         const {
             limit = 10,
             filters = {},
@@ -34,25 +32,17 @@ function semanticSearch(options = {}) {
 
         if (useCache) {
             const cachedResult = getFromCache(`${userId}:${query}`);
-            if (cachedResult) {
-                console.log('Returning cached results');
-                return cachedResult;
-            }
+            if (cachedResult) return cachedResult;
         }
 
         try {
-            console.log('Generating embedding for query...');
             const queryEmbedding = await generateEmbedding(query);
-            console.log('Embedding generated successfully');
-
-            console.log('Executing database query...');
             let results = await dbQuery(queryEmbedding, limit, filters, userId);
-            console.log(`Found ${results.length} results`);
 
-            // Apply cluster boosting if enabled
             if (clusterBoostEnabled && results.length > 0) {
-                console.log('Applying cluster boosting...');
+                console.log('Starting clustering enhancement...');
                 results = await applyClusterBoost(results, queryEmbedding);
+                console.log('Clustering enhancement completed successfully');
             }
 
             if (useCache) {
@@ -121,27 +111,18 @@ function semanticSearch(options = {}) {
 
     async function applyClusterBoost(results, queryEmbedding) {
         try {
-            // Get embeddings for clustering
             const embeddings = [queryEmbedding, ...results.map(r => r.embedding)];
-            
-            // Run clustering
-            console.log('Running clustering on results...');
             const clusterLabels = await runClustering(embeddings);
-            console.log('Clustering completed');
-
             const queryCluster = clusterLabels[0];
 
-            // Apply cluster boost
             results = results.map((result, index) => {
                 const documentCluster = clusterLabels[index + 1];
                 let boostAmount = 0;
 
-                // Apply boost if document is in same cluster as query
                 if (documentCluster === queryCluster && documentCluster !== -1) {
-                    boostAmount = 10; // 10% boost for same cluster
+                    boostAmount = 10;
                 }
 
-                // Clean up embedding before returning
                 delete result.embedding;
 
                 return {
@@ -150,20 +131,15 @@ function semanticSearch(options = {}) {
                 };
             });
 
-            // Re-sort results by boosted distance
-            results.sort((a, b) => b.distance - a.distance);
-
-            return results;
+            return results.sort((a, b) => b.distance - a.distance);
 
         } catch (error) {
             console.error('Error in cluster boosting:', error);
-            // If clustering fails, return original results
             results.forEach(r => delete r.embedding);
             return results;
         }
     }
 
-    // Cache management functions remain the same
     function addToCache(key, results) {
         if (cache.size >= maxCacheSize) {
             const oldestKey = cache.keys().next().value;
