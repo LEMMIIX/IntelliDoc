@@ -60,20 +60,32 @@ exports.uploadFile = async (req, res) => {
         // Clustering parameters
         const defaultParams = {
             minClusterSize: 3,
-            minSamples: 3,
+            minSamples: 2,
             clusterSelectionMethod: 'eom',
-            clusterSelectionEpsilon: 0.1
+            clusterSelectionEpsilon: 0.18,
+            anchorInfluence: 0.36,         // Changed from folder_weight
+            semanticThreshold: 0.52        // Changed from semantic_similarity_threshold
         };
 
         // Merge default parameters with any provided parameters
         const clusteringConfig = {
             ...defaultParams,
-            ...JSON.parse(clusteringParams || '{}')  // Parse provided params or use empty object
+            ...JSON.parse(clusteringParams || '{}')  // Allow overriding defaults through API
         };
 
         // Run clustering with parameters and debug info
         console.log('Starting clustering process with parameters:', clusteringConfig);
-        const clusterLabels = await modelClustering.runClustering(existingEmbeddings, clusteringConfig);
+        const clusteringResult = await modelClustering.runClustering(
+            existingEmbeddings, 
+            clusteringConfig,
+            userId
+        );
+        
+
+        const clusterLabels = clusteringResult.labels;
+        const clusterStats = clusteringResult.clusterStats;
+        const folderContext = clusteringResult.folderContext;
+
         console.log('Clustering complete. Results:', clusterLabels);
 
         // Update cluster labels
@@ -88,9 +100,24 @@ exports.uploadFile = async (req, res) => {
             fileId: fileId,
             clusteringResults: {
                 totalDocuments: allEmbeddings.length + 1,
-                uniqueClusters: [...new Set(clusterLabels)].length,
-                assignedCluster: clusterLabels[clusterLabels.length - 1]
-            }
+                uniqueClusters: clusterStats.num_clusters,
+                noisePoints: clusterStats.noise_points,
+                assignedCluster: clusterLabels[clusterLabels.length - 1],
+                clusterSizes: clusterStats.cluster_sizes
+            },
+            ...(folderContext && {
+                folderSuggestions: {
+                    statistics: folderContext.statistics,
+                    topAffinities: Object.entries(folderContext.affinities[clusterLabels.length - 1] || {})
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 5)
+                        .map(([folderId, score]) => ({
+                            folderId,
+                            folderName: folderContext.folderInfo.names[folderId],
+                            score: Math.round(score * 100) / 100
+                        }))
+                }
+            })
         });
     } catch (error) {
         console.error('Error processing file:', error);
