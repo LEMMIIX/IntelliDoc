@@ -9,5 +9,6 @@ router.post('/', upload.single('file'), docUploadController.uploadFile);
 router.get('/download/:filename', docUploadController.downloadFile);
 router.get('/view/:filename', docUploadController.viewFile);
 router.delete('/delete/:fileId', docUploadController.deleteFile);
+router.get('/api/documents/:documentId/versions', docUploadController.getVersionHistory);
 
 module.exports = router;

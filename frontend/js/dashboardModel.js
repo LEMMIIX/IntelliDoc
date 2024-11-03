@@ -3,6 +3,57 @@ document.addEventListener('DOMContentLoaded', function() {
     const responseDiv = document.getElementById('response');
     const folderSelect = document.getElementById('folderSelect');
 
+    const versionHistoryContainer = document.getElementById('versionHistoryContainer');
+    const versionHistoryList = document.getElementById('versionHistoryList');
+
+    // Function to fetch and display version history for a selected document
+    function fetchVersionHistory(documentId) {
+        fetch(`/api/documents/${documentId}/versions`)
+            .then(response => response.json())
+            .then(data => {
+                // Clear the existing version list
+                versionHistoryList.innerHTML = '';
+
+                if (data && data.versions && data.versions.length > 0) {
+                    // Display the version history container
+                    versionHistoryContainer.style.display = 'block';
+
+                    // Populate the list with version information
+                    data.versions.forEach(version => {
+                        const listItem = document.createElement('li');
+                        listItem.innerHTML = `
+                            Version ${version.versionNumber} - ${new Date(version.createdAt).toLocaleString()}
+                            <button onclick="downloadVersion('${version.fileId}')">Download</button>
+                            <button onclick="viewVersion('${version.fileId}')">View</button>
+                        `;
+                        versionHistoryList.appendChild(listItem);
+                    });
+                } else {
+                    versionHistoryList.innerHTML = '<li>No version history available.</li>';
+                }
+            })
+            .catch(error => console.error('Error fetching version history:', error));
+    }
+
+    // Function to download a specific version
+    window.downloadVersion = function (fileId) {
+        window.location.href = `/api/documents/versions/${fileId}/download`;
+    };
+
+    // Function to view a specific version (assuming it opens in a new window or preview area)
+    window.viewVersion = function (fileId) {
+        window.open(`/api/documents/versions/${fileId}/view`, '_blank');
+    };
+
+    // Example: Fetch version history when a document is selected (adjust to your logic)
+    // Assuming you have a function or event that triggers when a document is selected
+    document.getElementById('fileList').addEventListener('click', function (event) {
+        const documentId = event.target.dataset.documentId;
+        if (documentId) {
+            fetchVersionHistory(documentId);
+        }
+    });
+
     // Fetch folders and populate the select element
     fetch('/api/folders/tree')       // ---- fetch('/folders/tree')  ????
         .then(response => response.json())

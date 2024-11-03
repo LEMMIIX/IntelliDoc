@@ -269,7 +269,7 @@ function downloadFile(fileName) {
             console.error('Download error:', error);
             showErrorMessage('Failed to download file. Please try again later.');
         });
-}
+}//@author Ilyass Dablaq
     function renameDocument(documentId, oldFilename) {
         const newFilename = prompt("Geben Sie einen neuen Dateinamen ein:", oldFilename);
         if (newFilename) {
