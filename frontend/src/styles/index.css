@@ -1,3 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@layer components {
+  .btn-gradient {
+    @apply text-white;
+ background-image: linear-gradient(147.2deg, #436BF5 43.08%, #233E9D 94.14%);
+  }
+}
+
 :root {
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   font-weight: 400;

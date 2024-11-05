@@ -21,6 +21,7 @@ export function userLogin(username, password, navigate) {
       alert("Login successful!");
       // we set an indicator for the current user
       localStorage.setItem("currentUserId", data.userId);
+      localStorage.setItem("currentUserName", username);
 
       // Nutzer an "dashboard.html" weiterleiten
       navigate("/dashboard");
