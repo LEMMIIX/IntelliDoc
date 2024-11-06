@@ -31,9 +31,7 @@ function Dashboard() {
     y: 0,
   });
   const [isFileExplorerView, setIsFileExplorerView] = useState(
-    !JSON.parse(localStorage.getItem("isFileExplorerView"))
-      ? !JSON.parse(localStorage.getItem("isFileExplorerView"))
-      : false
+    JSON.parse(localStorage.getItem("isFileExplorerView")) ?? true
   );
 
   useEffect(() => {
@@ -86,7 +84,7 @@ function Dashboard() {
   const toggleView = () => {
     setIsFileExplorerView((prev) => {
       const newValue = !prev;
-      localStorage.setItem("isFileExplorerView", !newValue);
+      localStorage.setItem("isFileExplorerView", newValue);
       return newValue;
     });
   };
@@ -108,35 +106,6 @@ function Dashboard() {
     setContextMenu({ visible: false, folderId: null, x: 0, y: 0 });
   };
 
-  // const handleFolderDelete = async (folderId) => {
-  //   if (confirm("Are you sure you want to delete this folder?")) {
-  //     setIsDeleting(true);
-  //     try {
-  //       const response = await customFetch(
-  //         backendUrl + `/folders/${folderId}`,
-  //         {
-  //           method: "DELETE",
-  //           credentials: "include",
-  //         }
-  //       );
-  //       if (!response.ok) {
-  //         throw new Error("Failed to delete folder");
-  //       }
-  //       const data = await response.json();
-
-  //       // Updates the folder structure
-  //       const folderTree = await fetchAndRenderFolderTree();
-  //       if (folderTree) {
-  //         setFolders(folderTree);
-  //         setLoading(false);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error deleting folder:", error);
-  //     } finally {
-  //       setIsDeleting(false);
-  //     }
-  //   }
-  // };
   // console.log(contextMenu.folderId);
   const handleRenameSubmit = async (folderId, newFolderName) => {
     try {
@@ -171,7 +140,7 @@ function Dashboard() {
       inputLabel: "New Folder Name",
       inputValue: currentFolderName, // Set the current folder name as the default value
       showCancelButton: true,
-      confirmButtonText: "Save",
+      confirmButtonText: "Speichern",
       cancelButtonText: "Cancel",
       inputValidator: (value) => {
         if (!value) {
@@ -270,7 +239,7 @@ function Dashboard() {
             </div>
           )}
 
-          {isFileExplorerView ? (
+          {!isFileExplorerView ? (
             <div className="grid grid-cols-4 gap-2">
               <div className="border border-black/30 p-3 min-h-[600px]">
                 <div className="flex flex-col space-y-2">

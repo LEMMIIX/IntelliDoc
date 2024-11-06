@@ -39,12 +39,11 @@ const Breadcrumbs = ({
         {path &&
           folderPathArray.map((path, index) => {
             const folderId = getPathID(folders, path);
-            // const folderPathArray = folderContent.folderPath.split("/");
             return (
-              <>
+              <div key={`${path}-${index}`} className="flex items-center">
                 <span
                   className={`cursor-pointer px-0.5 hover:scale-105 ${
-                    folderPathArray.length - 1 == index
+                    folderPathArray.length - 1 === index
                       ? "text-black"
                       : "text-black/50"
                   }`}
@@ -54,10 +53,10 @@ const Breadcrumbs = ({
                 >
                   {path}
                 </span>
-                {folderPathArray.length - 1 != index && (
+                {folderPathArray.length - 1 !== index && (
                   <span className="text-black/50">/</span>
                 )}
-              </>
+              </div>
             );
           })}
       </span>
@@ -68,13 +67,13 @@ const Breadcrumbs = ({
         >
           <FaFolder
             className={`mr-2 ${
-              isFileExplorerView ? "text-blue-300" : "text-blue-500"
-            } text-lg`} // Blue for selected, lighter blue for unselected
+              !isFileExplorerView ? "text-blue-300" : "text-blue-500"
+            } text-lg`}
           />
           <FaThList
             className={`mr-2 ${
-              isFileExplorerView ? "text-blue-500" : "text-blue-300"
-            } text-lg`} // Lighter blue for selected, darker blue for unselected
+              !isFileExplorerView ? "text-blue-500" : "text-blue-300"
+            } text-lg`}
           />
         </button>
       </div>

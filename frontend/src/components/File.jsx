@@ -5,6 +5,7 @@ import { GoDownload } from "react-icons/go";
 import { MdOutlineEdit } from "react-icons/md";
 import { AiOutlineDelete } from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
+import { customFetch } from "../utils/helpers";
 const File = ({
   file,
   isDeleting,
@@ -13,6 +14,11 @@ const File = ({
   handleFileDownload,
   setSelectedDocToRename,
   setIsPopupVisible,
+  handleFileDelete,
+  currentlyPreviewedFile = null,
+  setCurrentlyPreviewedFile = null,
+  filePreviewContent = null,
+  setFilePreviewContent = null,
 }) => {
   const distance = file?.distance * 100;
   let starNumbers = 0;

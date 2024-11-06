@@ -19,6 +19,16 @@ import axios from "axios";
 import { getPathID } from "../../utils/helpers";
 import { MdOutlineEdit } from "react-icons/md";
 import Breadcrumbs from "../../components/ui/Breadcrumbs";
+import { ScrollArea } from "../../components/ui/scroll-area";
+import { X } from "lucide-react";
+import { Button } from "../../components/ui/button";
+import { ChevronRight } from "lucide-react";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from "../../components/ui/context-menu";
 const backendUrl = "http://localhost:3000";
 
 function Folder() {
@@ -136,12 +146,12 @@ function Folder() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to rename folder");
+        throw new Error("'Error renaming document");
       }
       setIsPopupVisible(false);
       setLoading(false);
       setNewFolderName("");
-      alert("Folder Name Changed Success!");
+      alert("Documemt Name Changed Success!");
     } catch (e) {
       console.log("error: ", e);
       setLoading(false);
@@ -154,7 +164,7 @@ function Folder() {
   const [editingFolderId, setEditingFolderId] = useState(null); // To track which folder is being edited
   // const [newFolderName, setNewFolderName] = useState("");
 
-  const [isFileExplorerView, setIsFileExplorerView] = useState(false);
+  const [isFileExplorerView, setIsFileExplorerView] = useState(true);
 
   // const [selectedFolders, setSelectedFolders] = useState([]);
   // const [selectedFolders, setSelectedFolders] = useState([folderContent]);
@@ -664,9 +674,9 @@ function Folder() {
         <div className="shadow-sm bg-white border-y border-slate-200 absolute left-0 top-0 right-0">
           <div className="flex items-center gap-2 bg-gray-10 py-2 px-3">
             <Breadcrumbs
-              path={folderContent.folderPath}
+              path={folderContent?.folderPath || ""}
               isFileExplorerView={isFileExplorerView}
-              folderPathArray={folderPathArray}
+              folderPathArray={folderPathArray || []}
               folders={folders}
               toggleView={toggleView}
             />
@@ -674,88 +684,13 @@ function Folder() {
         </div>
         {isFileExplorerView ? (
           <div className="mt-10">
-            {/* header start */}
-            {/* header start */}
-            {/* header start */}
-            {/* <div className="shadow-sm bg-white border-y border-slate-200 absolute left-0 top-0 right-0 px-4 py-2">
-              <h5 className="flex items-center gap-3 tracking-wide"> */}
-            {/* <button
-                  onClick={() => {
-                    navigate("/dashboard");
-                  }}
-                >
-                  <svg
-                    className="cursor-pointer"
-                    width="15"
-                    height="15"
-                    viewBox="0 0 17 17"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M15.5522 14.3554V8.81896C15.5522 7.91739 15.1826 7.05528 14.5299 6.43432L9.2928 1.45227C8.65893 0.849243 7.66431 0.849243 7.03045 1.45227L1.79337 6.43432C1.14059 7.05528 0.770996 7.91739 0.770996 8.81896V14.3554C0.770996 15.2637 1.50631 16 2.41336 16H13.9099C14.817 16 15.5522 15.2637 15.5522 14.3554Z"
-                      stroke="#9B9B9B"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button> */}
-            {/* Back button */}
-            {/* <button
-                  onClick={handleGoBack}
-                  //lassName="flex items-center mr-3"
-                  //style={{ marginRight: "0px" }}
-                >
-                  <svg
-                    onClick={() => {
-                      navigate(`/folders/${folderId}`); // Hier wird zur Dashboard-Seite navigiert
-                    }}
-                    width="15"
-                    height="15"
-                    viewBox="0 0 15 15"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="mr-2"
-                  >
-                    <path
-                      d="M8 1L3 7.5L8 14"
-                      stroke="#9B9B9B"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button> */}
-            {/* Folder Path */}
-
-            {/* {folderContent.folderPath.split("/").map((segment, index) => (
-                  <span key={index} className="text-[#9B9B9B] cursor-pointer">
-                    
-                    <div
-                      className="relative inline-block cursor-pointer"
-                      onClick={() => handlePathClick(index)}
-                    >
-                      <span className="text-blue-500">{segment}</span>
-                      <div className="absolute bottom-0 left-0 h-0.5 w-full bg-blue-500" />
-                    </div>
-
-                    {index < folderContent.folderPath.split("/").length - 1 &&
-                      " / "}
-                  </span>
-                ))} */}
-            {/* </h5> */}
-
-            {/* </div> */}
-
-            {/* header end */}
             <div>
               {/* Folders Section starts */}
               <h3 className="mb-4 flex items-center gap-1 tracking-wide text-lg text-black">
                 All Folders
               </h3>
               <ul className="grid grid-cols-1 pl-0 xsm:grid-cols-3 gap-4 md:gap-7 md:grid-cols-5">
-                {folderContent.children?.map((folder) => (
+                {(folderContent?.children || []).map((folder) => (
                   <FolderElement
                     key={folder.id}
                     folderId={folder.id}
@@ -805,7 +740,7 @@ function Folder() {
                 )}
               </div>
 
-              {folderContent.files.length > 0 ? (
+              {folderContent?.files?.length || 0 > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-black">
                     <thead>
@@ -859,9 +794,59 @@ function Folder() {
                                 <GoDownload className="text-lg" />
                               </button>
                               <button
-                                onClick={() => {
-                                  setSelectedDocToRename(file);
-                                  setIsPopupVisible(true);
+                                onClick={async () => {
+                                  const { value: newName } = await Swal.fire({
+                                    title: "Rename File",
+                                    input: "text",
+                                    inputLabel: "New File Name",
+                                    inputValue: file.name,
+                                    showCancelButton: true,
+                                    confirmButtonText: "Speichern",
+                                    inputValidator: (value) => {
+                                      if (!value)
+                                        return "You need to enter a file name!";
+                                    },
+                                  });
+
+                                  if (newName) {
+                                    try {
+                                      const response = await customFetch(
+                                        `${backendUrl}/folders/rename`,
+                                        {
+                                          method: "POST",
+                                          credentials: "include",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                          },
+                                          body: JSON.stringify({
+                                            documentId: file.id,
+                                            newFilename: newName,
+                                          }),
+                                        }
+                                      );
+                                      if (!response.ok)
+                                        throw new Error(
+                                          "Failed to rename file"
+                                        );
+
+                                      await Swal.fire(
+                                        "Success!",
+                                        "File renamed successfully",
+                                        "success"
+                                      );
+                                      window.location.reload();
+                                    } catch (error) {
+                                      await Swal.fire(
+                                        "Error!",
+                                        "Failed to rename file",
+                                        "error"
+                                      );
+                                      console.error(
+                                        "Error renaming file:",
+                                        error
+                                      );
+                                    }
+                                  }
                                 }}
                                 className="hover:bg-black/10 p-1 flex justify-center items-center rounded-full duration-150 transition-colors"
                               >
@@ -904,203 +889,674 @@ function Folder() {
             )}
           </div>
         ) : (
-          <div
-            className="mt-3 flex space-x-2 overflow-x-auto"
-            // style={{ marginLeft: "-85px", width: "150%" }}
-          >
-            {/* Header */}
-
-            <div className="flex space-x-2">
-              {/* Karte für die Liste der Ordner der Ebene 0*/}
-              <div className="relative w-[350px] h-[750px] border rounded-lg shadow-sm p-4 overflow-y-auto">
-                <h3 className="text-lg font-semibold mb-2">Ordner (Ebene 0)</h3>
-                {folders.map((folder) => renderFolders(folder, 0))}
-              </div>
-
-              {/* Karten für die unteren Ebenen hinzufügen */}
-              {[...Array(cont)].slice(Math.max(0, cont - 3)).map((_, level) => {
-                const actualLevel = cont <= 3 ? level : cont - 3 + level; // Calculate the actual level
-                return (
-                  <div
-                    key={actualLevel}
-                    className="relative w-[300px] h-[750px] border rounded-lg shadow-sm p-4"
-                  >
-                    <h3 className="text-lg font-semibold mb-2">
-                      Unterordner und Dokumente des ausgewählten Ordners (Ebene{" "}
-                      {actualLevel + 1})
-                    </h3>
-                    {selectedFolders[actualLevel] &&
-                    (getChildren(selectedFolders[actualLevel]).length > 0 ||
-                      getFiles(selectedFolders[actualLevel]).length > 0) ? (
-                      <>
-                        {getChildren(selectedFolders[actualLevel]).map(
-                          (subFolder) => (
-                            <div
-                              key={subFolder.id}
-                              className={`flex items-center p-1 cursor-pointer ${
-                                selectedFolderIds[actualLevel] === subFolder.id
-                                  ? "bg-blue-100"
-                                  : ""
-                              }`} // Change background for selected folder
-                              onContextMenu={(e) =>
-                                handleContextMenu(e, subFolder)
-                              }
-                              onClick={() => {
-                                handleFolderSelect(subFolder, actualLevel + 1);
-                                setSelectedFolderIds((prev) => {
-                                  const newIds = [...prev];
-                                  newIds[actualLevel] = subFolder.id; // Update selected folder ID for this level
-                                  return newIds;
-                                });
-                              }}
-                            >
-                              <FaFolder className="text-xl text-primary mr-2" />
-                              <span className="text-sm text-gray-800">
-                                {subFolder.name}
-                              </span>
-                            </div>
-                          )
-                        )}
-                        {getFiles(selectedFolders[actualLevel]).map((file) => (
-                          <div
-                            key={file.id}
-                            onClick={() => {
-                              handleFilePreview(file.name);
-                              setSelectedFileId(file.id); // Update the selected file ID
-                            }}
-                            onContextMenu={(e) => handleContextMenu(e, file)}
-                            className={`flex items-center p-2 cursor-pointer ${
-                              selectedFileId === file.id ? "bg-blue-100" : ""
-                            }`} // Change background for selected file
-                          >
-                            {["png", "jpg", "jpeg", "gif"].includes(
-                              file.name.split(".").pop()
-                            ) ? (
-                              <MdImage className="text-success text-lg mr-2" />
-                            ) : (
-                              <IoIosDocument
-                                className={`text-lg ${
-                                  file.name.split(".").pop() === "pdf"
-                                    ? "text-danger"
-                                    : ""
-                                } ${
-                                  ["word", "odt", "txt", "docx"].includes(
-                                    file.name.split(".").pop()
-                                  )
-                                    ? "text-blue-600"
-                                    : ""
-                                } mr-2`}
-                              />
-                            )}
-                            <span className="text-sm text-gray-800">
-                              {file.name}
-                            </span>
-                          </div>
-                        ))}
-                      </>
-                    ) : (
-                      <p className="text-gray-500">
-                        Keine Unterordner und Dokumente zum Anzeigen.
-                      </p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {currentlyPreviewedFile && (
-              <div className="relative w-[300px] h-auto border rounded-lg shadow-sm p-4 overflow-y-auto">
-                <button
-                  className="ml-auto flex text-lg border-[1.5px] border-danger bg-danger text-white hover:bg-opacity-90 duration-200 transition-colors p-2 rounded-full mb-2"
-                  onClick={() => {
-                    setCurrentlyPreviewedFile(null);
-                    setFilePreviewContent(null);
-                    setSelectedFileId(null);
-                  }}
-                >
-                  <IoClose />
-                </button>
-
-                {/* Vorschauinhalt */}
-                <div className="flex flex-col items-center space-y-4">
-                  {/* Container für den Dateiinhalte (in Form eines Quadrats) */}
-                  <div className="w-[350px] h-[250px] flex items-center justify-center overflow-hidden bg-gray-100">
-                    {filePreviewContent ? (
-                      <div className="w-full h-full p-2 flex items-center justify-center">
-                        {filePreviewContent}{" "}
-                        {/* Anzeige des Dateiinhalts in einem Quadrat. */}
-                      </div>
-                    ) : (
-                      <p className="text-gray-500">
-                        Kein Inhalt zum Anzeigen für diese Datei.
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Dateiname unten */}
-                  <span className="text-sm text-gray-800">
-                    {filePreviewContent.props.src.split("/").pop()}{" "}
-                  </span>
-                </div>
-              </div>
-            )}
-
-            {/* Dynamically generate cards based on folder selection */}
-
-            {/* Context Menu */}
-            {contextMenu.visible && (
+          <div className="mt-3 relative">
+            <div className="grid2-scroll-x pb-4">
               <div
-                className="absolute bg-white border rounded shadow-lg p-2 z-10"
+                className="flex gap-6 p-4 min-w-max"
                 style={{
-                  top: `${contextMenu.y - 40}px`,
-                  left: `${contextMenu.x - 400}px`,
+                  WebkitOverflowScrolling: "touch",
                 }}
               >
-                {/* Neuen Ordner erstellen */}
-                <button
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={handleCreateFolderSwal}
-                >
-                  Neuen Ordner erstellen
-                </button>
+                {/* First column - root folders */}
+                <div className="min-w-[300px] bg-muted/40 rounded-lg p-4 space-y-2 h-[calc(100vh-14rem)] grid2-scroll-y">
+                  {folders.map((folder) => (
+                    <ContextMenu>
+                      <ContextMenuTrigger>
+                        <div
+                          key={folder.id}
+                          className={`flex items-center gap-2 p-2 hover:bg-accent rounded-md cursor-pointer ${
+                            selectedFolderIds[0] === folder.id
+                              ? "bg-accent"
+                              : ""
+                          }`}
+                          onClick={() => {
+                            handleFolderSelect(folder, 0);
+                            setSelectedFolderIds([folder.id]);
+                          }}
+                        >
+                          <FaFolder className="w-5 h-5 text-blue-500" />
+                          <span className="text-sm">{folder.name}</span>
+                          {folder.children?.length > 0 && (
+                            <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+                          )}
+                        </div>
+                      </ContextMenuTrigger>
+                      <ContextMenuContent className="w-48">
+                        <ContextMenuItem
+                          onClick={async () => {
+                            const { value: folderName } = await Swal.fire({
+                              title: "Create New Folder",
+                              input: "text",
+                              inputLabel: "Folder Name",
+                              inputPlaceholder: "Enter folder name",
+                              showCancelButton: true,
+                              confirmButtonText: "Erstellen",
+                              inputValidator: (value) => {
+                                if (!value)
+                                  return "You need to enter a folder name!";
+                              },
+                            });
 
-                {/* Datei hochladen */}
-                <button
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => handleFileUploadSwal(contextMenu.folderId)}
-                >
-                  Datei hochladen
-                </button>
+                            if (folderName) {
+                              try {
+                                const response = await customFetch(
+                                  `${backendUrl}/folders/create`,
+                                  {
+                                    method: "POST",
+                                    credentials: "include",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      folderName,
+                                      parentFolderId: folder.id,
+                                    }),
+                                  }
+                                );
+                                if (!response.ok)
+                                  throw new Error("Failed to create folder");
 
-                {/* Bestehender Button für "Bearbeiten" */}
-                <button
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() =>
-                    handleEditClick(contextMenu.folderId, contextMenu.name)
-                  }
-                >
-                  Rename
-                </button>
+                                await Swal.fire(
+                                  "Success!",
+                                  "Folder created successfully",
+                                  "success"
+                                );
+                                window.location.reload();
+                              } catch (error) {
+                                await Swal.fire(
+                                  "Error!",
+                                  "Failed to create folder",
+                                  "error"
+                                );
+                                console.error("Error creating folder:", error);
+                              }
+                            }
+                          }}
+                        >
+                          New Folder
+                        </ContextMenuItem>
 
-                {/* Bestehender Button für "Löschen" */}
-                <button
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => handleFolderDelete(contextMenu.folderId)}
-                >
-                  Löschen
-                </button>
+                        <ContextMenuItem
+                          onClick={async () => {
+                            const { value: file } = await Swal.fire({
+                              title: "Select File",
+                              input: "file",
+                              inputAttributes: {
+                                accept: "*/*",
+                                "aria-label": "Upload your file",
+                              },
+                            });
+
+                            if (file) {
+                              try {
+                                const formData = new FormData();
+                                formData.append("file", file);
+                                formData.append("folderId", folder.id);
+
+                                const response = await customFetch(
+                                  `${backendUrl}/docupload`,
+                                  {
+                                    method: "POST",
+                                    credentials: "include",
+                                    body: formData,
+                                  }
+                                );
+                                if (!response.ok)
+                                  throw new Error("Failed to upload file");
+
+                                await Swal.fire(
+                                  "Success!",
+                                  "File uploaded successfully",
+                                  "success"
+                                );
+                                window.location.reload();
+                              } catch (error) {
+                                await Swal.fire(
+                                  "Error!",
+                                  "Failed to upload file",
+                                  "error"
+                                );
+                                console.error("Error uploading file:", error);
+                              }
+                            }
+                          }}
+                        >
+                          New Document
+                        </ContextMenuItem>
+
+                        <ContextMenuItem
+                          onClick={async () => {
+                            const result = await Swal.fire({
+                              title: "Are you sure?",
+                              text: "You won't be able to revert this!",
+                              icon: "warning",
+                              showCancelButton: true,
+                              confirmButtonColor: "#3085d6",
+                              cancelButtonColor: "#d33",
+                              confirmButtonText: "Yes, delete it!",
+                            });
+
+                            if (result.isConfirmed) {
+                              try {
+                                const response = await customFetch(
+                                  `${backendUrl}/folders/${folder.id}`,
+                                  {
+                                    method: "DELETE",
+                                    credentials: "include",
+                                  }
+                                );
+                                if (!response.ok)
+                                  throw new Error("Failed to delete folder");
+
+                                Swal.fire(
+                                  "Deleted!",
+                                  "Folder has been deleted.",
+                                  "success"
+                                );
+                                window.location.reload();
+                              } catch (error) {
+                                Swal.fire(
+                                  "Error!",
+                                  "Failed to delete folder",
+                                  "error"
+                                );
+                                console.error("Error deleting folder:", error);
+                              }
+                            }
+                          }}
+                        >
+                          Delete
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </ContextMenu>
+                  ))}
+                </div>
+
+                {/* Additional columns for selected folder hierarchy */}
+                {[...Array(cont)]
+                  .slice(Math.max(0, cont - 2))
+                  .map((_, level) => {
+                    const actualLevel =
+                      cont <= 2 ? level + 1 : cont - 2 + level;
+                    return (
+                      <div
+                        key={actualLevel}
+                        className="min-w-[300px] bg-muted/40 rounded-lg p-4 space-y-2 h-[calc(100vh-14rem)] grid2-scroll-y"
+                      >
+                        {selectedFolders[actualLevel - 1] &&
+                          getChildren(selectedFolders[actualLevel - 1]).map(
+                            (subFolder) => (
+                              <ContextMenu key={subFolder.id}>
+                                <ContextMenuTrigger>
+                                  <div
+                                    className={`flex items-center gap-2 p-2 hover:bg-accent rounded-md cursor-pointer ${
+                                      selectedFolderIds[actualLevel] ===
+                                      subFolder.id
+                                        ? "bg-accent"
+                                        : ""
+                                    }`}
+                                    onClick={() => {
+                                      console.log("Clicked folder:", subFolder);
+                                      handleFolderSelect(
+                                        subFolder,
+                                        actualLevel
+                                      );
+                                      setSelectedFolderIds((prev) => {
+                                        const newIds = [...prev];
+                                        newIds[actualLevel] = subFolder.id;
+                                        return newIds;
+                                      });
+                                    }}
+                                  >
+                                    <FaFolder className="w-5 h-5 text-blue-500" />
+                                    <span className="text-sm">
+                                      {subFolder.name}
+                                    </span>
+                                    {subFolder.children?.length > 0 && (
+                                      <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+                                    )}
+                                  </div>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent className="w-48">
+                                  <ContextMenuItem
+                                    onClick={async () => {
+                                      const { value: folderName } =
+                                        await Swal.fire({
+                                          title: "Create New Folder",
+                                          input: "text",
+                                          inputLabel: "Folder Name",
+                                          inputPlaceholder: "Enter folder name",
+                                          showCancelButton: true,
+                                          confirmButtonText: "Erstellen",
+                                          inputValidator: (value) => {
+                                            if (!value)
+                                              return "You need to enter a folder name!";
+                                          },
+                                        });
+
+                                      if (folderName) {
+                                        try {
+                                          const response = await customFetch(
+                                            `${backendUrl}/folders/create`,
+                                            {
+                                              method: "POST",
+                                              credentials: "include",
+                                              headers: {
+                                                "Content-Type":
+                                                  "application/json",
+                                              },
+                                              body: JSON.stringify({
+                                                folderName,
+                                                parentFolderId: subFolder.id,
+                                              }),
+                                            }
+                                          );
+                                          if (!response.ok)
+                                            throw new Error(
+                                              "Failed to create folder"
+                                            );
+
+                                          await Swal.fire(
+                                            "Success!",
+                                            "Folder created successfully",
+                                            "success"
+                                          );
+                                          window.location.reload();
+                                        } catch (error) {
+                                          await Swal.fire(
+                                            "Error!",
+                                            "Failed to create folder",
+                                            "error"
+                                          );
+                                          console.error(
+                                            "Error creating folder:",
+                                            error
+                                          );
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    New Folder
+                                  </ContextMenuItem>
+
+                                  <ContextMenuItem
+                                    onClick={async () => {
+                                      const { value: file } = await Swal.fire({
+                                        title: "Select File",
+                                        input: "file",
+                                        inputAttributes: {
+                                          accept: "*/*",
+                                          "aria-label": "Upload your file",
+                                        },
+                                      });
+
+                                      if (file) {
+                                        try {
+                                          const formData = new FormData();
+                                          formData.append("file", file);
+                                          formData.append(
+                                            "folderId",
+                                            subFolder.id
+                                          );
+
+                                          const response = await customFetch(
+                                            `${backendUrl}/docupload`,
+                                            {
+                                              method: "POST",
+                                              credentials: "include",
+                                              body: formData,
+                                            }
+                                          );
+                                          if (!response.ok)
+                                            throw new Error(
+                                              "Failed to upload file"
+                                            );
+
+                                          await Swal.fire(
+                                            "Success!",
+                                            "File uploaded successfully",
+                                            "success"
+                                          );
+                                          window.location.reload();
+                                        } catch (error) {
+                                          await Swal.fire(
+                                            "Error!",
+                                            "Failed to upload file",
+                                            "error"
+                                          );
+                                          console.error(
+                                            "Error uploading file:",
+                                            error
+                                          );
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    New Document
+                                  </ContextMenuItem>
+
+                                  <ContextMenuItem
+                                    onClick={async () => {
+                                      try {
+                                        const response = await customFetch(
+                                          `${backendUrl}/folders/${subFolder.id}`,
+                                          {
+                                            method: "DELETE",
+                                            credentials: "include",
+                                          }
+                                        );
+                                        if (!response.ok)
+                                          throw new Error(
+                                            "Failed to delete folder"
+                                          );
+                                        window.location.reload();
+                                      } catch (error) {
+                                        console.error(
+                                          "Error deleting folder:",
+                                          error
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    Delete
+                                  </ContextMenuItem>
+                                </ContextMenuContent>
+                              </ContextMenu>
+                            )
+                          )}
+                        {selectedFolders[actualLevel - 1] &&
+                          getFiles(selectedFolders[actualLevel - 1]).map(
+                            (file) => (
+                              <ContextMenu key={file.id}>
+                                <ContextMenuTrigger>
+                                  <div
+                                    className={`flex items-center gap-2 p-2 hover:bg-accent rounded-md cursor-pointer ${
+                                      selectedFileId === file.id
+                                        ? "bg-accent"
+                                        : ""
+                                    }`}
+                                    onClick={() => {
+                                      console.log("Clicked file:", file);
+                                      handleFilePreview(file.name);
+                                      setSelectedFileId(file.id);
+                                    }}
+                                  >
+                                    <IoIosDocument
+                                      className={`w-5 h-5 ${
+                                        file.name
+                                          .toLowerCase()
+                                          .endsWith(".docx") ||
+                                        file.name.toLowerCase().endsWith(".doc")
+                                          ? "text-blue-500"
+                                          : "text-red-500"
+                                      }`}
+                                    />
+                                    <span className="text-sm">{file.name}</span>
+                                  </div>
+                                </ContextMenuTrigger>
+                                <ContextMenuContent className="w-48">
+                                  <ContextMenuItem
+                                    onClick={async () => {
+                                      try {
+                                        const response = await customFetch(
+                                          `${backendUrl}/docupload/view/${file.name}`,
+                                          {
+                                            credentials: "include",
+                                          }
+                                        );
+                                        if (!response.ok)
+                                          throw new Error(
+                                            "Failed to view file"
+                                          );
+                                        const content = await response.text();
+                                        setFilePreviewContent(content);
+                                        setCurrentlyPreviewedFile(file.name);
+                                      } catch (error) {
+                                        await Swal.fire(
+                                          "Error!",
+                                          "Failed to view file",
+                                          "error"
+                                        );
+                                        console.error(
+                                          "Error viewing file:",
+                                          error
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    View
+                                  </ContextMenuItem>
+
+                                  <ContextMenuItem
+                                    onClick={async () => {
+                                      try {
+                                        const response = await customFetch(
+                                          `${backendUrl}/docupload/download/${file.name}`,
+                                          {
+                                            credentials: "include",
+                                          }
+                                        );
+                                        if (!response.ok)
+                                          throw new Error(
+                                            "Failed to download file"
+                                          );
+                                        const blob = await response.blob();
+                                        const url =
+                                          window.URL.createObjectURL(blob);
+                                        const a = document.createElement("a");
+                                        a.href = url;
+                                        a.download = file.name;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        window.URL.revokeObjectURL(url);
+                                        a.remove();
+                                        await Swal.fire(
+                                          "Success!",
+                                          "File downloaded successfully",
+                                          "success"
+                                        );
+                                      } catch (error) {
+                                        await Swal.fire(
+                                          "Error!",
+                                          "Failed to download file",
+                                          "error"
+                                        );
+                                        console.error(
+                                          "Error downloading file:",
+                                          error
+                                        );
+                                      }
+                                    }}
+                                  >
+                                    Download
+                                  </ContextMenuItem>
+
+                                  <ContextMenuItem
+                                    onClick={async () => {
+                                      const { value: newName } =
+                                        await Swal.fire({
+                                          title: "Rename File",
+                                          input: "text",
+                                          inputLabel: "New File Name",
+                                          inputValue: file.name,
+                                          showCancelButton: true,
+                                          inputValidator: (value) => {
+                                            if (!value)
+                                              return "You need to enter a file name!";
+                                          },
+                                        });
+
+                                      if (newName) {
+                                        try {
+                                          const response = await customFetch(
+                                            `${backendUrl}/folders/rename`,
+                                            {
+                                              method: "POST",
+                                              credentials: "include",
+                                              headers: {
+                                                "Content-Type":
+                                                  "application/json",
+                                              },
+                                              body: JSON.stringify({
+                                                documentId: file.id,
+                                                newFilename: newName,
+                                              }),
+                                            }
+                                          );
+                                          if (!response.ok)
+                                            throw new Error(
+                                              "Failed to rename file"
+                                            );
+
+                                          await Swal.fire(
+                                            "Success!",
+                                            "File renamed successfully",
+                                            "success"
+                                          );
+                                          window.location.reload();
+                                        } catch (error) {
+                                          await Swal.fire(
+                                            "Error!",
+                                            "Failed to rename file",
+                                            "error"
+                                          );
+                                          console.error(
+                                            "Error renaming file:",
+                                            error
+                                          );
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    Rename
+                                  </ContextMenuItem>
+
+                                  <ContextMenuItem
+                                    onClick={async () => {
+                                      const result = await Swal.fire({
+                                        title: "Are you sure?",
+                                        text: "You won't be able to revert this!",
+                                        icon: "warning",
+                                        showCancelButton: true,
+                                        confirmButtonColor: "#3085d6",
+                                        cancelButtonColor: "#d33",
+                                        confirmButtonText: "Yes, delete it!",
+                                      });
+
+                                      if (result.isConfirmed) {
+                                        try {
+                                          const response = await customFetch(
+                                            `${backendUrl}/docupload/delete/${file.id}`,
+                                            {
+                                              method: "DELETE",
+                                              credentials: "include",
+                                            }
+                                          );
+                                          if (!response.ok)
+                                            throw new Error(
+                                              "Failed to delete file"
+                                            );
+
+                                          await Swal.fire(
+                                            "Deleted!",
+                                            "File has been deleted.",
+                                            "success"
+                                          );
+                                          window.location.reload();
+                                        } catch (error) {
+                                          await Swal.fire(
+                                            "Error!",
+                                            "Failed to delete file",
+                                            "error"
+                                          );
+                                          console.error(
+                                            "Error deleting file:",
+                                            error
+                                          );
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    Delete
+                                  </ContextMenuItem>
+                                </ContextMenuContent>
+                              </ContextMenu>
+                            )
+                          )}
+                      </div>
+                    );
+                  })}
+
+                {/* File Preview Column */}
+                {currentlyPreviewedFile && (
+                  <div className="min-w-[300px] bg-muted/40 rounded-lg p-6 transition-all duration-300 ease-in-out relative h-[calc(100vh-14rem)] grid2-scroll-y">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute top-2 right-2"
+                      onClick={() => {
+                        setCurrentlyPreviewedFile(null);
+                        setFilePreviewContent(null);
+                        setSelectedFileId(null);
+                      }}
+                    >
+                      <X className="h-6 w-6" />
+                    </Button>
+                    <h3 className="font-bold mb-4 text-xl">
+                      {currentlyPreviewedFile}
+                    </h3>
+                    <div className="text-base">{filePreviewContent}</div>
+                  </div>
+                )}
               </div>
-            )}
-
-            {/* Close context menu when clicking outside */}
-            {contextMenu.visible && (
-              <div
-                className="fixed inset-0 z-0"
-                onClick={handleCloseContextMenu}
-              ></div>
-            )}
+            </div>
           </div>
         )}
+        {contextMenu.visible && (
+          <div
+            className="absolute bg-white border rounded shadow-lg p-2 z-10"
+            style={{
+              top: `${contextMenu.y - 40}px`,
+              left: `${contextMenu.x - 400}px`,
+            }}
+          >
+            {/* Neuen Ordner erstellen */}
+            <button
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={handleCreateFolderSwal}
+            >
+              Neuen Ordner erstellen
+            </button>
+
+            {/* Datei hochladen */}
+            <button
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => handleFileUploadSwal(contextMenu.folderId)}
+            >
+              Datei hochladen
+            </button>
+
+            {/* Bestehender Button für "Bearbeiten" */}
+            <button
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() =>
+                handleEditClick(contextMenu.folderId, contextMenu.name)
+              }
+            >
+              Rename
+            </button>
+
+            {/* Bestehender Button für "Löschen" */}
+            <button
+              className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              onClick={() => handleFolderDelete(contextMenu.folderId)}
+            >
+              Löschen
+            </button>
+          </div>
+        )}
+
+        {/* Close context menu when clicking outside */}
         {contextMenu.visible && (
           <div
             className="fixed inset-0 z-0"
@@ -1146,7 +1602,7 @@ function Folder() {
                 className="bg-[#436BF5] text-white px-4 py-2 rounded-md hover:bg-[#426AF3] transition duration-200 ease-in-out"
               >
                 {/* {setLoading ? "Loading..." : "Save"} */}
-                Speichern
+                Save
               </button>
               <button
                 onClick={() => {
