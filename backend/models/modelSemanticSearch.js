@@ -1,72 +1,164 @@
 const { generateEmbedding } = require('./modelEmbedding');
+const { runClustering } = require('./modelClustering');
 const db = require('../../ConnectPostgres');
 
 function semanticSearch(options = {}) {
     const {
         cacheEnabled = false,
-        relevanceFeedbackEnabled = false
+        maxCacheSize = 1000,
+        cacheExpiryMs = 1000 * 60 * 60,
+        clusterBoostEnabled = true
     } = options;
 
-    const cache = new Map(); // Simple in-memory cache
+    const cache = new Map();
+    const cacheTimestamps = new Map();
+    let clusterCache = null;
+    let clusterCacheTimestamp = null;
+    const clusterCacheExpiry = 1000 * 60 * 15;
 
     async function executeSearch(query, options = {}) {
         const {
             limit = 10,
             filters = {},
             useCache = cacheEnabled,
-            req // Pass the request object instead of userId
+            req
         } = options;
 
-        if (!req || !req.session || !req.session.userId) {
+        if (!req?.session?.userId) {
             throw new Error("User is not authenticated");
         }
 
         const userId = req.session.userId;
 
-        // Check cache if enabled
         if (useCache) {
             const cachedResult = getFromCache(`${userId}:${query}`);
             if (cachedResult) return cachedResult;
         }
 
-        const queryEmbedding = await generateEmbedding(query);
-        const results = await dbQuery(queryEmbedding, limit, filters, userId);
+        try {
+            const queryEmbedding = await generateEmbedding(query);
+            let results = await dbQuery(queryEmbedding, limit, filters, userId);
 
-        // Cache results if caching is enabled
-        if (useCache) {
-            addToCache(`${userId}:${query}`, results);
+            if (clusterBoostEnabled && results.length > 0) {
+                console.log('Starting clustering enhancement...');
+                results = await applyClusterBoost(results, queryEmbedding);
+                console.log('Clustering enhancement completed successfully');
+            }
+
+            if (useCache) {
+                addToCache(`${userId}:${query}`, results);
+            }
+
+            return results;
+
+        } catch (error) {
+            console.error('Error in executeSearch:', error);
+            throw error;
         }
-
-        return results;
     }
 
     async function dbQuery(queryEmbedding, limit, filters, userId) {
         const filterConditions = buildFilterConditions(filters);
-        
-        // Convert the JavaScript array to a PostgreSQL vector string
         const vectorString = '[' + queryEmbedding.join(',') + ']';
-        
-        // Always include user_id in the WHERE clause
         const whereClause = `WHERE user_id = $3 ${filterConditions ? `AND ${filterConditions}` : ''}`;
         
+        const expandedLimit = Math.min(limit * 3, 30);
+        
         const query = `
-            SELECT file_id, file_name, file_type, 
-                   1 - (embedding <=> $1::vector) AS similarity
-            FROM main.files
-            ${whereClause}
-            ORDER BY similarity DESC
+            WITH similarity_scores AS (
+                SELECT 
+                    file_id, 
+                    file_name, 
+                    file_type,
+                    embedding,
+                    (1 - (embedding <=> $1::vector)) AS cosine_similarity,
+                    1 - (embedding <-> $1::vector) / NULLIF(MAX(embedding <-> $1::vector) OVER (), 1) AS normalized_euclidean_similarity,
+                    1 / (1 + EXP(-(embedding <#> $1::vector))) AS sigmoid_inner_product
+                FROM main.files
+                ${whereClause}
+            )
+            SELECT 
+                file_id,
+                file_name,
+                file_type,
+                embedding,
+                (
+                    (0.6 * cosine_similarity + 
+                    0.25 * normalized_euclidean_similarity +
+                    0.15 * sigmoid_inner_product) * 100
+                ) AS similarity_score
+            FROM similarity_scores
+            ORDER BY similarity_score DESC
             LIMIT $2
         `;
-        
-        const queryParams = [vectorString, limit, userId];
-        
-        const result = await db.query(query, queryParams);
-        return result.rows.map(row => ({
-            id: row.file_id,
-            name: row.file_name,
-            type: row.file_type,
-            distance: 1 - row.similarity
-        }));
+
+        try {
+            const result = await db.query(query, [vectorString, expandedLimit, userId]);
+            
+            return result.rows.map(row => ({
+                id: row.file_id,
+                name: row.file_name,
+                type: row.file_type,
+                embedding: row.embedding,
+                distance: row.similarity_score
+            }));
+
+        } catch (error) {
+            console.error('Database query error:', error);
+            throw error;
+        }
+    }
+
+    async function applyClusterBoost(results, queryEmbedding) {
+        try {
+            const embeddings = [queryEmbedding, ...results.map(r => r.embedding)];
+            const clusterLabels = await runClustering(embeddings);
+            const queryCluster = clusterLabels[0];
+
+            results = results.map((result, index) => {
+                const documentCluster = clusterLabels[index + 1];
+                let boostAmount = 0;
+
+                if (documentCluster === queryCluster && documentCluster !== -1) {
+                    boostAmount = 10;
+                }
+
+                delete result.embedding;
+
+                return {
+                    ...result,
+                    distance: Math.min(100, result.distance + boostAmount)
+                };
+            });
+
+            return results.sort((a, b) => b.distance - a.distance);
+
+        } catch (error) {
+            console.error('Error in cluster boosting:', error);
+            results.forEach(r => delete r.embedding);
+            return results;
+        }
+    }
+
+    function addToCache(key, results) {
+        if (cache.size >= maxCacheSize) {
+            const oldestKey = cache.keys().next().value;
+            cache.delete(oldestKey);
+            cacheTimestamps.delete(oldestKey);
+        }
+        cache.set(key, results);
+        cacheTimestamps.set(key, Date.now());
+    }
+
+    function getFromCache(key) {
+        const timestamp = cacheTimestamps.get(key);
+        if (!timestamp) return null;
+        if (Date.now() - timestamp > cacheExpiryMs) {
+            cache.delete(key);
+            cacheTimestamps.delete(key);
+            return null;
+        }
+        return cache.get(key);
     }
 
     function buildFilterConditions(filters) {
@@ -75,24 +167,8 @@ function semanticSearch(options = {}) {
             .join(' AND ');
     }
 
-    function getFromCache(key) {
-        return cache.get(key);
-    }
-
-    function addToCache(key, results) {
-        cache.set(key, results);
-    }
-
-    async function provideFeedback(queryId, documentId, isRelevant) {
-        if (relevanceFeedbackEnabled) {
-            // Implement relevance feedback logic here
-            console.log(`Feedback received for query ${queryId}, document ${documentId}: ${isRelevant}`);
-        }
-    }
-
     return {
-        executeSearch,
-        provideFeedback
+        executeSearch
     };
 }
 

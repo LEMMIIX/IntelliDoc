@@ -14,14 +14,14 @@ router.delete('/:folderId', foldersController.deleteFolder); // Route zum Lösch
 // Route zum Umbenennen eines Dokuments
 router.post('/rename', async (req, res) => {
     const { documentId, newFilename } = req.body;
-
+console.log ("cc",req.body)
     // Prüfen, ob die benötigten Daten übergeben wurden
     if (!documentId || !newFilename) {
         return res.status(400).json({ message: 'Dokument-ID und neuer Dateiname sind erforderlich' });
     }
 
     // Loggen, welche Operation ausgeführt wird, zur besseren Nachverfolgung
-    console.log(`Umbenennen des Dokuments mit ID ${documentId} in ${newFilename}`);
+    //console.log(`Umbenennen des Dokuments mit ID ${documentId} in ${newFilename}`);
 
     try {
         // Benutze die Funktion, um das Dokument umzubenennen

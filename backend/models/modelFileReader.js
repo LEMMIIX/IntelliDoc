@@ -13,7 +13,7 @@ async function extractTextFromPDF(buffer) {
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
         try {
-            console.log(`Attempt ${attempt} to extract text from PDF`);
+            //console.log(`Attempt ${attempt} to extract text from PDF`);
             const pyshell = new PythonShell(pythonScriptPath, {
                 mode: 'text',
                 pythonOptions: ['-u'],
@@ -94,7 +94,7 @@ async function extractTextContent(buffer, mimetype, filename) {
     console.log(`Successfully extracted text from ${filename}`);
     console.log(`Preview of extracted text (first 1000 characters):`);
     console.log(textContent.substring(0, 1000));
-    console.log(`... (${textContent.length} total characters extracted)`);
+    //console.log(`... (${textContent.length} total characters extracted)`);
 
     const endTime = performance.now();
     const processingTime = (endTime - startTime).toFixed(2);

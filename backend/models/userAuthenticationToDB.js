@@ -24,7 +24,7 @@ const authenticateUser = async (email, password_hash) => {
         const isPasswordValid = await bcrypt.compare(password_hash, user.password_hash);
 
         if (isPasswordValid) {
-            console.log('Password is valid. Authentication successful');
+            //console.log('Password is valid. Authentication successful');
             return { id: user.user_id, user_name: user.user_name, email: user.email };
         } else {
             console.log('Invalid password_hash');
