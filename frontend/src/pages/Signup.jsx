@@ -82,8 +82,8 @@ function Signup() {
                </button>
                <div className="login_signup_question">
                   <p>Haben Sie bereits ein Konto?</p>
-                  <Link to='/login'> 
-                     Anmelden
+                  <Link to='/login'className="text-blue-500"> 
+                     Einloggen
                   </Link>
                </div>
             </form>
