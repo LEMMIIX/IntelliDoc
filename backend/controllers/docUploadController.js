@@ -155,21 +155,20 @@ exports.uploadFile = async (req, res) => {
 
 exports.downloadFile = async (req, res) => {
     try {
-        const fileName = req.params.filename;
+        const fileId = req.params.fileId;
         const userId = req.session.userId;
 
-        const query = 'SELECT file_data, file_type FROM main.files WHERE file_name = $1 AND user_id = $2';
-        const result = await db.query(query, [fileName, userId]);
+        const query = 'SELECT file_data, file_type, file_name FROM main.files WHERE file_id = $1 AND user_id = $2';
+        const result = await db.query(query, [fileId, userId]);
 
         if (result.rows.length === 0) {
             return res.status(404).send('File not found');
         }
 
-        const { file_data, file_type } = result.rows[0];
+        const { file_data, file_type, file_name } = result.rows[0];
 
-        res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+        res.setHeader('Content-Disposition', `attachment; filename="${file_name}"`);
         res.setHeader('Content-Type', file_type);
-
         res.send(file_data);
     } catch (error) {
         console.error('Error downloading file:', error);
@@ -198,18 +197,19 @@ exports.deleteFile = async (req, res) => {
 
 exports.viewFile = async (req, res) => {
     try {
-        const fileName = req.params.filename;
+        const fileId = req.params.fileId;
         const userId = req.session.userId;
 
-        const result = await db.query('SELECT file_name, file_type, file_data FROM main.files WHERE file_name = $1', [fileName]);
+        const query = 'SELECT file_name, file_type, file_data, version, file_id FROM main.files WHERE file_id = $1 AND user_id = $2';
+        const result = await db.query(query, [fileId, userId]);
 
-        //console.log('Reached after query');
         if (result.rowCount === 0) {
             return res.status(404).json({ error: 'File not found' });
         }
 
         const document = result.rows[0];
-        
+
+        // Handle different file types
         if (document.file_type === 'pdf') {
             res.setHeader('Content-Type', 'application/pdf');
             res.send(document.file_data);
@@ -233,7 +233,7 @@ exports.viewFile = async (req, res) => {
                     </style>
                 </head>
                 <body>
-                    <h1>${document.file_name}</h1>
+                    <h1>${document.file_name} (Version ${document.version})</h1>
                     <pre class="file-content">${document.file_data.toString()}</pre>
                 </body>
                 </html>
@@ -261,7 +261,7 @@ exports.viewFile = async (req, res) => {
                     </style>
                 </head>
                 <body>
-                    <h1>${document.file_name}</h1>
+                    <h1>${document.file_name} (Version ${document.version})</h1>
                     <div class="file-content">${htmlContent}</div>
                 </body>
                 </html>
@@ -279,69 +279,38 @@ exports.viewFile = async (req, res) => {
 // New function to get version history based on original_file_id
 exports.getVersionHistory = async (req, res) => {
     try {
-        const { documentId } = req.params; // Assume documentId is the original file_id
+        const fileId = req.params.fileId;
         const userId = req.session.userId;
 
-        const query = `
-            SELECT file_id, file_name, file_type, version, created_at
+        // First get the original_file_id
+        const fileQuery = `
+            SELECT original_file_id, file_name
             FROM main.files
-            WHERE (file_id = $1 OR original_file_id = $1) AND user_id = $2
-            ORDER BY version DESC;
+            WHERE file_id = $1 AND user_id = $2;
         `;
-        const result = await db.query(query, [documentId, userId]);
+        const fileResult = await db.query(fileQuery, [fileId, userId]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'No version history found for this document' });
+        if (fileResult.rows.length === 0) {
+            return res.status(404).json({ error: 'File not found' });
         }
 
-        res.json({ versions: result.rows });
+        const fileName = fileResult.rows[0].file_name;
+        
+        // Then get all versions of this file
+        const versionsQuery = `
+            SELECT file_id, version, created_at
+            FROM main.files
+            WHERE file_name = $1 AND user_id = $2
+            ORDER BY version DESC;
+        `;
+        const versionsResult = await db.query(versionsQuery, [fileName, userId]);
+
+        res.json({ 
+            fileName: fileName,
+            versions: versionsResult.rows 
+        });
     } catch (error) {
         console.error('Error fetching version history:', error);
         res.status(500).json({ error: 'Error fetching version history' });
-    }
-};
-
-// New function to download a specific version
-exports.downloadVersion = async (req, res) => {
-    try {
-        const { fileId } = req.params;
-        const userId = req.session.userId;
-
-        const query = 'SELECT file_data, file_name, file_type FROM main.files WHERE file_id = $1 AND user_id = $2';
-        const result = await db.query(query, [fileId, userId]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'File not found' });
-        }
-
-        const { file_data, file_name, file_type } = result.rows[0];
-        res.setHeader('Content-Disposition', `attachment; filename="${file_name}"`);
-        res.setHeader('Content-Type', file_type);
-        res.send(file_data);
-    } catch (error) {
-        console.error('Error downloading version:', error);
-        res.status(500).json({ message: 'Error downloading version' });
-    }
-};
-
-// New function to view a specific version
-exports.viewVersion = async (req, res) => {
-    try {
-        const { fileId } = req.params;
-        const userId = req.session.userId;
-
-        const query = 'SELECT file_data, file_type FROM main.files WHERE file_id = $1 AND user_id = $2';
-        const result = await db.query(query, [fileId, userId]);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ message: 'File not found' });
-        }
-
-        const { file_data, file_type } = result.rows[0];
-        res.setHeader('Content-Type', file_type);
-        res.send(file_data);
-    } catch (error) {
-        console.error('Error viewing version:', error);
-        res.status(500).json({ message: 'Error viewing version' });
     }
 };
