@@ -41,22 +41,48 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
     
-        // Sort results by similarity (1 - distance) in descending order
-        results.sort((a, b) => (1 - b.distance) - (1 - a.distance));
+        // Sortiere die Ergebnisse nach Relevanz (höchste zuerst)
+        results.sort((a, b) => b.distance - a.distance);
+    
+        const bestScore = results[0].distance; // Höchster Score im Set
+        const worstScore = results[results.length - 1].distance; // Niedrigster Score im Set
+        const scoreRange = bestScore - worstScore; // Spannweite der Scores
     
         const ul = document.createElement('ul');
-        results.forEach(result => {
+    
+        results.forEach((result, index) => {
+            const relevance = result.distance.toFixed(2);
+    
+            // Normalisiere den Score auf eine Skala von 0 bis 1
+            const normalizedScore = scoreRange > 0 ? (result.distance - worstScore) / scoreRange : 1;
+    
+            // Dynamische Sterne-Bewertung basierend auf relativer Position und absolutem Wert
+            let starsText;
+            if (index === 0 && bestScore >= 50) {
+                // Bestes Ergebnis über 50 %: 3 Sterne in Blau
+                starsText = "★★★ (Blau)";
+            } else if (bestScore >= 30 && result.distance >= 30) {
+                // Ergebnisse über 30 % (relativ gesehen): 2 Sterne oder mehr
+                starsText = normalizedScore >= 0.75 ? "★★★" : "★★";
+            } else {
+                // Geringe Relevanz: 1 Stern in Gelb für alles unter 30 %
+                starsText = "★";
+            }
+    
+            // Ergebnis-Element erstellen
             const li = document.createElement('li');
-            const relevance = (1 - result.distance).toFixed(4);
             li.innerHTML = `
                 <span class="file-name">${result.name}</span> 
-                (${result.type}) - Relevance: ${relevance}
+                (${result.type}) - Relevance: ${relevance}% - Sterne: ${starsText}
             `;
             li.querySelector('.file-name').addEventListener('click', () => previewFile(result.name));
             ul.appendChild(li);
         });
+    
         searchResults.appendChild(ul);
     }
+    
+    
 
     let currentlyPreviewedFile = null;
 

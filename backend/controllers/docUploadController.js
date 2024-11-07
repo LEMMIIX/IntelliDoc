@@ -1,8 +1,10 @@
 const db = require('../../ConnectPostgres');
 const path = require('path');
 const mammoth = require('mammoth');
+// E/F: Added new imports for text extraction and embedding generation
 const { extractTextContent } = require('../models/modelFileReader');
 const modelEmbedding = require('../models/modelEmbedding');
+const modelClustering = require('../models/modelClustering');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -11,19 +13,28 @@ exports.renderUploadForm = (req, res) => {
 
 exports.uploadFile = async (req, res) => {
     try {
+        // Überprüfen, ob req.file tatsächlich vorhanden ist
         if (!req.file) {
             return res.status(400).send('No file uploaded');
         }
 
         const { originalname, buffer, mimetype } = req.file;
-        const { folderId } = req.body;
+        const { folderId, clusteringParams } = req.body;  // Add clusteringParams to body
         const userId = req.session.userId;
 
+        // Konvertiere folderId in eine Ganzzahl, wenn möglich
         const folderIdInt = parseInt(folderId, 10);
+        // Falls folderId leer ist oder keine gültige Zahl ist, auf NULL setzen
         const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
 
+        console.log('Extracting text content...');
         const textContent = await extractTextContent(buffer, mimetype, originalname);
+        console.log(`Extracted text length: ${textContent.length} characters`);
+        
         const embedding = await modelEmbedding.generateEmbedding(textContent);
+
+        //console.log('Inserting into database...');
+        // Format the embedding as a PostgreSQL array
         const formattedEmbedding = `[${embedding.join(',')}]`;
 
         // Check if a file with the same name already exists
@@ -36,8 +47,8 @@ exports.uploadFile = async (req, res) => {
         `;
         const checkResult = await db.query(checkQuery, [originalname, userId]);
 
-        let version = 1;
-        let originalFileId = null;
+        console.log('Insertion complete.');
+        //console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
 
         if (checkResult.rows.length > 0) {
             // Increment the version number if a file with the same name exists
@@ -54,12 +65,93 @@ exports.uploadFile = async (req, res) => {
         const result = await db.query(insertQuery, values);
         const fileId = result.rows[0].file_id;
 
-        res.status(201).json({ message: `File uploaded successfully as version ${version}`, fileId: fileId });
+        // Get all embeddings
+        const allEmbeddings = await modelEmbedding.getAllEmbeddings();
+        console.log(`Total documents for clustering: ${allEmbeddings.length}`);
+        
+        // Extract and verify embeddings
+        const existingEmbeddings = allEmbeddings.map(item => {
+            let emb = item.embedding;
+            if (typeof emb === 'string') {
+                emb = emb.replace(/[\[\]]/g, '').split(',').map(Number);
+            }
+            if (!Array.isArray(emb) || emb.length !== 768) {
+                console.warn(`Warning: Invalid embedding format for file ID ${item.fileId}. Length: ${emb.length}`);
+            }
+            return emb;
+        });
+
+        // Add new embedding
+        existingEmbeddings.push(embedding);
+
+        // Clustering parameters
+        const defaultParams = {
+            minClusterSize: 3,
+            minSamples: 2,
+            clusterSelectionMethod: 'eom',
+            clusterSelectionEpsilon: 0.18,
+            anchorInfluence: 0.36,         // Changed from folder_weight
+            semanticThreshold: 0.52        // Changed from semantic_similarity_threshold
+        };
+
+        // Merge default parameters with any provided parameters
+        const clusteringConfig = {
+            ...defaultParams,
+            ...JSON.parse(clusteringParams || '{}')  // Allow overriding defaults through API
+        };
+
+        // Run clustering with parameters and debug info
+        console.log('Starting clustering process with parameters:', clusteringConfig);
+        const clusteringResult = await modelClustering.runClustering(
+            existingEmbeddings, 
+            clusteringConfig,
+            userId
+        );
+        
+
+        const clusterLabels = clusteringResult.labels;
+        const clusterStats = clusteringResult.clusterStats;
+        const folderContext = clusteringResult.folderContext;
+
+        console.log('Clustering complete. Results:', clusterLabels);
+
+        // Update cluster labels
+        for (let i = 0; i < clusterLabels.length; i++) {
+            const updateQuery = 'UPDATE main.files SET cluster_label = $1 WHERE file_id = $2';
+            const fileIdToUpdate = i < allEmbeddings.length ? allEmbeddings[i].fileId : fileId;
+            await db.query(updateQuery, [clusterLabels[i], fileIdToUpdate]);
+        }
+
+        res.status(201).json({ 
+            message: 'File uploaded successfully', 
+            fileId: fileId,
+            clusteringResults: {
+                totalDocuments: allEmbeddings.length + 1,
+                uniqueClusters: clusterStats.num_clusters,
+                noisePoints: clusterStats.noise_points,
+                assignedCluster: clusterLabels[clusterLabels.length - 1],
+                clusterSizes: clusterStats.cluster_sizes
+            },
+            ...(folderContext && {
+                folderSuggestions: {
+                    statistics: folderContext.statistics,
+                    topAffinities: Object.entries(folderContext.affinities[clusterLabels.length - 1] || {})
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 5)
+                        .map(([folderId, score]) => ({
+                            folderId,
+                            folderName: folderContext.folderInfo.names[folderId],
+                            score: Math.round(score * 100) / 100
+                        }))
+                }
+            })
+        });
     } catch (error) {
         console.error('Error processing file:', error);
         res.status(422).json({ message: 'Error processing file', error: error.message });
     }
 };
+
 
 exports.downloadFile = async (req, res) => {
     try {
@@ -109,22 +201,75 @@ exports.viewFile = async (req, res) => {
         const fileName = req.params.filename;
         const userId = req.session.userId;
 
-        const query = `
-            SELECT file_id, file_name, file_type, file_data, version
-            FROM main.files
-            WHERE file_name = $1 AND user_id = $2
-            ORDER BY version DESC;
-        `;
-        const result = await db.query(query, [fileName, userId]);
+        const result = await db.query('SELECT file_name, file_type, file_data FROM main.files WHERE file_name = $1', [fileName]);
 
-        if (result.rows.length === 0) {
+        //console.log('Reached after query');
+        if (result.rowCount === 0) {
             return res.status(404).json({ error: 'File not found' });
         }
 
-        const files = result.rows;
-
-        // Respond with JSON containing all versions for the file
-        res.json({ versions: files });
+        const document = result.rows[0];
+        
+        if (document.file_type === 'pdf') {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.send(document.file_data);
+        } else if (document.file_type === 'text/plain') {
+            res.setHeader('Content-Type', 'text/html');
+            res.send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>View Text File</title>
+                    <style>
+                        .file-content {
+                            background-color: #f4f4f4;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            margin-top: 20px;
+                            white-space: pre-wrap;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${document.file_name}</h1>
+                    <pre class="file-content">${document.file_data.toString()}</pre>
+                </body>
+                </html>
+            `);
+        } else if (document.file_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+            const docxBuffer = Buffer.from(document.file_data);
+            const { value: htmlContent } = await mammoth.convertToHtml({ buffer: docxBuffer });
+            
+            res.setHeader('Content-Type', 'text/html');
+            res.send(`
+                <!DOCTYPE html>
+                <html lang="de">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>View DOCX File</title>
+                    <style>
+                        .file-content {
+                            background-color: #f4f4f4;
+                            padding: 10px;
+                            border: 1px solid #ddd;
+                            margin-top: 20px;
+                            white-space: pre-wrap;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <h1>${document.file_name}</h1>
+                    <div class="file-content">${htmlContent}</div>
+                </body>
+                </html>
+            `);
+        } else {
+            res.setHeader('Content-Type', document.file_type);
+            res.send(document.file_data);
+        }
     } catch (err) {
         console.error('Error fetching document:', err.stack);
         res.status(500).json({ error: 'Error fetching document', details: err.stack });
