@@ -276,13 +276,64 @@ exports.viewFile = async (req, res) => {
     }
 };
 
-// New function to get version history based on original_file_id
+//////// getVersionHistory --- neue Dokumentation für Frontend !!!
+//          |
+//          |
+//          |
+//          |
+//          V
+
+
+/**
+ * Retrieves the complete version history for a document based on any version's fileId.
+ * 
+ * The function works by:
+ * 1. Finding the original document using the provided fileId
+ * 2. Using the file name to retrieve all versions
+ * 3. Returning a sorted list of all versions with metadata
+ * 
+ * @route GET /versions/:fileId
+ * @param {string} req.params.fileId - The ID of any version of the file
+ * @param {string} req.session.userId - User ID from session (for authorization)
+ * 
+ * @returns {Object} Response object
+ * @returns {string} Response.fileName - The original name of the file
+ * @returns {Array<Object>} Response.versions - Array of version objects
+ * @returns {string} Response.versions[].file_id - Unique identifier for each version
+ * @returns {number} Response.versions[].version - Version number (starts at 1)
+ * @returns {Date} Response.versions[].created_at - Timestamp of version creation
+ * 
+ * @example
+ * // Frontend API call
+ * const response = await fetch(`/api/versions/${fileId}`);
+ * const versionHistory = await response.json();
+ * 
+ * // Response example:
+ * {
+ *   fileName: "document.pdf",
+ *   versions: [
+ *     {
+ *       file_id: "123",
+ *       version: 2,
+ *       created_at: "2024-11-07T14:30:00Z"
+ *     },
+ *     {
+ *       file_id: "122",
+ *       version: 1,
+ *       created_at: "2024-11-07T12:00:00Z"
+ *     }
+ *   ]
+ * }
+ * 
+ * @errorResponse {404} File not found
+ * @errorResponse {500} Server error during retrieval
+ */
 exports.getVersionHistory = async (req, res) => {
     try {
         const fileId = req.params.fileId;
         const userId = req.session.userId;
 
-        // First get the original_file_id
+        // First get the file details for the provided fileId
         const fileQuery = `
             SELECT original_file_id, file_name
             FROM main.files
@@ -291,26 +342,61 @@ exports.getVersionHistory = async (req, res) => {
         const fileResult = await db.query(fileQuery, [fileId, userId]);
 
         if (fileResult.rows.length === 0) {
-            return res.status(404).json({ error: 'File not found' });
+            return res.status(404).json({ 
+                error: 'File not found',
+                details: 'The specified file ID does not exist or you do not have access to it'
+            });
         }
 
         const fileName = fileResult.rows[0].file_name;
         
-        // Then get all versions of this file
+        // Retrieve all versions of the file using the file name
+        // Files are considered versions of each other if they share the same name
         const versionsQuery = `
-            SELECT file_id, version, created_at
+            SELECT 
+                file_id,      -- Unique identifier for each version
+                version,      -- Version number (auto-incremented)
+                created_at    -- Timestamp when this version was created
             FROM main.files
             WHERE file_name = $1 AND user_id = $2
-            ORDER BY version DESC;
+            ORDER BY version DESC;  -- Latest version first
         `;
         const versionsResult = await db.query(versionsQuery, [fileName, userId]);
 
+        // Return formatted response with file name and version array
         res.json({ 
             fileName: fileName,
             versions: versionsResult.rows 
         });
     } catch (error) {
         console.error('Error fetching version history:', error);
-        res.status(500).json({ error: 'Error fetching version history' });
+        res.status(500).json({ 
+            error: 'Error fetching version history',
+            details: 'An internal server error occurred while retrieving the version history'
+        });
     }
 };
+
+/**
+ * Database Schema Reference (main.files table)
+ * 
+ * Relevant columns for versioning:
+ * - file_id (PK): Unique identifier for each file version
+ * - file_name: Name of the file (used to group versions)
+ * - version: Auto-incrementing version number for files with the same name
+ * - created_at: Timestamp of upload
+ * - user_id (FK): Reference to user who owns the file
+ * 
+ * Version Handling Logic:
+ * 1. When a file is uploaded, the system checks if a file with the same name exists
+ * 2. If it exists, the new file gets the next version number
+ * 3. All versions of a file share the same file_name but have unique file_ids
+ * 
+ * Frontend Usage Notes:
+ * - Use this endpoint to build version history displays
+ * - The versions array is pre-sorted (newest first)
+ * - Each version's file_id can be used with other endpoints:
+ *   - /download/:fileId (to download specific versions)
+ *   - /view/:fileId (to view specific versions)
+ *   - /delete/:fileId (to delete specific versions)
+ */
