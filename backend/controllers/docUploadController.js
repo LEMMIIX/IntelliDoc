@@ -5,6 +5,7 @@ const mammoth = require('mammoth');
 const { extractTextContent } = require('../models/modelFileReader');
 const modelEmbedding = require('../models/modelEmbedding');
 const modelClustering = require('../models/modelClustering');
+const { generateKeywords } = require('../models/modelKeywords');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -64,6 +65,7 @@ exports.uploadFile = async (req, res) => {
 
         const result = await db.query(insertQuery, values);
         const fileId = result.rows[0].file_id;
+        generateKeywordsInBackground(textContent, file_id);
 
         // Get all embeddings
         const allEmbeddings = await modelEmbedding.getAllEmbeddings();
@@ -152,6 +154,20 @@ exports.uploadFile = async (req, res) => {
     }
 };
 
+// Keywords im Hintergrund generiert
+const generateKeywordsInBackground = async (textContent,file_id) => {
+    try {
+        const keywords = await generateKeywords(textContent);
+
+        // Verbinde die Keywords in eine Zeichenkette
+        const keywordsString = keywords.join(', ');
+        // Keywords in der Datenbank speichern
+        const query = 'UPDATE main.files SET keywords = $1 WHERE file_id = $2';
+        await db.query(query, [keywordsString, file_id]);
+    } catch (error) {
+        console.error('Error generating keywords:', error);
+    }
+};
 
 exports.downloadFile = async (req, res) => {
     try {
