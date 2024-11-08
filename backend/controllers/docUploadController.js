@@ -50,6 +50,9 @@ exports.uploadFile = async (req, res) => {
 
         console.log('Insertion complete.');
         //console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
+        
+        let version = 1;
+        let originalFileId = null;
 
         if (checkResult.rows.length > 0) {
             // Increment the version number if a file with the same name exists
@@ -65,7 +68,7 @@ exports.uploadFile = async (req, res) => {
 
         const result = await db.query(insertQuery, values);
         const fileId = result.rows[0].file_id;
-        generateKeywordsInBackground(textContent, file_id);
+        generateKeywordsInBackground(textContent, fileId);
 
         // Get all embeddings
         const allEmbeddings = await modelEmbedding.getAllEmbeddings();
