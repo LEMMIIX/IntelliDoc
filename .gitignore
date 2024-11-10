@@ -103,3 +103,6 @@ ConnectPostgres.js
 # Lokale Dateien
 *.local
 .tern-port
+
+# Testdateien mit JEST
+*.test.js

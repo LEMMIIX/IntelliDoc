@@ -6,14 +6,18 @@ const docUploadController = require('../controllers/docUploadController');
 
 // Basic routes
 router.get('/', docUploadController.renderUploadForm);
-router.post('/', upload.single('file'), docUploadController.uploadFile);  // Handles versioning based on filename
+router.post('/', upload.single('file'), docUploadController.uploadFile);
 
-// File operations - all using fileId
+// File operations
 router.get('/download/:fileId', docUploadController.downloadFile);
 router.get('/view/:fileId', docUploadController.viewFile);
 router.delete('/delete/:fileId', docUploadController.deleteFile);
 
-// Get version history for a file
+// Version management
 router.get('/versions/:fileId', docUploadController.getVersionHistory);
+
+// Folder name generation routes
+router.post('/folder-suggestions', docUploadController.getFolderSuggestions);
+router.post('/regenerate-folder-names', docUploadController.regenerateFolderNames);
 
 module.exports = router;

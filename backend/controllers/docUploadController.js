@@ -6,6 +6,7 @@ const { extractTextContent } = require('../models/modelFileReader');
 const modelEmbedding = require('../models/modelEmbedding');
 const modelClustering = require('../models/modelClustering');
 const { generateKeywords } = require('../models/modelKeywords');
+const folderGenerator = require('../models/modelFolderNameGeneration');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -14,31 +15,24 @@ exports.renderUploadForm = (req, res) => {
 
 exports.uploadFile = async (req, res) => {
     try {
-        // Überprüfen, ob req.file tatsächlich vorhanden ist
         if (!req.file) {
             return res.status(400).send('No file uploaded');
         }
 
         const { originalname, buffer, mimetype } = req.file;
-        const { folderId, clusteringParams } = req.body;  // Add clusteringParams to body
+        const { folderId, clusteringParams } = req.body;
         const userId = req.session.userId;
 
-        // Konvertiere folderId in eine Ganzzahl, wenn möglich
         const folderIdInt = parseInt(folderId, 10);
-        // Falls folderId leer ist oder keine gültige Zahl ist, auf NULL setzen
         const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
 
+        // Extract text and generate embedding
         console.log('Extracting text content...');
         const textContent = await extractTextContent(buffer, mimetype, originalname);
-        console.log(`Extracted text length: ${textContent.length} characters`);
-        
         const embedding = await modelEmbedding.generateEmbedding(textContent);
-
-        //console.log('Inserting into database...');
-        // Format the embedding as a PostgreSQL array
         const formattedEmbedding = `[${embedding.join(',')}]`;
 
-        // Check if a file with the same name already exists
+        // Check for versioning
         const checkQuery = `
             SELECT file_id, version
             FROM main.files
@@ -47,113 +41,132 @@ exports.uploadFile = async (req, res) => {
             LIMIT 1;
         `;
         const checkResult = await db.query(checkQuery, [originalname, userId]);
-
-        console.log('Insertion complete.');
-        //console.log('Executing database query:', { text: query, params: values.map((v, i) => i === 3 ? '<Buffer>' : v) });
         
         let version = 1;
         let originalFileId = null;
-
         if (checkResult.rows.length > 0) {
-            // Increment the version number if a file with the same name exists
             version = checkResult.rows[0].version + 1;
             originalFileId = checkResult.rows[0].file_id;
         }
 
+        // Insert file
         const insertQuery = `
-            INSERT INTO main.files (user_id, file_name, file_type, file_data, folder_id, embedding, version, original_file_id)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING file_id;
+            INSERT INTO main.files (
+                user_id, file_name, file_type, file_data, 
+                folder_id, embedding, version, original_file_id
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            RETURNING file_id;
         `;
-        const values = [userId, originalname, mimetype, buffer, folderIdToUse, formattedEmbedding, version, originalFileId];
+        const values = [
+            userId, originalname, mimetype, buffer,
+            folderIdToUse, formattedEmbedding, version, originalFileId
+        ];
 
         const result = await db.query(insertQuery, values);
         const fileId = result.rows[0].file_id;
+
+        // Generate keywords in background
         generateKeywordsInBackground(textContent, fileId);
 
-        // Get all embeddings
+        // Check for folder suggestions if no folder specified
+        let folderSuggestions = null;
+        if (!folderIdToUse) {
+            const folderDecision = await folderGenerator.shouldCreateNewFolder(embedding, userId);
+            
+            if (folderDecision.shouldCreate) {
+                const suggestions = await folderGenerator.generateFolderNames(
+                    textContent,
+                    userId,
+                    {
+                        language: 'auto',
+                        numSuggestions: 3,
+                        temperature: 0.7
+                    }
+                );
+                folderSuggestions = {
+                    names: suggestions.suggestions,
+                    language: suggestions.language,
+                    similarFolders: folderDecision.topSimilarities,
+                    processingTime: folderDecision.processingTime
+                };
+            } else {
+                folderSuggestions = {
+                    suggestedFolder: folderDecision.similarFolder,
+                    otherSimilarFolders: folderDecision.topSimilarities,
+                    processingTime: folderDecision.processingTime
+                };
+            }
+        }
+
+        // Run clustering
         const allEmbeddings = await modelEmbedding.getAllEmbeddings();
         console.log(`Total documents for clustering: ${allEmbeddings.length}`);
         
-        // Extract and verify embeddings
         const existingEmbeddings = allEmbeddings.map(item => {
             let emb = item.embedding;
             if (typeof emb === 'string') {
                 emb = emb.replace(/[\[\]]/g, '').split(',').map(Number);
             }
-            if (!Array.isArray(emb) || emb.length !== 768) {
-                console.warn(`Warning: Invalid embedding format for file ID ${item.fileId}. Length: ${emb.length}`);
-            }
             return emb;
         });
 
-        // Add new embedding
         existingEmbeddings.push(embedding);
 
-        // Clustering parameters
         const defaultParams = {
             minClusterSize: 3,
             minSamples: 2,
             clusterSelectionMethod: 'eom',
             clusterSelectionEpsilon: 0.18,
-            anchorInfluence: 0.36,         // Changed from folder_weight
-            semanticThreshold: 0.52        // Changed from semantic_similarity_threshold
+            anchorInfluence: 0.36,
+            semanticThreshold: 0.52
         };
 
-        // Merge default parameters with any provided parameters
         const clusteringConfig = {
             ...defaultParams,
-            ...JSON.parse(clusteringParams || '{}')  // Allow overriding defaults through API
+            ...JSON.parse(clusteringParams || '{}')
         };
 
-        // Run clustering with parameters and debug info
-        console.log('Starting clustering process with parameters:', clusteringConfig);
+        console.log('Starting clustering process...');
         const clusteringResult = await modelClustering.runClustering(
             existingEmbeddings, 
             clusteringConfig,
             userId
         );
-        
-
-        const clusterLabels = clusteringResult.labels;
-        const clusterStats = clusteringResult.clusterStats;
-        const folderContext = clusteringResult.folderContext;
-
-        console.log('Clustering complete. Results:', clusterLabels);
 
         // Update cluster labels
-        for (let i = 0; i < clusterLabels.length; i++) {
+        for (let i = 0; i < clusteringResult.labels.length; i++) {
             const updateQuery = 'UPDATE main.files SET cluster_label = $1 WHERE file_id = $2';
             const fileIdToUpdate = i < allEmbeddings.length ? allEmbeddings[i].fileId : fileId;
-            await db.query(updateQuery, [clusterLabels[i], fileIdToUpdate]);
+            await db.query(updateQuery, [clusteringResult.labels[i], fileIdToUpdate]);
         }
 
-        res.status(201).json({ 
-            message: 'File uploaded successfully', 
+        // Prepare response
+        const response = {
+            message: 'File uploaded successfully',
             fileId: fileId,
             clusteringResults: {
                 totalDocuments: allEmbeddings.length + 1,
-                uniqueClusters: clusterStats.num_clusters,
-                noisePoints: clusterStats.noise_points,
-                assignedCluster: clusterLabels[clusterLabels.length - 1],
-                clusterSizes: clusterStats.cluster_sizes
-            },
-            ...(folderContext && {
-                folderSuggestions: {
-                    statistics: folderContext.statistics,
-                    topAffinities: Object.entries(folderContext.affinities[clusterLabels.length - 1] || {})
-                        .sort(([,a], [,b]) => b - a)
-                        .slice(0, 5)
-                        .map(([folderId, score]) => ({
-                            folderId,
-                            folderName: folderContext.folderInfo.names[folderId],
-                            score: Math.round(score * 100) / 100
-                        }))
-                }
-            })
-        });
+                uniqueClusters: clusteringResult.clusterStats.num_clusters,
+                noisePoints: clusteringResult.clusterStats.noise_points,
+                assignedCluster: clusteringResult.labels[clusteringResult.labels.length - 1],
+                clusterSizes: clusteringResult.clusterStats.cluster_sizes
+            }
+        };
+
+        // Add folder suggestions if available
+        if (folderSuggestions) {
+            response.folderSuggestions = folderSuggestions;
+        }
+
+        res.status(201).json(response);
+
     } catch (error) {
         console.error('Error processing file:', error);
-        res.status(422).json({ message: 'Error processing file', error: error.message });
+        res.status(422).json({ 
+            message: 'Error processing file', 
+            error: error.message 
+        });
     }
 };
 
@@ -419,3 +432,80 @@ exports.getVersionHistory = async (req, res) => {
  *   - /view/:fileId (to view specific versions)
  *   - /delete/:fileId (to delete specific versions)
  */
+
+
+exports.getFolderSuggestions = async (req, res) => {
+    try {
+        const { textContent, embedding } = req.body;
+        const userId = req.session.userId;
+
+        if (!textContent || !embedding) {
+            return res.status(400).json({ 
+                error: 'Missing required parameters' 
+            });
+        }
+
+        const folderDecision = await folderGenerator.shouldCreateNewFolder(embedding, userId);
+        
+        if (folderDecision.shouldCreate) {
+            const suggestions = await folderGenerator.generateFolderNames(
+                textContent,
+                userId,
+                {
+                    language: 'auto',
+                    numSuggestions: 3,
+                    temperature: 0.7
+                }
+            );
+
+            res.json({
+                names: suggestions.suggestions,
+                language: suggestions.language,
+                similarFolders: folderDecision.topSimilarities,
+                processingTime: folderDecision.processingTime
+            });
+        } else {
+            res.json({
+                suggestedFolder: folderDecision.similarFolder,
+                otherSimilarFolders: folderDecision.topSimilarities,
+                processingTime: folderDecision.processingTime
+            });
+        }
+
+    } catch (error) {
+        console.error('Error generating folder suggestions:', error);
+        res.status(500).json({ 
+            error: 'Failed to generate folder suggestions',
+            details: error.message
+        });
+    }
+};
+
+exports.regenerateFolderNames = async (req, res) => {
+    try {
+        const { textContent, previousSuggestions } = req.body;
+        const userId = req.session.userId;
+
+        if (!textContent) {
+            return res.status(400).json({ 
+                error: 'Missing text content' 
+            });
+        }
+
+        const result = await folderGenerator.regenerateNames(
+            textContent,
+            userId,
+            previousSuggestions || [],
+            { temperature: 0.8 }
+        );
+
+        res.json(result);
+
+    } catch (error) {
+        console.error('Error regenerating folder names:', error);
+        res.status(500).json({ 
+            error: 'Failed to regenerate folder names',
+            details: error.message
+        });
+    }
+};
