@@ -14,37 +14,40 @@ async function initModel() {
       pipeline = transformers.pipeline;
       env = transformers.env;
 
-      // Configure path to node_modules/@xenova/transformers/models
-      env.localModelPath = path.join(process.cwd(), 'node_modules', '@xenova', 'transformers', 'models');
-      env.allowRemoteModels = false; // Disable remote loading when using local files
+      // Define base paths - Updated to use Xenova's model path
+      const baseModelPath = path.join(process.cwd(), 'node_modules', '@xenova', 'transformers', 'models');
+      const modelName = 'Xenova/paraphrase-multilingual-mpnet-base-v2';
+      
+      // Configure environment
+      env.localModelPath = baseModelPath;
+      env.cacheDir = baseModelPath;
+      env.allowRemoteModels = false;
 
-      // Custom cache directory configuration (optional - you might not need this)
-      env.cacheDir = path.join(process.cwd(), 'node_modules', '@xenova', 'transformers', 'models');
-
-      // Custom cache directory configuration
-      env.cacheDir = path.join(__dirname, 'model_cache'); // Adjust path as needed
+      const modelPath = path.join(baseModelPath, modelName.split('/')[0], modelName.split('/')[1]);
+      console.log('Looking for model in:', modelPath);
 
       try {
-        // First attempt: Try loading from local path
-        model = await pipeline('feature-extraction', 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2', {
-          quantized: false,
-          local: true // Force local loading
+        // First attempt: Try loading from local path with ONNX configuration
+        model = await pipeline('feature-extraction', modelName, {
+          quantized: true, // Use quantized model by default for better performance
+          local: true,
+          revision: 'main',
+          modelPath: modelPath,
+          progress_callback: (progress) => {
+            console.log(`Loading progress: ${Math.round(progress * 100)}%`);
+          }
         });
         console.log('MPNet model loaded successfully from local storage');
       } catch (localError) {
-        console.log('Local model not found, attempting remote download...');
-        // Second attempt: If local fails, enable remote loading and try again
-        env.allowRemoteModels = true;
-        model = await pipeline('feature-extraction', 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2', {
-          quantized: false
-        });
-        console.log('MPNet model downloaded and loaded successfully');
+        console.error('Local loading error:', localError.message);
+        throw new Error('Model not found locally. Please ensure the model is downloaded with the correct structure.');
       }
     } catch (error) {
       console.error('Error loading MPNet model:', error);
       throw error;
     }
   }
+  return model;
 }
 
 async function generateEmbedding(text) {
@@ -53,7 +56,11 @@ async function generateEmbedding(text) {
   const startTime = performance.now();
   
   console.log('Generating embedding...');
-  const output = await model(text, { pooling: 'mean', normalize: true });
+  const output = await model(text, { 
+    pooling: 'mean', 
+    normalize: true,
+    //max_length: 512 // Add max length to prevent issues with very long texts
+  });
   
   const endTime = performance.now();
   const processingTime = (endTime - startTime).toFixed(2);
