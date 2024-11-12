@@ -310,10 +310,9 @@ class FolderNameGenerator {
     }
 
     _parseEmbedding(embedding) {
-        if (typeof embedding === 'string') {
-            return embedding.replace(/[\[\]]/g, '').split(',').map(Number);
-        }
-        return embedding;
+        return typeof embedding === 'string'
+        ? embedding.replace(/[{}\[\]]/g, '').split(',').map(Number)
+        : embedding;
     }
 
     /**
