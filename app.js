@@ -11,6 +11,12 @@ const foldersRoutes = require("./backend/routes/foldersRoutes");
 const semanticSearchRoutes = require('./backend/routes/semanticSearchRoutes');
 process.env.NODE_ENV = 'UTF-8';
 const passwordResetRoutes = require('./backend/models/passwordReset');
+const sequelize = require("./sequelize.config.js");
+const User = require("./database/User.js");
+const Folder = require("./database/Folder.js");
+const File = require("./database/File.js");
+const UserRole = require("./database/UserRole.js");
+const UserRoleMapping = require("./database/UserRoleMapping.js");
 
 const PORT = process.env.PORT || 3000;
 
@@ -56,6 +62,43 @@ app.use(
     },
   })
 );
+
+// Verbindungsaufbau zur Datenbank und Synchronisierung der Modelle
+(async () => {
+  try {
+    await sequelize.authenticate();
+    console.log("Verbindung zur Datenbank erfolgreich.");
+
+    // Definiere die Beziehungen zwischen den Modellen
+
+    // User - Folder (One-to-Many)
+    User.hasMany(Folder, { foreignKey: "user_id", onDelete: "CASCADE" });
+    Folder.belongsTo(User, { foreignKey: "user_id" });
+
+    // Folder - Folder (Parent-Child)
+    Folder.hasMany(Folder, { foreignKey: "parent_folder_id", as: "subfolders", onDelete: "SET NULL" });
+    Folder.belongsTo(Folder, { foreignKey: "parent_folder_id", as: "parentFolder", onDelete: "SET NULL" });
+
+    // User - File (One-to-Many)
+    User.hasMany(File, { foreignKey: "user_id", onDelete: "CASCADE" });
+    File.belongsTo(User, { foreignKey: "user_id" });
+
+    // Folder - File (One-to-Many)
+    Folder.hasMany(File, { foreignKey: "folder_id", onDelete: "SET NULL" });
+    File.belongsTo(Folder, { foreignKey: "folder_id" });
+
+    // User - UserRole (Many-to-Many through UserRoleMapping)
+    User.belongsToMany(UserRole, { through: UserRoleMapping, foreignKey: "user_id", onDelete: "CASCADE" });
+    UserRole.belongsToMany(User, { through: UserRoleMapping, foreignKey: "role_id", onDelete: "CASCADE" });
+
+    // Synchronisiere alle Modelle mit der Datenbank
+    await sequelize.sync();
+    console.log("Datenbank-Synchronisation erfolgreich.");
+
+  } catch (error) {
+    console.error("Datenbankfehler:", error);
+  }
+})();
 
 // Authentication middleware
 const authenticateMiddleware = (req, res, next) => {
