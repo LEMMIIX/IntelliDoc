@@ -1,5 +1,4 @@
 // @Autor Luca Neumann
-const db = require('../../ConnectPostgres');
 const Folder = require('../../database/Folder.js');
 const File = require('../../database/File.js');
 const sequelize = require('../../sequelize.config.js');

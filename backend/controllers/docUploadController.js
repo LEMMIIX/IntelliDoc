@@ -1,4 +1,3 @@
-const db = require('../../ConnectPostgres');
 const path = require('path');
 const mammoth = require('mammoth');
 // E/F: Added new imports for text extraction and embedding generation
@@ -6,7 +5,6 @@ const { extractTextContent } = require('../models/modelFileReader');
 const modelEmbedding = require('../models/modelEmbedding');
 const modelClustering = require('../models/modelClustering');
 const { generateKeywords } = require('../models/modelKeywords');
-const { Op } = require('sequelize');
 const File = require('../../database/File.js');
 const sequelize = require('../../sequelize.config.js');
 
