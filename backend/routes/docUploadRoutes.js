@@ -15,5 +15,7 @@ router.delete('/delete/:fileId', docUploadController.deleteFile);
 
 // Get version history for a file
 router.get('/versions/:fileId', docUploadController.getVersionHistory);
+// Get keywords for a file
+router.get('/keywords/:fileId', docUploadController.getKeywords);
 
 module.exports = router;
