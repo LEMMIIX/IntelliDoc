@@ -192,7 +192,6 @@ exports.deleteFile = async (req, res) => {
 exports.viewFile = async (req, res) => {
     try {
         const fileName = req.params.fileId;
-        console.log(fileName);
         const userId = req.session.userId;
 
         // Datei mit Sequelize abrufen

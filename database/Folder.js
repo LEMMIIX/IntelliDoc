@@ -27,7 +27,7 @@ const Folder = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     embedding: {
-      type: DataTypes.ARRAY(DataTypes.FLOAT), // Speichert das Embedding als Float-Array
+      type: 'VECTOR(768)', // Annahme: Embeddings sind 768-dimensional
       allowNull: true,
     },
   },
