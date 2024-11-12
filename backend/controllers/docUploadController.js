@@ -135,7 +135,7 @@ const generateKeywordsInBackground = async (textContent, file_id) => {
 
 exports.downloadFile = async (req, res) => {
     try {
-        const fileName = req.params.fileName; 
+        const fileName = req.params.fileId; 
         const userId = req.session.userId;
 
         const file = await File.findOne({
