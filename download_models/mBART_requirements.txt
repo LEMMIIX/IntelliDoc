@@ -1,5 +1,0 @@
---find-links https://download.pytorch.org/whl/cpu
-torch
-transformers>=4.30.0
-sentencepiece
-langdetect

@@ -39,35 +39,41 @@ class GenerationQueue extends EventEmitter {
 
 class FolderNameGenerator {
     constructor(options = {}) {
+        // Core configuration
         this.pythonScript = path.join(__dirname, 'folderNameGenerator.py');
         this.similarityThreshold = options.similarityThreshold || 0.75;
-        this.timeout = options.timeout || 30000; // 30 seconds
+        this.timeout = options.timeout || 30000;
         this.maxRetries = options.maxRetries || 2;
         this.queue = new GenerationQueue(options.concurrency || 2);
         
-        // Cache for similarity calculations
-        this.similarityCache = new Map();
+        // Generation parameters
+        this.defaultGenerationParams = {
+            temperature: 0.85,     // Higher temperature for more creative names
+            top_p: 0.92,          // Nucleus sampling for better diversity
+            max_tokens: 12,       // Reasonable length for folder names
+            stop_sequences: ["\n", ".", ","], // Stop generating at these sequences
+            presence_penalty: 0.6, // Encourage diverse word usage
+            frequency_penalty: 0.7 // Discourage repetitive patterns
+        };
         
-        // Performance monitoring
+        // Cache and metrics
+        this.similarityCache = new Map();
         this.metrics = {
             totalRequests: 0,
             successfulRequests: 0,
             failedRequests: 0,
-            averageResponseTime: 0
+            averageResponseTime: 0,
+            lastError: null
         };
     }
 
     /**
      * Determines if a new folder should be created based on semantic similarity
-     * @param {Array} docEmbedding - Document embedding vector
-     * @param {string} userId - User ID for folder lookup
-     * @returns {Promise<Object>} Decision object with similarity information
      */
     async shouldCreateNewFolder(docEmbedding, userId) {
         const startTime = performance.now();
         
         try {
-            // Get existing folders with embeddings
             const query = `
                 SELECT 
                     f.folder_id,
@@ -117,7 +123,6 @@ class FolderNameGenerator {
                 }
             }
 
-            // Sort similarities for recommendation
             similarities.sort((a, b) => b.similarity - a.similarity);
 
             return {
@@ -130,7 +135,7 @@ class FolderNameGenerator {
                     fileCount: mostSimilarFolder.file_count,
                     parentId: mostSimilarFolder.parent_folder_id
                 } : null,
-                topSimilarities: similarities.slice(0, 3), // Top 3 similar folders
+                topSimilarities: similarities.slice(0, 3),
                 processingTime: performance.now() - startTime
             };
         } catch (error) {
@@ -140,11 +145,7 @@ class FolderNameGenerator {
     }
 
     /**
-     * Generates folder name suggestions using the mBART model
-     * @param {string} textContent - Document content
-     * @param {string} userId - User ID for folder lookup
-     * @param {Object} options - Generation options
-     * @returns {Promise<Object>} Generated folder names and metadata
+     * Generates folder name suggestions using GPT model
      */
     async generateFolderNames(textContent, userId, options = {}) {
         const startTime = performance.now();
@@ -152,7 +153,10 @@ class FolderNameGenerator {
 
         try {
             const existingFolders = await this._getExistingFolderNames(userId);
-            const result = await this._queueGenerationTask(textContent, existingFolders, options);
+            const result = await this._queueGenerationTask(textContent, existingFolders, {
+                ...this.defaultGenerationParams,
+                ...options
+            });
             
             this.metrics.successfulRequests++;
             this.metrics.averageResponseTime = 
@@ -162,30 +166,27 @@ class FolderNameGenerator {
             return result;
         } catch (error) {
             this.metrics.failedRequests++;
+            this.metrics.lastError = error.message;
             throw error;
         }
     }
 
     /**
-     * Regenerates folder names, excluding previous suggestions
-     * @param {string} textContent - Document content
-     * @param {string} userId - User ID
-     * @param {Array} excludeNames - Names to exclude
-     * @param {Object} options - Generation options
-     * @returns {Promise<Object>} New folder name suggestions
+     * Regenerates folder names with adjusted parameters for more variety
      */
     async regenerateNames(textContent, userId, excludeNames = [], options = {}) {
         try {
             const existingFolders = await this._getExistingFolderNames(userId);
             const allExclusions = [...new Set([...existingFolders, ...excludeNames])];
             
-            // Increase temperature for more variety in regeneration
-            const regenerationOptions = {
-                ...options,
-                temperature: (options.temperature || 0.7) + 0.1
+            const regenerationParams = {
+                ...this.defaultGenerationParams,
+                temperature: Math.min(this.defaultGenerationParams.temperature + 0.1, 1.0),
+                presence_penalty: Math.min(this.defaultGenerationParams.presence_penalty + 0.1, 1.0),
+                ...options
             };
 
-            return await this._queueGenerationTask(textContent, allExclusions, regenerationOptions);
+            return await this._queueGenerationTask(textContent, allExclusions, regenerationParams);
         } catch (error) {
             console.error('Error in regenerateNames:', error);
             throw error;
@@ -194,20 +195,19 @@ class FolderNameGenerator {
 
     /**
      * Queues a generation task with retry logic
-     * @private
      */
-    async _queueGenerationTask(textContent, existingFolders, options) {
+    async _queueGenerationTask(textContent, existingFolders, params) {
         let lastError;
         
         for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
             try {
                 return await this.queue.add(() => 
-                    this._generateNames(textContent, existingFolders, options)
+                    this._generateNames(textContent, existingFolders, params)
                 );
             } catch (error) {
                 lastError = error;
                 if (attempt < this.maxRetries) {
-                    await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                    await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
                 }
             }
         }
@@ -217,7 +217,6 @@ class FolderNameGenerator {
 
     /**
      * Retrieves existing folder names for a user
-     * @private
      */
     async _getExistingFolderNames(userId) {
         const query = `
@@ -231,50 +230,77 @@ class FolderNameGenerator {
     }
 
     /**
-     * Executes the Python script for name generation
-     * @private
+     * Executes the Python script for name generation with proper input formatting
      */
-    async _generateNames(textContent, existingFolders, options = {}) {
+    async _generateNames(textContent, existingFolders, params) {
         return new Promise((resolve, reject) => {
             const pythonProcess = spawn('python', [
                 this.pythonScript,
-                '--language', options.language || 'auto',
-                '--num_suggestions', options.numSuggestions || '3'
+                '--language', params.language || 'en',
+                '--num_suggestions', params.numSuggestions || '3'
             ]);
-
+    
             let outputData = '';
             let errorData = '';
+            
             const timeoutId = setTimeout(() => {
                 pythonProcess.kill();
                 reject(new Error('Generation timeout'));
             }, this.timeout);
 
-            pythonProcess.stdin.write(JSON.stringify({
-                text: textContent,
-                existing_folders: existingFolders,
-                temperature: options.temperature || 0.7
-            }));
-            pythonProcess.stdin.end();
+            // Prepare the prompt with context and rules
+            const ruleset = [
+                "Generate a clear, concise folder name that:",
+                "1. Captures the main topic and purpose",
+                "2. Uses 2-4 descriptive words",
+                "3. Follows proper capitalization",
+                "4. Avoids dates and special characters",
+                "5. Is reusable for similar content"
+            ].join('\n');
 
+            const prompt = `${ruleset}\n\nContent: ${textContent.slice(0, 500)}\n\nFolder name:`;
+
+            // Prepare model input
+            const modelInput = {
+                text: prompt,
+                existingFolders,
+                params: {
+                    temperature: params.temperature,
+                    top_p: params.top_p,
+                    max_tokens: params.max_tokens,
+                    stop_sequences: params.stop_sequences,
+                    presence_penalty: params.presence_penalty,
+                    frequency_penalty: params.frequency_penalty
+                }
+            };
+
+            pythonProcess.stdin.write(JSON.stringify(modelInput));
+            pythonProcess.stdin.end();
+    
             pythonProcess.stdout.on('data', (data) => {
                 outputData += data.toString();
             });
-
+    
             pythonProcess.stderr.on('data', (data) => {
                 errorData += data.toString();
-                console.error(`Python stderr: ${data}`);
             });
-
+    
             pythonProcess.on('close', (code) => {
                 clearTimeout(timeoutId);
-                
+    
                 if (code !== 0) {
                     reject(new Error(`Generation failed (${code}): ${errorData}`));
                     return;
                 }
-
+    
                 try {
                     const result = JSON.parse(outputData);
+                    
+                    // Validate result structure
+                    if (!result.suggestions || !Array.isArray(result.suggestions)) {
+                        throw new Error('Invalid response format');
+                    }
+                    
                     resolve(result);
                 } catch (error) {
                     reject(new Error(`Failed to parse Python output: ${error.message}`));
@@ -285,12 +311,10 @@ class FolderNameGenerator {
 
     /**
      * Calculates cosine similarity with caching
-     * @private
      */
     async _calculateSimilarity(embedding1, embedding2, cacheKey = null) {
-        if (cacheKey) {
-            const cached = this.similarityCache.get(cacheKey);
-            if (cached) return cached;
+        if (cacheKey && this.similarityCache.has(cacheKey)) {
+            return this.similarityCache.get(cacheKey);
         }
 
         const vec1 = this._parseEmbedding(embedding1);
@@ -311,8 +335,8 @@ class FolderNameGenerator {
 
     _parseEmbedding(embedding) {
         return typeof embedding === 'string'
-        ? embedding.replace(/[{}\[\]]/g, '').split(',').map(Number)
-        : embedding;
+            ? embedding.replace(/[{}\[\]]/g, '').split(',').map(Number)
+            : embedding;
     }
 
     /**
@@ -322,7 +346,8 @@ class FolderNameGenerator {
         return {
             ...this.metrics,
             queueSize: this.queue.queue.length,
-            activeGenerations: this.queue.running
+            activeGenerations: this.queue.running,
+            cacheSize: this.similarityCache.size
         };
     }
 
