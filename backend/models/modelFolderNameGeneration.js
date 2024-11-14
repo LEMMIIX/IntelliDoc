@@ -46,16 +46,6 @@ class FolderNameGenerator {
         this.maxRetries = options.maxRetries || 2;
         this.queue = new GenerationQueue(options.concurrency || 2);
         
-        // Generation parameters
-        this.defaultGenerationParams = {
-            temperature: 0.85,     // Higher temperature for more creative names
-            top_p: 0.92,          // Nucleus sampling for better diversity
-            max_tokens: 12,       // Reasonable length for folder names
-            stop_sequences: ["\n", ".", ","], // Stop generating at these sequences
-            presence_penalty: 0.6, // Encourage diverse word usage
-            frequency_penalty: 0.7 // Discourage repetitive patterns
-        };
-        
         // Cache and metrics
         this.similarityCache = new Map();
         this.metrics = {
@@ -67,9 +57,6 @@ class FolderNameGenerator {
         };
     }
 
-    /**
-     * Determines if a new folder should be created based on semantic similarity
-     */
     async shouldCreateNewFolder(docEmbedding, userId) {
         const startTime = performance.now();
         
@@ -144,19 +131,13 @@ class FolderNameGenerator {
         }
     }
 
-    /**
-     * Generates folder name suggestions using GPT model
-     */
     async generateFolderNames(textContent, userId, options = {}) {
         const startTime = performance.now();
         this.metrics.totalRequests++;
 
         try {
             const existingFolders = await this._getExistingFolderNames(userId);
-            const result = await this._queueGenerationTask(textContent, existingFolders, {
-                ...this.defaultGenerationParams,
-                ...options
-            });
+            const result = await this._queueGenerationTask(textContent, existingFolders, options);
             
             this.metrics.successfulRequests++;
             this.metrics.averageResponseTime = 
@@ -171,31 +152,17 @@ class FolderNameGenerator {
         }
     }
 
-    /**
-     * Regenerates folder names with adjusted parameters for more variety
-     */
     async regenerateNames(textContent, userId, excludeNames = [], options = {}) {
         try {
             const existingFolders = await this._getExistingFolderNames(userId);
             const allExclusions = [...new Set([...existingFolders, ...excludeNames])];
-            
-            const regenerationParams = {
-                ...this.defaultGenerationParams,
-                temperature: Math.min(this.defaultGenerationParams.temperature + 0.1, 1.0),
-                presence_penalty: Math.min(this.defaultGenerationParams.presence_penalty + 0.1, 1.0),
-                ...options
-            };
-
-            return await this._queueGenerationTask(textContent, allExclusions, regenerationParams);
+            return await this._queueGenerationTask(textContent, allExclusions, options);
         } catch (error) {
             console.error('Error in regenerateNames:', error);
             throw error;
         }
     }
 
-    /**
-     * Queues a generation task with retry logic
-     */
     async _queueGenerationTask(textContent, existingFolders, params) {
         let lastError;
         
@@ -215,9 +182,6 @@ class FolderNameGenerator {
         throw lastError;
     }
 
-    /**
-     * Retrieves existing folder names for a user
-     */
     async _getExistingFolderNames(userId) {
         const query = `
             SELECT folder_name 
@@ -229,9 +193,6 @@ class FolderNameGenerator {
         return result.rows.map(row => row.folder_name);
     }
 
-    /**
-     * Executes the Python script for name generation with proper input formatting
-     */
     async _generateNames(textContent, existingFolders, params) {
         return new Promise((resolve, reject) => {
             const pythonProcess = spawn('python', [
@@ -248,30 +209,10 @@ class FolderNameGenerator {
                 reject(new Error('Generation timeout'));
             }, this.timeout);
 
-            // Prepare the prompt with context and rules
-            const ruleset = [
-                "Generate a clear, concise folder name that:",
-                "1. Captures the main topic and purpose",
-                "2. Uses 2-4 descriptive words",
-                "3. Follows proper capitalization",
-                "4. Avoids dates and special characters",
-                "5. Is reusable for similar content"
-            ].join('\n');
-
-            const prompt = `${ruleset}\n\nContent: ${textContent.slice(0, 500)}\n\nFolder name:`;
-
-            // Prepare model input
             const modelInput = {
-                text: prompt,
+                text: textContent,
                 existingFolders,
-                params: {
-                    temperature: params.temperature,
-                    top_p: params.top_p,
-                    max_tokens: params.max_tokens,
-                    stop_sequences: params.stop_sequences,
-                    presence_penalty: params.presence_penalty,
-                    frequency_penalty: params.frequency_penalty
-                }
+                params
             };
 
             pythonProcess.stdin.write(JSON.stringify(modelInput));
@@ -296,7 +237,6 @@ class FolderNameGenerator {
                 try {
                     const result = JSON.parse(outputData);
                     
-                    // Validate result structure
                     if (!result.suggestions || !Array.isArray(result.suggestions)) {
                         throw new Error('Invalid response format');
                     }
@@ -309,9 +249,6 @@ class FolderNameGenerator {
         });
     }
 
-    /**
-     * Calculates cosine similarity with caching
-     */
     async _calculateSimilarity(embedding1, embedding2, cacheKey = null) {
         if (cacheKey && this.similarityCache.has(cacheKey)) {
             return this.similarityCache.get(cacheKey);
@@ -339,9 +276,6 @@ class FolderNameGenerator {
             : embedding;
     }
 
-    /**
-     * Returns current performance metrics
-     */
     getMetrics() {
         return {
             ...this.metrics,
@@ -351,9 +285,6 @@ class FolderNameGenerator {
         };
     }
 
-    /**
-     * Clears the similarity cache
-     */
     clearCache() {
         this.similarityCache.clear();
     }
