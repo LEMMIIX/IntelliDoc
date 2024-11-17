@@ -53,7 +53,34 @@ document.addEventListener('DOMContentLoaded', function() {
             fetchVersionHistory(documentId);
         }
     });
+    // Function to fetch and display keywords for a selected document
+    function fetchKeywords(documentId) {
+        fetch(`/api/documents/${documentId}/keywords`)
+            .then(response => response.json())
+            .then(data => {
+                keywordsList.innerHTML = ''; // Clear existing keywords
 
+                if (data && data.keywords && data.keywords.length > 0) {
+                    keywordsContainer.style.display = 'block'; // Show the keywords container
+                    data.keywords.forEach(keyword => {
+                        const keywordItem = document.createElement('li');
+                        keywordItem.textContent = keyword;
+                        keywordsList.appendChild(keywordItem);
+                    });
+                } else {
+                    keywordsList.innerHTML = '<li>No keywords available.</li>';
+                }
+            })
+            .catch(error => console.error('Error fetching keywords:', error));
+    }
+
+    document.getElementById('fileList').addEventListener('click', function (event) {
+        const documentId = event.target.dataset.documentId;
+        if (documentId) {
+            fetchVersionHistory(documentId);
+            fetchKeywords(documentId); // Fetch and display keywords for the selected document
+        }
+    });
     // Fetch folders and populate the select element
     fetch('/api/folders/tree')       // ---- fetch('/folders/tree')  ????
         .then(response => response.json())
