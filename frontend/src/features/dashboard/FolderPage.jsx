@@ -35,7 +35,8 @@ function Folder() {
   const { folderId } = useParams();
   const [loading, setLoading] = useState(true);
   const [folders, setFolders] = useState([]);
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+    const [keywords, setKeywords] = useState('');
 
   const [selectedFolders, setSelectedFolders] = useState([]); // Um die Historie der ausgewählten Ordner zu verfolgen
   /////
@@ -237,7 +238,7 @@ function Folder() {
       localStorage.setItem("isFileExplorerView", newValue);
       return newValue;
     });
-  };
+    };
 
   useEffect(() => {
     setCurrentlyPreviewedFile(null);
@@ -262,7 +263,7 @@ function Folder() {
   }, [uploadRef]);
 
   const handleFolderDelete = async (folderId) => {
-    if (confirm("Are you sure you want to delete this folder?")) {
+    if (confirm("Are you sure you want  delete this folder?")) {
       setIsDeleting(true);
       try {
         const response = await customFetch(
@@ -291,7 +292,7 @@ function Folder() {
     }
   };
   const handleFDelete = async (fileId) => {
-    if (confirm("Are you sure you want to delete this folder?")) {
+    if (confirm("Are you sure you want to delete  folder?")) {
       setIsDeleting(true);
       try {
         const response = await customFetch(
@@ -747,6 +748,7 @@ function Folder() {
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-2 px-4 text-black">Name</th>
                         <th className="text-left py-2 px-4">Actions</th>
+                        <th className="text-left py-2 px-4">Keywords</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -858,9 +860,35 @@ function Folder() {
                                 className="text-danger hover:bg-black/10 p-1 flex justify-center items-center rounded-full duration-150 transition-colors"
                               >
                                 <AiOutlineDelete className="text-lg" />
-                              </button>
+                                      </button>
+                                      <button
+                                          onClick={async () => {
+                                
+                                              try {
+                                                  const response = await customFetch(
+                                                      `${backendUrl}/docupload/api/keywords-status/${file.id}`,
+                                                      {
+                                                          method: "GET",
+                                                          credentials: "include",
+                                                      }
+                                                  );
+                                                 
+                                                  const data = await response.json();
+                                                  console.log("--------------------------------");
+                                                  console.log(data);
+                                                  setKeywords(data.keywords); // hier nur inhalte (String mit keywords) werden vom data geholt. 
+                                              } catch (error) {
+                                                  error.message;  
+                                              }
+                                          }}
+                                      >
+                                          F 
+                                      </button>
                             </div>
-                          </td>
+                              </td>
+                              <td>
+                                  <p>{keywords}</p>
+                              </td>
                         </tr>
                       ))}
                     </tbody>
@@ -1620,6 +1648,6 @@ function Folder() {
       )}
     </>
   );
-}
+  }
 
 export default Folder;

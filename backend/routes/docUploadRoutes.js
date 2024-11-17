@@ -15,5 +15,6 @@ router.delete('/delete/:fileId', docUploadController.deleteFile);
 
 // Get version history for a file
 router.get('/versions/:fileId', docUploadController.getVersionHistory);
-
+// Deine Logik für das Abrufen der Keywords
+router.get('/api/keywords-status/:fileId', docUploadController.checkKeywordStatus);
 module.exports = router;

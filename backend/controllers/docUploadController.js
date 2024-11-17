@@ -169,6 +169,28 @@ const generateKeywordsInBackground = async (textContent,file_id) => {
         console.error('Error generating keywords:', error);
     }
 };
+exports.checkKeywordStatus = async (req, res) => {
+    const fileId = req.params.fileId; // Extract fileId from URL parameters
+    try {
+        // Query the database to get the keywords for the specified fileId
+        const query = 'SELECT keywords FROM main.files WHERE file_id = $1';
+        const result = await db.query(query, [fileId]);
+
+        // Check if keywords exist for the given fileId
+        const keywords = result["rows"][0]["keywords"];
+        if (keywords) {
+            // If keywords are available
+            res.json({keywords });
+        } else {
+            // If keywords are still pending or not found
+            res.json({ status: 'pending' });
+        }
+    } catch (error) {
+        // Handle any errors that occur during the query
+        console.error('Error checking keyword status:', error);
+        res.status(500).json({ status: 'error', message: 'Fehler beim Abrufen der Keywords' });
+    }
+};
 
 exports.downloadFile = async (req, res) => {
     try {
