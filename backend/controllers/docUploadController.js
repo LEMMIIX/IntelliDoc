@@ -170,19 +170,19 @@ const generateKeywordsInBackground = async (textContent,file_id) => {
     }
 };
 exports.checkKeywordStatus = async (req, res) => {
-    const fileId = req.params.fileId; // Extract fileId from URL parameters
+    const fileId = req.params.fileId; // file.id vom url. 
     try {
-        // Query the database to get the keywords for the specified fileId
+        // database query. um keywords für den jeweiligen fileid abzurufen 
         const query = 'SELECT keywords FROM main.files WHERE file_id = $1';
         const result = await db.query(query, [fileId]);
 
-        // Check if keywords exist for the given fileId
+        // reszlt in keywords einpacken und als res. senden. 
         const keywords = result["rows"][0]["keywords"];
         if (keywords) {
-            // If keywords are available
+            // wenn keywords verfügbar sind. 
             res.json({keywords });
         } else {
-            // If keywords are still pending or not found
+            // warten wenn keywords noch nicht fertif sind. 
             res.json({ status: 'pending' });
         }
     } catch (error) {

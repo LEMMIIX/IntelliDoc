@@ -15,6 +15,6 @@ router.delete('/delete/:fileId', docUploadController.deleteFile);
 
 // Get version history for a file
 router.get('/versions/:fileId', docUploadController.getVersionHistory);
-// Deine Logik für das Abrufen der Keywords
+// Endpoint für keywords. routing über App.js wie die alle anderen methoden in diese class :Ayoub 
 router.get('/api/keywords-status/:fileId', docUploadController.checkKeywordStatus);
 module.exports = router;
