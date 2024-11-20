@@ -8,6 +8,7 @@ import Layout from "./components/ui/Layout";
 import FileUpload from "./features/dashboard/FileUpload";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import FolderPage from "./features/dashboard/FolderPage";
 
 const App = () => {
@@ -16,6 +17,15 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
 
+        {/* Admin Route separat */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute shouldBeAuthenticated={true} isAdminRoute={true}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
         <Route
           element={
             <ProtectedRoute shouldBeAuthenticated={true}>
