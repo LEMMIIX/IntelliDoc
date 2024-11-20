@@ -6,7 +6,7 @@ const { extractTextContent } = require('../models/modelFileReader');
 const modelEmbedding = require('../models/modelEmbedding');
 const modelClustering = require('../models/modelClustering');
 const { generateKeywords } = require('../models/modelKeywords');
-const folderGenerator = require('../models/modelFolderNameGeneration');
+const folderSuggestion = require('../models/modelFolderSuggestion');
 
 exports.renderUploadForm = (req, res) => {
     // Liefere die statische HTML-Datei aus
@@ -69,40 +69,24 @@ exports.uploadFile = async (req, res) => {
         // Generate keywords in background
         generateKeywordsInBackground(textContent, fileId);
 
-        // Check for folder suggestions if no folder specified
+        // Get folder suggestions if no folder specified
         let folderSuggestions = null;
         if (!folderIdToUse) {
-            const folderDecision = await folderGenerator.shouldCreateNewFolder(embedding, userId);
+            const suggestions = await folderSuggestion.getSuggestedFolders({
+                docEmbedding: embedding,
+                userId
+            });
             
-            if (folderDecision.shouldCreate) {
-                const suggestions = await folderGenerator.generateFolderNames(
-                    textContent,
-                    userId,
-                    {
-                        language: 'auto',
-                        numSuggestions: 3,
-                        temperature: 0.7
-                    }
-                );
-                folderSuggestions = {
-                    names: suggestions.suggestions,
-                    language: suggestions.language,
-                    similarFolders: folderDecision.topSimilarities,
-                    processingTime: folderDecision.processingTime
-                };
-            } else {
-                folderSuggestions = {
-                    suggestedFolder: folderDecision.similarFolder,
-                    otherSimilarFolders: folderDecision.topSimilarities,
-                    processingTime: folderDecision.processingTime
-                };
-            }
+            folderSuggestions = {
+                suggestedFolders: suggestions.suggestedFolders,
+                processingTime: suggestions.processingTime
+            };
         }
 
         // Run clustering
-        const allEmbeddings = await modelEmbedding.getAllEmbeddings();
-        console.log(`Total documents for clustering: ${allEmbeddings.length}`);
-        
+        const allEmbeddings = await modelEmbedding.getAllEmbeddings(userId);
+        console.log(`Total documents for clustering (user ${userId}): ${allEmbeddings.length}`);
+            
         const existingEmbeddings = allEmbeddings.map(item => {
             let emb = item.embedding;
             if (typeof emb === 'string') {
@@ -110,9 +94,9 @@ exports.uploadFile = async (req, res) => {
             }
             return emb;
         });
-
+        
         existingEmbeddings.push(embedding);
-
+        
         const defaultParams = {
             minClusterSize: 3,
             minSamples: 2,
@@ -121,17 +105,17 @@ exports.uploadFile = async (req, res) => {
             anchorInfluence: 0.36,
             semanticThreshold: 0.52
         };
-
+        
         const clusteringConfig = {
             ...defaultParams,
             ...JSON.parse(clusteringParams || '{}')
         };
-
-        console.log('Starting clustering process...');
+        
+        console.log('Starting clustering process for user documents...');
         const clusteringResult = await modelClustering.runClustering(
             existingEmbeddings, 
             clusteringConfig,
-            userId
+            userId  // Pass userId as a required parameter
         );
 
         // Update cluster labels
@@ -154,7 +138,6 @@ exports.uploadFile = async (req, res) => {
             }
         };
 
-        // Add folder suggestions if available
         if (folderSuggestions) {
             response.folderSuggestions = folderSuggestions;
         }
@@ -445,10 +428,10 @@ exports.getFolderSuggestions = async (req, res) => {
             });
         }
 
-        const folderDecision = await folderGenerator.shouldCreateNewFolder(embedding, userId);
+        const folderDecision = await folderSuggestion.shouldCreateNewFolder(embedding, userId);
         
         if (folderDecision.shouldCreate) {
-            const suggestions = await folderGenerator.generateFolderNames(
+            const suggestions = await folderSuggestion.generateFolderNames(
                 textContent,
                 userId,
                 {
@@ -492,7 +475,7 @@ exports.regenerateFolderNames = async (req, res) => {
             });
         }
 
-        const result = await folderGenerator.regenerateNames(
+        const result = await folderSuggestion.regenerateNames(
             textContent,
             userId,
             previousSuggestions || [],

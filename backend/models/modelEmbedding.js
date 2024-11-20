@@ -68,9 +68,19 @@ async function generateEmbedding(text) {
   return Array.from(output.data);
 }
 
-async function getAllEmbeddings() {
-  const query = 'SELECT embedding, file_id FROM main.files';
-  const result = await db.query(query);
+async function getAllEmbeddings(userId) {
+  if (!userId) {
+    throw new Error('userId is required for security purposes');
+  }
+  
+  const query = `
+    SELECT embedding, file_id 
+    FROM main.files 
+    WHERE user_id = $1 
+    AND embedding IS NOT NULL
+  `;
+  
+  const result = await db.query(query, [userId]);
   return result.rows.map(row => ({
     embedding: row.embedding,
     fileId: row.file_id
