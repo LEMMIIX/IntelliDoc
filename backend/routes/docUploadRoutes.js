@@ -19,5 +19,6 @@ router.get('/versions/:fileId', docUploadController.getVersionHistory);
 // Folder name generation routes
 router.post('/folder-suggestions', docUploadController.getFolderSuggestions);
 router.post('/regenerate-folder-names', docUploadController.regenerateFolderNames);
+router.post('/assign-folder', docUploadController.assignFolder);
 
 module.exports = router;

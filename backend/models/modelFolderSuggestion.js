@@ -1,7 +1,6 @@
-const { Worker } = require('worker_threads');
-const path = require('path');
 const { performance } = require('perf_hooks');
 const db = require('../../ConnectPostgres');
+const vectorOps = require('./modelVectorOperations');
 
 class FolderSuggestionEngine {
     constructor(options = {}) {
@@ -25,7 +24,6 @@ class FolderSuggestionEngine {
         const cacheKey = `folder_suggestions:${userId}:${this._hashEmbedding(docEmbedding)}`;
 
         try {
-            // Check memory cache
             if (this.similarityCache.has(cacheKey)) {
                 return this.similarityCache.get(cacheKey);
             }
@@ -67,6 +65,58 @@ class FolderSuggestionEngine {
         }
     }
 
+    async _calculateSimilarity(embedding1, embedding2, cacheKey = null) {
+        if (cacheKey && this.similarityCache.has(cacheKey)) {
+            return this.similarityCache.get(cacheKey);
+        }
+
+        try {
+            const similarity = vectorOps.calculateSimilarity(embedding1, embedding2);
+
+            if (cacheKey && similarity > this.similarityThreshold * 0.8) {
+                this.similarityCache.set(cacheKey, similarity);
+            }
+
+            return similarity;
+        } catch (error) {
+            console.error('Error calculating similarity:', error);
+            return 0;
+        }
+    }
+
+    async _processSuggestions(docEmbedding, folders) {
+        const suggestions = [];
+    
+        try {
+            for (const folder of folders) {
+                const similarity = await this._calculateSimilarity(
+                    docEmbedding,
+                    folder.embedding,
+                    folder.folder_id
+                );
+    
+                // Remove the similarity threshold check to get all suggestions
+                suggestions.push({
+                    folderId: folder.folder_id,
+                    folderName: folder.folder_name,
+                    similarity: parseFloat(similarity.toFixed(4)),
+                    fileCount: folder.file_count,
+                    parentId: folder.parent_folder_id,
+                    recentFiles: folder.recent_files,
+                    confidence: this._calculateConfidence(similarity, folder)
+                });
+            }
+    
+            // Sort by similarity and take top suggestions
+            return suggestions
+                .sort((a, b) => b.similarity - a.similarity)
+                .slice(0, this.maxSuggestions);  // Always return maxSuggestions number of folders
+        } catch (error) {
+            console.error('Error processing suggestions:', error);
+            return [];
+        }
+    }
+
     async _getFolderData(userId) {
         const query = `
             WITH RankedFiles AS (
@@ -98,90 +148,24 @@ class FolderSuggestionEngine {
         return await db.query(query, [userId]);
     }
 
-    async _processSuggestions(docEmbedding, folders) {
-        const suggestions = [];
-
-        for (const folder of folders) {
-            const similarity = await this._calculateSimilarity(
-                docEmbedding,
-                folder.embedding,
-                folder.folder_id
-            );
-
-            suggestions.push({
-                folderId: folder.folder_id,
-                folderName: folder.folder_name,
-                similarity: similarity,
-                fileCount: folder.file_count,
-                parentId: folder.parent_folder_id,
-                recentFiles: folder.recent_files
-            });
-        }
-
-        return suggestions.sort((a, b) => b.similarity - a.similarity);
-    }
-
-    _cacheResult(key, value) {
-        this.similarityCache.set(key, value);
-        // Basic cache cleanup
-        if (this.similarityCache.size > 1000) {
-            const firstKey = this.similarityCache.keys().next().value;
-            this.similarityCache.delete(firstKey);
-        }
+    _calculateConfidence(similarity, folder) {
+        const baseFactor = 0.7;
+        const fileCountFactor = Math.min(folder.file_count / 10, 0.2);
+        const recentFilesFactor = folder.recent_files?.length ? 0.1 : 0;
+        
+        return similarity;
     }
 
     _hashEmbedding(embedding) {
         return Buffer.from(embedding.join(',')).toString('base64').slice(0, 10);
     }
 
-    async _calculateSimilarity(embedding1, embedding2, cacheKey = null) {
-        if (cacheKey && this.similarityCache.has(cacheKey)) {
-            return this.similarityCache.get(cacheKey);
+    _cacheResult(key, value) {
+        this.similarityCache.set(key, value);
+        if (this.similarityCache.size > 1000) {
+            const firstKey = this.similarityCache.keys().next().value;
+            this.similarityCache.delete(firstKey);
         }
-    
-        const vec1 = this._parseEmbedding(embedding1);
-        const vec2 = this._parseEmbedding(embedding2);
-    
-        const exactMatchWeight = 0.9;
-        const semanticWeight = 0.2;
-    
-        // Cosine similarity for semantic matching
-        const dotProduct = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
-        const norm1 = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
-        const norm2 = Math.sqrt(vec2.reduce((sum, val) => sum + val * val, 0));
-        const cosineSim = dotProduct / (norm1 * norm2);
-    
-        // Euclidean distance for exact matching
-        const euclideanDist = Math.sqrt(vec1.reduce((sum, val, i) => {
-            const diff = val - vec2[i];
-            return sum + diff * diff;
-        }, 0));
-        const exactMatchScore = Math.exp(-euclideanDist);
-    
-        const similarity = (exactMatchWeight * exactMatchScore) + (semanticWeight * cosineSim);
-    
-        if (cacheKey) {
-            this.similarityCache.set(cacheKey, similarity);
-        }
-    
-        return similarity;
-    }
-
-    _parseEmbedding(embedding) {
-        return typeof embedding === 'string'
-            ? embedding.replace(/[{}\[\]]/g, '').split(',').map(Number)
-            : embedding;
-    }
-
-    getMetrics() {
-        return {
-            ...this.metrics,
-            cacheSize: this.similarityCache.size
-        };
-    }
-
-    clearCache() {
-        this.similarityCache.clear();
     }
 }
 
