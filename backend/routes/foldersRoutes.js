@@ -8,6 +8,8 @@ router.get('/tree', foldersController.getFolderTree); //Route zum Ausgaben der O
 router.post('/create', foldersController.createFolder); //Route zum erstellen eines Ordners
 router.get('/', foldersController.getFolders); //Route zum Ausgeben aller Ordner des Benutzers
 router.delete('/:folderId', foldersController.deleteFolder); // Route zum Löschen eines Ordners
+router.post('/renameFolder', foldersController.renameFolder); // Route zum Umbenennen eines Ordners
+
 
 // @Autor Ilyass Dablaq
 
