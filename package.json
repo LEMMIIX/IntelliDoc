@@ -15,10 +15,11 @@
         "nodemailer": "^6.9.15",
         "pdf-lib": "^1.17.1",
         "pdf-parse": "^1.1.1",
-        "pg": "^8.12.0",
+        "pg": "^8.13.1",
+        "pg-hstore": "^2.3.4",
         "pg-protocol": "^1.6.1",
         "python-shell": "^5.0.0",
-        "sequelize": "^6.37.3",
+        "sequelize": "^6.37.5",
         "tesseract.js": "^5.1.1"
     }
 }
