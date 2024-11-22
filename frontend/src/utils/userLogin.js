@@ -18,7 +18,6 @@ export function userLogin(username, password, navigate) {
     .then((data) => {
       console.log("Success:", data);
 
-      alert("Login successful!");
       // we set an indicator for the current user
       localStorage.setItem("currentUserId", data.userId);
       localStorage.setItem("currentUserName", username);

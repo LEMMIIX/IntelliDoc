@@ -172,6 +172,41 @@ const generateKeywordsInBackground = async (textContent,file_id) => {
     }
 };
 
+exports.checkKeywordStatus = async (req, res) => {
+    const fileId = req.params.fileId; // file.id vom url. 
+    try {
+        // database query. um keywords für den jeweiligen fileid abzurufen 
+        const query = 'SELECT keywords FROM main.files WHERE file_id = $1';
+        const result = await db.query(query, [fileId]);
+
+        // reszlt in keywords einpacken und als res. senden. 
+        const keywords = result["rows"][0]["keywords"];
+        if (keywords) {
+            // wenn keywords verfügbar sind. 
+            res.json({keywords });
+        } else {
+            // warten wenn keywords noch nicht fertif sind. 
+            res.json({ status: 'pending' });
+        }
+    } catch (error) {
+        // Handle any errors that occur during the query
+        console.error('Error checking keyword status:', error);
+        res.status(500).json({ status: 'error', message: 'Fehler beim Abrufen der Keywords' });
+    }
+};
+
+        if (keywords && keywords.length > 0) {
+            res.status(200).json({ keywords: keywords.map(kw => kw.text) });
+        } else {
+            res.status(404).json({ message: 'No keywords found for this file.' });
+        }
+    } catch (error) {
+        console.error('Error fetching keywords:', error);
+        res.status(500).json({ message: 'An error occurred while fetching keywords.' });
+    }
+};
+
+// download
 exports.downloadFile = async (req, res) => {
     try {
         const fileId = req.params.fileId;

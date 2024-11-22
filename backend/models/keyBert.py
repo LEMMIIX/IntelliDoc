@@ -4,7 +4,7 @@ from sentence_transformers import SentenceTransformer
 import json
 
 # Funktion zur Schlagwort-Generierung
-def generate_keywords(text, max_keywords=3):
+def generate_keywords(text, max_keywords=2):
     # Lade das MiniLM-Modell mit sentence-transformers
     minilm_model = SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')
     model = KeyBERT(minilm_model)  

@@ -54,7 +54,7 @@ function Dashboard() {
 
   // console.log(JSON.parse(localStorage.getItem("isFileExplorerView")));
   const handleFolderDelete = async (folderId) => {
-    if (confirm("Are you sure you want to delete this folder?")) {
+      if (confirm("Möchtest du den Ordner wirklich löschen? Alle Unterordner und Dateien werden unwiderruflich entfernt.")) {
       try {
         const response = await customFetch(
           backendUrl + `/folders/${folderId}`,
@@ -208,11 +208,7 @@ function Dashboard() {
                     <th className="text-left py-2 px-4">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {results?.map((file, index) => (
-                    <File file={file} />
-                  ))}
-                </tbody>
+                
               </table>
             </div>
           ) : (
