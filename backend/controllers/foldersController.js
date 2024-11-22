@@ -222,3 +222,45 @@ exports.deleteFolder = async (req, res) => {
     }
 };
 
+// Funktion zum Umbenennen eines Ordners
+exports.renameFolder = async (req, res) => {
+    if (!req.session.userId) {
+        return res.status(401).json({ message: 'Unauthorized: User not logged in' });
+    }
+
+    const userId = parseInt(req.session.userId, 10);
+    const { folderId, newFolderName } = req.body;
+
+    // Validierung der Eingabedaten
+    if (!folderId || !newFolderName) {
+        return res.status(400).json({ message: 'Ordner-ID und neuer Ordnername sind erforderlich.' });
+    }
+
+    try {
+        // Überprüfen, ob der Ordner existiert und dem Nutzer gehört
+        const checkQuery = `
+            SELECT folder_id FROM main.folders 
+            WHERE folder_id = $1 AND user_id = $2
+        `;
+        const checkResult = await db.query(checkQuery, [folderId, userId]);
+
+        if (checkResult.rows.length === 0) {
+            return res.status(404).json({ message: 'Ordner nicht gefunden oder nicht autorisiert.' });
+        }
+
+        // Ordnernamen in der Datenbank aktualisieren
+        const updateQuery = `
+            UPDATE main.folders 
+            SET folder_name = $1 
+            WHERE folder_id = $2 
+            RETURNING *;
+        `;
+        const updateResult = await db.query(updateQuery, [newFolderName, folderId]);
+
+        // Erfolgreiche Rückmeldung an den Client
+        res.json({ message: 'Ordner erfolgreich umbenannt.', folder: updateResult.rows[0] });
+    } catch (error) {
+        console.error('Fehler beim Umbenennen des Ordners:', error);
+        res.status(500).json({ message: 'Fehler beim Umbenennen des Ordners.' });
+    }
+};

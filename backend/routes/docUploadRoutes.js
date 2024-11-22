@@ -8,13 +8,21 @@ const docUploadController = require('../controllers/docUploadController');
 router.get('/', docUploadController.renderUploadForm);
 router.post('/', upload.single('file'), docUploadController.uploadFile);  // Handles versioning based on filename
 
-// File operations - all using fileId
+// smart file upload with folder suggestion
+router.post('/smart', upload.single('file'), docUploadController.smartUploadFile);
+
+// File operations
 router.get('/download/:fileId', docUploadController.downloadFile);
 router.get('/view/:fileId', docUploadController.viewFile);
 router.delete('/delete/:fileId', docUploadController.deleteFile);
 
-// Get version history for a file
+// Version management
 router.get('/versions/:fileId', docUploadController.getVersionHistory);
-// Endpoint für keywords. routing über App.js wie die alle anderen methoden in diese class :Ayoub 
+// Endpoint fÃ¼r keywords. routing Ã¼ber App.js wie die alle anderen methoden in diese class :Ayoub 
 router.get('/api/keywords-status/:fileId', docUploadController.checkKeywordStatus);
+
+// Folder suggestion routes
+router.post('/folder-suggestions', docUploadController.getFolderSuggestions);
+router.post('/assign-folder', docUploadController.assignFolder);
+
 module.exports = router;

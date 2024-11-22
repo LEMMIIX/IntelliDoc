@@ -53,6 +53,10 @@ async function getDocumentFolderMap(userId) {
 }
 
 async function runClustering(embeddings, config = {}, userId) {
+    if (!userId) {
+        throw new Error('userId is required for security purposes');
+    }
+    
     return new Promise((resolve, reject) => {
         const processingFunction = async () => {
             try {
