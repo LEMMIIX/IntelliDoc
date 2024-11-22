@@ -15,15 +15,157 @@ exports.renderUploadForm = (req, res) => {
 
 exports.uploadFile = async (req, res) => {
     try {
+        // Überprüfen, ob req.file tatsächlich vorhanden ist
         if (!req.file) {
             return res.status(400).send('No file uploaded');
         }
 
         const { originalname, buffer, mimetype } = req.file;
+        const { folderId, clusteringParams } = req.body;  // Add clusteringParams to body
         const userId = req.session.userId;
 
-        // Extract text and generate embedding
+        // Konvertiere folderId in eine Ganzzahl, wenn möglich
+        const folderIdInt = parseInt(folderId, 10);
+        // Falls folderId leer ist oder keine gültige Zahl ist, auf NULL setzen
+        const folderIdToUse = isNaN(folderIdInt) ? null : folderIdInt;
+
+        console.log('Extracting text content...');
         const textContent = await extractTextContent(buffer, mimetype, originalname);
+        console.log(`Extracted text length: ${textContent.length} characters`);
+        
+        const embedding = await modelEmbedding.generateEmbedding(textContent);
+
+        const existingFile = await File.findOne({
+            where: {
+                file_name: originalname,
+                user_id: userId,
+            },
+            order: [['version', 'DESC']],
+        });
+
+        let version = 1;
+        let originalFileId = null;
+
+        if (existingFile) {
+            version = existingFile.version + 1;
+            originalFileId = existingFile.file_id;
+        }
+
+        const newFile = await File.create({
+            user_id: userId,
+            file_name: originalname,
+            file_type: mimetype,
+            file_data: buffer,
+            folder_id: folderIdToUse,
+            embedding: sequelize.literal(`'[${embedding.join(', ')}]'`),
+            version: version,
+            original_file_id: originalFileId,
+        });
+
+        const fileId = newFile.file_id;
+        await generateKeywordsInBackground(textContent, fileId);
+
+        const allEmbeddings = await File.findAll({
+            attributes: ['file_id', 'embedding'],
+        });
+
+        const existingEmbeddings = allEmbeddings.map(item => item.embedding);
+        existingEmbeddings.push(embedding);
+
+        // Clustering parameters
+        const defaultParams = {
+            minClusterSize: 3,
+            minSamples: 2,
+            clusterSelectionMethod: 'eom',
+            clusterSelectionEpsilon: 0.18,
+            anchorInfluence: 0.36,         // Changed from folder_weight
+            semanticThreshold: 0.52        // Changed from semantic_similarity_threshold
+        };
+
+        // Merge default parameters with any provided parameters
+        const clusteringConfig = {
+            ...defaultParams,
+            ...JSON.parse(clusteringParams || '{}')  // Allow overriding defaults through API
+        };
+
+        // Run clustering with parameters and debug info
+        console.log('Starting clustering process with parameters:', clusteringConfig);
+        const clusteringResult = await modelClustering.runClustering(
+            existingEmbeddings, 
+            clusteringConfig,
+            userId
+        );
+        
+
+        const clusterLabels = clusteringResult.labels;
+        const clusterStats = clusteringResult.clusterStats;
+        const folderContext = clusteringResult.folderContext;
+
+        console.log('Clustering complete. Results:', clusterLabels);
+
+        // Update cluster labels
+        for (let i = 0; i < clusterLabels.length; i++) {
+            const fileIdToUpdate = i < allEmbeddings.length ? allEmbeddings[i].file_id : fileId;
+            await File.update(
+                { cluster_label: clusterLabels[i] },
+                { where: { file_id: fileIdToUpdate } },
+            );
+        }
+
+        res.status(201).json({
+            message: 'File uploaded successfully',
+            fileId: fileId,
+            clusteringResults: {
+                totalDocuments: allEmbeddings.length + 1,
+                uniqueClusters: clusterStats.num_clusters,
+                noisePoints: clusterStats.noise_points,
+                assignedCluster: clusterLabels[clusterLabels.length - 1],
+                clusterSizes: clusterStats.cluster_sizes
+            },
+            ...(folderContext && {
+                folderSuggestions: {
+                    statistics: folderContext.statistics,
+                    topAffinities: Object.entries(folderContext.affinities[clusterLabels.length - 1] || {})
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 5)
+                        .map(([folderId, score]) => ({
+                            folderId,
+                            folderName: folderContext.folderInfo.names[folderId],
+                            score: Math.round(score * 100) / 100
+                        }))
+                }
+            })
+        });
+    } catch (error) {
+        console.error('Error processing file:', error);
+        res.status(422).json({ message: 'Error processing file', error: error.message });
+    }
+};
+
+/** 
+ * Diese Funktion ermöglicht den SMART UPLOAD 
+ * 
+ * Die Funktion kann überall eingesetzt werden wo folgendes erreicht werden soll:
+ * Nutzer lädt Datei hoch
+ * -> Datei wird durch upload pipeline geschickt
+ * -> vorerst mit folder id = NULL hochgeladen
+ * -> 3 Ordnervorschläge werden gesucht und prösentiert, wo Datei hineinpassen kann
+ * -> folder id wird entsprechend dem Ornder gesetzt, für den sich der Nutzer entschdeidet
+ */  
+exports.smartUploadFile = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).send('No file uploaded');
+        }
+
+        const { originalname, buffer, mimetype } = req.file;
+        const { clusteringParams } = req.body;  // Allow custom clustering params
+        const userId = req.session.userId;
+
+        console.log('Extracting text content...');
+        const textContent = await extractTextContent(buffer, mimetype, originalname);
+        console.log(`Extracted text length: ${textContent.length} characters`);
+        
         const embedding = await modelEmbedding.generateEmbedding(textContent);
         const formattedEmbedding = `[${embedding.join(',')}]`;
 
@@ -55,7 +197,7 @@ exports.uploadFile = async (req, res) => {
         `;
         const values = [
             userId, originalname, mimetype, buffer,
-            null, // folder_id is null initially
+            null, // folder_id always null for smart upload
             formattedEmbedding, version, originalFileId
         ];
 
@@ -64,6 +206,63 @@ exports.uploadFile = async (req, res) => {
 
         // Generate keywords in background
         generateKeywordsInBackground(textContent, fileId);
+
+        // Get all existing embeddings
+        const embeddingsQuery = `
+            SELECT file_id, embedding 
+            FROM main.files 
+            WHERE user_id = $1
+        `;
+        const embeddingsResult = await db.query(embeddingsQuery, [userId]);
+        const existingEmbeddings = embeddingsResult.rows.map(row => {
+            // Convert string embedding back to array
+            let emb = row.embedding;
+            if (typeof emb === 'string') {
+                emb = emb.replace(/[\[\]]/g, '').split(',').map(Number);
+            }
+            return emb;
+        });
+        existingEmbeddings.push(embedding);
+
+        // Clustering parameters
+        const defaultParams = {
+            minClusterSize: 3,
+            minSamples: 2,
+            clusterSelectionMethod: 'eom',
+            clusterSelectionEpsilon: 0.18,
+            anchorInfluence: 0.36,
+            semanticThreshold: 0.52
+        };
+
+        const clusteringConfig = {
+            ...defaultParams,
+            ...JSON.parse(clusteringParams || '{}')
+        };
+
+        // Run clustering
+        console.log('Starting clustering process with parameters:', clusteringConfig);
+        const clusteringResult = await modelClustering.runClustering(
+            existingEmbeddings,
+            clusteringConfig,
+            userId
+        );
+
+        const clusterLabels = clusteringResult.labels;
+        const clusterStats = clusteringResult.clusterStats;
+        const folderContext = clusteringResult.folderContext;
+
+        // Update cluster labels
+        for (let i = 0; i < clusterLabels.length; i++) {
+            const fileIdToUpdate = i < embeddingsResult.rows.length ? 
+                embeddingsResult.rows[i].file_id : fileId;
+            
+            const updateQuery = `
+                UPDATE main.files 
+                SET cluster_label = $1 
+                WHERE file_id = $2
+            `;
+            await db.query(updateQuery, [clusterLabels[i], fileIdToUpdate]);
+        }
 
         // Get folder suggestions
         const suggestions = await folderSuggestion.getSuggestedFolders({
@@ -75,7 +274,27 @@ exports.uploadFile = async (req, res) => {
             message: 'File uploaded successfully',
             fileId: fileId,
             folderSuggestions: suggestions.suggestedFolders,
-            processingTime: suggestions.processingTime
+            processingTime: suggestions.processingTime,
+            clusteringResults: {
+                totalDocuments: existingEmbeddings.length,
+                uniqueClusters: clusterStats.num_clusters,
+                noisePoints: clusterStats.noise_points,
+                assignedCluster: clusterLabels[clusterLabels.length - 1],
+                clusterSizes: clusterStats.cluster_sizes
+            },
+            ...(folderContext && {
+                folderContext: {
+                    statistics: folderContext.statistics,
+                    topAffinities: Object.entries(folderContext.affinities[clusterLabels.length - 1] || {})
+                        .sort(([,a], [,b]) => b - a)
+                        .slice(0, 5)
+                        .map(([folderId, score]) => ({
+                            folderId,
+                            folderName: folderContext.folderInfo.names[folderId],
+                            score: Math.round(score * 100) / 100
+                        }))
+                }
+            })
         });
 
     } catch (error) {
@@ -393,35 +612,6 @@ exports.getFolderSuggestions = async (req, res) => {
         console.error('Error generating folder suggestions:', error);
         res.status(500).json({ 
             error: 'Failed to generate folder suggestions',
-            details: error.message
-        });
-    }
-};
-
-exports.regenerateFolderNames = async (req, res) => {
-    try {
-        const { textContent, previousSuggestions } = req.body;
-        const userId = req.session.userId;
-
-        if (!textContent) {
-            return res.status(400).json({ 
-                error: 'Missing text content' 
-            });
-        }
-
-        const result = await folderSuggestion.regenerateNames(
-            textContent,
-            userId,
-            previousSuggestions || [],
-            { temperature: 0.8 }
-        );
-
-        res.json(result);
-
-    } catch (error) {
-        console.error('Error regenerating folder names:', error);
-        res.status(500).json({ 
-            error: 'Failed to regenerate folder names',
             details: error.message
         });
     }

@@ -8,6 +8,9 @@ const docUploadController = require('../controllers/docUploadController');
 router.get('/', docUploadController.renderUploadForm);
 router.post('/', upload.single('file'), docUploadController.uploadFile);
 
+// smart file upload with folder suggestion
+router.post('/smart', upload.single('file'), docUploadController.smartUploadFile);
+
 // File operations
 router.get('/download/:fileId', docUploadController.downloadFile);
 router.get('/view/:fileId', docUploadController.viewFile);
@@ -16,9 +19,8 @@ router.delete('/delete/:fileId', docUploadController.deleteFile);
 // Version management
 router.get('/versions/:fileId', docUploadController.getVersionHistory);
 
-// Folder name generation routes
+// Folder suggestion routes
 router.post('/folder-suggestions', docUploadController.getFolderSuggestions);
-router.post('/regenerate-folder-names', docUploadController.regenerateFolderNames);
 router.post('/assign-folder', docUploadController.assignFolder);
 
 module.exports = router;
