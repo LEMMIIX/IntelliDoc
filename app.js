@@ -9,6 +9,7 @@ const { authenticateUser } = require("./backend/models/userAuthenticationToDB");
 const docUploadRoutes = require("./backend/routes/docUploadRoutes");
 const foldersRoutes = require("./backend/routes/foldersRoutes");
 const semanticSearchRoutes = require('./backend/routes/semanticSearchRoutes');
+const adminRoutes = require('./backend/routes/adminRoutes.js');
 process.env.NODE_ENV = 'UTF-8';
 const passwordResetRoutes = require('./backend/models/passwordReset');
 const sequelize = require("./sequelize.config.js");
@@ -88,9 +89,12 @@ app.use(
     File.belongsTo(Folder, { foreignKey: "folder_id" });
 
     // User - UserRole (Many-to-Many through UserRoleMapping)
-    User.belongsToMany(UserRole, { through: UserRoleMapping, foreignKey: "user_id", onDelete: "CASCADE" });
-    UserRole.belongsToMany(User, { through: UserRoleMapping, foreignKey: "role_id", onDelete: "CASCADE" });
-
+    UserRoleMapping.belongsTo(User, { foreignKey: "user_id" });
+    UserRoleMapping.belongsTo(UserRole, { foreignKey: "role_id" });
+    
+    User.belongsToMany(UserRole, { through: UserRoleMapping, foreignKey: "user_id" });
+    UserRole.belongsToMany(User, { through: UserRoleMapping, foreignKey: "role_id" });
+    
     // Synchronisiere alle Modelle mit der Datenbank
     await sequelize.sync();
     console.log("Datenbank-Synchronisation erfolgreich.");
@@ -109,13 +113,26 @@ const authenticateMiddleware = (req, res, next) => {
   }
 };
 
+app.use('/api/admin', adminRoutes);
+
+app.get("/api/admin/status", (req, res) => {
+  if (req.session.isAdmin) {
+    res.json({ isAdmin: true });
+  } else {
+    res.json({ isAdmin: false });
+  }
+});
+
 // Routes
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "html", "login.html"));
 });
 
 app.get("/api/current-user", authenticateMiddleware, (req, res) => {
-  res.json({ userId: req.session.userId });
+  res.json({
+    userId: req.session.userId,
+    isAdmin: req.session.isAdmin || false,
+  });
 });
 
 // Registration Route
@@ -158,12 +175,32 @@ app.post("/login", async (req, res) => {
   try {
     const user = await authenticateUser(username, password);
     if (user) {
-      /////// user_id wird in der session gespeichert/genutzt, nach erfolgreicher Authentifizierung
+      // user_id wird in der Session gespeichert/genutzt, nach erfolgreicher Authentifizierung
       req.session.userId = user.id;
-      ///////
+
+      // Überprüfe, ob der Benutzer die Admin-Rolle besitzt
+      const isAdmin = await UserRoleMapping.findOne({
+        where: { user_id: user.id },
+        include: [
+          {
+            model: UserRole,
+            where: { role_name: "admin" },
+          },
+        ],
+      });
+      
+      // Speichere die Admin-Information in der Session
+      req.session.isAdmin = isAdmin?.UserRole?.role_name === 'admin';
+
+      console.log("isAdmin:", req.session.isAdmin);
+
+
       console.log("User logged in successfully with user_id:", user.id);
-      res.status(200).json({ message: "Login successful", userId: user.id });
-      res.send(req.session.sessionID);
+      res.status(200).json({
+        message: "Login successful",
+        userId: user.id,
+        isAdmin: !!isAdmin,
+      });
     } else {
       console.log("Login failed: Invalid credentials");
       res.status(401).json({ message: "Invalid username or password" });
