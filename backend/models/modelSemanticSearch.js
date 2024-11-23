@@ -12,9 +12,6 @@ function semanticSearch(options = {}) {
 
     const cache = new Map();
     const cacheTimestamps = new Map();
-    let clusterCache = null;
-    let clusterCacheTimestamp = null;
-    const clusterCacheExpiry = 1000 * 60 * 15;
 
     async function executeSearch(query, options = {}) {
         const {
@@ -41,7 +38,7 @@ function semanticSearch(options = {}) {
 
             if (clusterBoostEnabled && results.length > 0) {
                 console.log('Starting clustering enhancement...');
-                results = await applyClusterBoost(results, queryEmbedding);
+                results = await applyClusterBoost(results, queryEmbedding, userId);
                 console.log('Clustering enhancement completed successfully');
             }
 
@@ -54,6 +51,45 @@ function semanticSearch(options = {}) {
         } catch (error) {
             console.error('Error in executeSearch:', error);
             throw error;
+        }
+    }
+
+    async function applyClusterBoost(results, queryEmbedding, userId) {
+        try {
+            const embeddings = [queryEmbedding, ...results.map(r => r.embedding)];
+            const config = {
+                minClusterSize: 2,
+                minSamples: 2,
+                clusterSelectionMethod: 'eom',
+                clusterSelectionEpsilon: 0.15
+            };
+            
+            const clusterResults = await runClustering(embeddings, config, userId);
+            const clusterLabels = clusterResults.labels;
+            const queryCluster = clusterLabels[0];
+
+            results = results.map((result, index) => {
+                const documentCluster = clusterLabels[index + 1];
+                let boostAmount = 0;
+
+                if (documentCluster === queryCluster && documentCluster !== -1) {
+                    boostAmount = 10;
+                }
+
+                delete result.embedding;
+
+                return {
+                    ...result,
+                    distance: Math.min(100, result.distance + boostAmount)
+                };
+            });
+
+            return results.sort((a, b) => b.distance - a.distance);
+
+        } catch (error) {
+            console.error('Error in cluster boosting:', error);
+            results.forEach(r => delete r.embedding);
+            return results;
         }
     }
 
@@ -106,37 +142,6 @@ function semanticSearch(options = {}) {
         } catch (error) {
             console.error('Database query error:', error);
             throw error;
-        }
-    }
-
-    async function applyClusterBoost(results, queryEmbedding) {
-        try {
-            const embeddings = [queryEmbedding, ...results.map(r => r.embedding)];
-            const clusterLabels = await runClustering(embeddings);
-            const queryCluster = clusterLabels[0];
-
-            results = results.map((result, index) => {
-                const documentCluster = clusterLabels[index + 1];
-                let boostAmount = 0;
-
-                if (documentCluster === queryCluster && documentCluster !== -1) {
-                    boostAmount = 10;
-                }
-
-                delete result.embedding;
-
-                return {
-                    ...result,
-                    distance: Math.min(100, result.distance + boostAmount)
-                };
-            });
-
-            return results.sort((a, b) => b.distance - a.distance);
-
-        } catch (error) {
-            console.error('Error in cluster boosting:', error);
-            results.forEach(r => delete r.embedding);
-            return results;
         }
     }
 
