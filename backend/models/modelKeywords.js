@@ -1,39 +1,114 @@
-const { PythonShell } = require('python-shell');
 const path = require('path');
+const { performance } = require('perf_hooks');
 
-// Pfad zum Python-Skript, das die Schlagwort-Generierung durchführt
-const keywordGeneratorPath = path.join(__dirname, 'keyBert.py');
+let model;
+let pipeline;
+let env;
 
-// Funktion zur Schlagwörter-Generierung
-async function generateKeywords(text) {
-    console.log('Sending text to Python:', text);
-    return new Promise((resolve, reject) => {
-        const pyshell = new PythonShell(keywordGeneratorPath, { mode: 'text' });
+async function initModel() {
+    if (!model) {
+        console.log('Initializing MPNet model for keywords...');
+        try {
+            const transformers = await import('@xenova/transformers');
+            pipeline = transformers.pipeline;
+            env = transformers.env;
 
-        // Sende den Text an das Python-Skript
-        pyshell.send(text);
-
-        let keywords = [];
-
-        // Empfange die Schlagwörter von Python
-        pyshell.on('message', function (message) {
+            const baseModelPath = path.join(process.cwd(), 'node_modules', '@xenova', 'transformers', 'models');
+            const modelName = 'Xenova/all-mpnet-base-v2';
             
-            const receivedKeywords = JSON.parse(message);  
-            keywords = receivedKeywords;
+            env.localModelPath = baseModelPath;
+            env.cacheDir = baseModelPath;
+            env.allowRemoteModels = false;
+
+            const modelPath = path.join(baseModelPath, 'Xenova', 'all-mpnet-base-v2');
+            console.log('Looking for model in:', modelPath);
+
+            try {
+                model = await pipeline('feature-extraction', modelName, {
+                    quantized: true,
+                    local: true,
+                    revision: 'main',
+                    modelPath: modelPath,
+                    progress_callback: (progress) => {
+                        if (progress) {
+                            console.log(`Loading progress: ${Math.round(progress * 100)}%`);
+                        }
+                    }
+                });
+                console.log('Model loaded successfully from local storage');
+            } catch (localError) {
+                console.error('Local loading error:', localError.message);
+                throw new Error(`Model not found locally at ${modelPath}. Please ensure the model is downloaded.`);
+            }
+        } catch (error) {
+            console.error('Error loading model:', error);
+            throw error;
+        }
+    }
+    return model;
+}
+
+async function generateKeywords(text, maxKeywords = 2) {
+    const startTime = performance.now();
+    console.log('Starting keyword generation...');
+
+    try {
+        await initModel();
+        
+        // Split text into words and remove duplicates/short words
+        const words = [...new Set(text.toLowerCase()
+            .match(/\b\w+\b/g)
+            ?.filter(word => word.length > 3) || [])];
+        
+        if (words.length === 0) {
+            return [];
+        }
+
+        // Get embedding for the full text
+        const textEmbedding = await model(text, {
+            pooling: 'mean',
+            normalize: true
         });
 
-        // Beende den Prozess und gib das Ergebnis zurück
-        pyshell.end(function (err) {
-            if (err) {
-                console.error('Fehler bei der Schlagwort-Generierung:', err);
-                return reject(err);
-            }
-            resolve(keywords); // Die Schlagwörter werden hier zurückgegeben
-        });
-    });
+        // Get embeddings for individual words
+        const wordEmbeddings = await Promise.all(
+            words.map(async word => ({
+                word,
+                embedding: await model(word, {
+                    pooling: 'mean',
+                    normalize: true
+                })
+            }))
+        );
+
+        // Calculate similarity scores
+        const keywordScores = wordEmbeddings.map(({ word, embedding }) => ({
+            word,
+            score: calculateCosineSimilarity(textEmbedding.data, embedding.data)
+        }));
+
+        // Sort by score and get top keywords
+        const keywords = keywordScores
+            .sort((a, b) => b.score - a.score)
+            .slice(0, maxKeywords);
+
+        const endTime = performance.now();
+        console.log(`Keyword generation completed in ${(endTime - startTime).toFixed(2)}ms`);
+        console.log('Keywords found:', keywords);
+
+        return keywords.map(k => k.word);
+
+    } catch (error) {
+        console.error('Error generating keywords:', error);
+        throw error;
+    }
+}
+
+function calculateCosineSimilarity(vec1, vec2) {
+    const dotProduct = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
+    const norm1 = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
+    const norm2 = Math.sqrt(vec2.reduce((sum, val) => sum + val * val, 0));
+    return dotProduct / (norm1 * norm2);
 }
 
 module.exports = { generateKeywords };
-
-
-//Ayoub

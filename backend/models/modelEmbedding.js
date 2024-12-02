@@ -14,7 +14,7 @@ async function initModel() {
       pipeline = transformers.pipeline;
       env = transformers.env;
 
-      // Define base paths - Updated to use Xenova's model path
+      // Use absolute path to model directory
       const baseModelPath = path.join(process.cwd(), 'node_modules', '@xenova', 'transformers', 'models');
       const modelName = 'Xenova/paraphrase-multilingual-mpnet-base-v2';
       
@@ -23,24 +23,25 @@ async function initModel() {
       env.cacheDir = baseModelPath;
       env.allowRemoteModels = false;
 
-      const modelPath = path.join(baseModelPath, modelName.split('/')[0], modelName.split('/')[1]);
+      const modelPath = path.join(baseModelPath, 'Xenova', 'paraphrase-multilingual-mpnet-base-v2');
       console.log('Looking for model in:', modelPath);
 
       try {
-        // First attempt: Try loading from local path with ONNX configuration
         model = await pipeline('feature-extraction', modelName, {
-          quantized: true, // Use quantized model by default for better performance
+          quantized: true,
           local: true,
           revision: 'main',
           modelPath: modelPath,
           progress_callback: (progress) => {
-            console.log(`Loading progress: ${Math.round(progress * 100)}%`);
+            if (progress) {  // Only log if progress is not undefined
+              console.log(`Loading progress: ${Math.round(progress * 100)}%`);
+            }
           }
         });
         console.log('MPNet model loaded successfully from local storage');
       } catch (localError) {
         console.error('Local loading error:', localError.message);
-        throw new Error('Model not found locally. Please ensure the model is downloaded with the correct structure.');
+        throw new Error(`Model not found locally at ${modelPath}. Please ensure the model is downloaded with the correct structure.`);
       }
     } catch (error) {
       console.error('Error loading MPNet model:', error);
@@ -58,8 +59,7 @@ async function generateEmbedding(text) {
   console.log('Generating embedding...');
   const output = await model(text, { 
     pooling: 'mean', 
-    normalize: true,
-    //max_length: 512 // Add max length to prevent issues with very long texts
+    normalize: true
   });
   
   const endTime = performance.now();
