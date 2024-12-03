@@ -1,13 +1,22 @@
 #!/bin/bash
 
-# cleanup.sh
+read -p "Keep all data, table entries and files? (Y/n): " keep
 
-echo "[ CLEANING IN PROGRESS ] Cleaning up Docker resources..."
+keep=${keep:-y}
+if [[ $keep =~ ^[Yy]$ ]] || [[ $keep == "" ]]; then
+    echo "Stopping containers while preserving data..."
+    docker compose down --remove-orphans
+else
+    echo "WARNING: This will delete all database entries!"
+    read -p "Are you really sure you want to delete all data? (y/N): " confirm
+    if [[ $confirm =~ ^[Yy]$ ]]; then
+        echo "Removing all data..."
+        docker compose down --volumes --remove-orphans
+    else
+        echo "Keeping data safe! Continuing with normal restart..."
+        docker compose down --remove-orphans
+    fi
+fi
 
-# Stop all running containers
-docker compose down --volumes --remove-orphans
-
-echo "[ HERE WE GO ] Starting fresh containers..."
-
-# Start containers with dev configuration
+echo "Starting fresh containers..."
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
