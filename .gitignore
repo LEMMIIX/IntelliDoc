@@ -108,3 +108,10 @@ model_visualize.py
 
 # Testdateien mit JEST
 *.test.js
+
+
+
+
+
+# # # # WHITELIST # # # #
+!pip-requirements.txt
