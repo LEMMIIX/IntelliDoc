@@ -1,5 +1,7 @@
 \connect postgres
 
+-- Hier nötige EXTENSIONMS installieren, da diese nicht mit pg_dump eingefangen werden können müssen sie manuell hinzugefügt werden
+
 -- Zu Beginn werden zwei default Nutzer der DB hinzugefügt: admin und user, um sofort login etc testen zu können
 
 INSERT INTO main.users (user_name, email, password_hash, is_verified, registered_at)

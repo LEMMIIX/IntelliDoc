@@ -28,6 +28,10 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_SCHEMA: main
+    volumes:
+      - model_data:/app/models
+      - pip_cache:/pip_cache
+      - venv_data:/app/venv
     ports:
       - "3000:3000"
     networks:
@@ -39,3 +43,6 @@ networks:
 
 volumes:
   postgres_data:
+  model_data:
+  pip_cache:
+  venv_data:

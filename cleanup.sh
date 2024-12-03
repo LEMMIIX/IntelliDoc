@@ -1,14 +1,14 @@
 #!/bin/bash
 
-read -p "Keep all data, table entries and files? (Y/n): " keep
+# First prompt with YES as default
+read -p "Keep all files and data? (Y/n): " keep
+keep=${keep:-Y}
 
-keep=${keep:-y}
-if [[ $keep =~ ^[Yy]$ ]] || [[ $keep == "" ]]; then
-    echo "Stopping containers while preserving data..."
-    docker compose down --remove-orphans
-else
-    echo "WARNING: This will delete all database entries!"
-    read -p "Are you really sure you want to delete all data? (y/N): " confirm
+if [[ $keep =~ ^[Nn]$ ]]; then
+    # Second prompt with NO as default
+    read -p "Are you sure you want to delete all data? (y/N): " confirm
+    confirm=${confirm:-N}
+    
     if [[ $confirm =~ ^[Yy]$ ]]; then
         echo "Removing all data..."
         docker compose down --volumes --remove-orphans
@@ -16,6 +16,9 @@ else
         echo "Keeping data safe! Continuing with normal restart..."
         docker compose down --remove-orphans
     fi
+else
+    echo "Stopping containers while preserving data..."
+    docker compose down --remove-orphans
 fi
 
 echo "Starting fresh containers..."

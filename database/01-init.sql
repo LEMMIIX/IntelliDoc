@@ -17,13 +17,11 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: main; Type: SCHEMA; Schema: -; Owner: postgres
+-- Name: main; Type: SCHEMA; Schema: -; Owner: -
 --
 
 CREATE SCHEMA main;
 
-
-ALTER SCHEMA main OWNER TO postgres;
 
 --
 -- Name: adminpack; Type: EXTENSION; Schema: -; Owner: -
@@ -33,7 +31,7 @@ CREATE EXTENSION IF NOT EXISTS adminpack WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION adminpack; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION adminpack; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION adminpack IS 'administrative functions for PostgreSQL';
@@ -47,7 +45,7 @@ CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA main;
 
 
 --
--- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: 
+-- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
@@ -58,7 +56,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- Name: files; Type: TABLE; Schema: main; Owner: postgres
+-- Name: files; Type: TABLE; Schema: main; Owner: -
 --
 
 CREATE TABLE main.files (
@@ -77,10 +75,8 @@ CREATE TABLE main.files (
 );
 
 
-ALTER TABLE main.files OWNER TO postgres;
-
 --
--- Name: files_file_id_seq; Type: SEQUENCE; Schema: main; Owner: postgres
+-- Name: files_file_id_seq; Type: SEQUENCE; Schema: main; Owner: -
 --
 
 CREATE SEQUENCE main.files_file_id_seq
@@ -92,17 +88,15 @@ CREATE SEQUENCE main.files_file_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE main.files_file_id_seq OWNER TO postgres;
-
 --
--- Name: files_file_id_seq; Type: SEQUENCE OWNED BY; Schema: main; Owner: postgres
+-- Name: files_file_id_seq; Type: SEQUENCE OWNED BY; Schema: main; Owner: -
 --
 
 ALTER SEQUENCE main.files_file_id_seq OWNED BY main.files.file_id;
 
 
 --
--- Name: folders; Type: TABLE; Schema: main; Owner: postgres
+-- Name: folders; Type: TABLE; Schema: main; Owner: -
 --
 
 CREATE TABLE main.folders (
@@ -115,10 +109,8 @@ CREATE TABLE main.folders (
 );
 
 
-ALTER TABLE main.folders OWNER TO postgres;
-
 --
--- Name: folders_folder_id_seq; Type: SEQUENCE; Schema: main; Owner: postgres
+-- Name: folders_folder_id_seq; Type: SEQUENCE; Schema: main; Owner: -
 --
 
 CREATE SEQUENCE main.folders_folder_id_seq
@@ -130,17 +122,15 @@ CREATE SEQUENCE main.folders_folder_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE main.folders_folder_id_seq OWNER TO postgres;
-
 --
--- Name: folders_folder_id_seq; Type: SEQUENCE OWNED BY; Schema: main; Owner: postgres
+-- Name: folders_folder_id_seq; Type: SEQUENCE OWNED BY; Schema: main; Owner: -
 --
 
 ALTER SEQUENCE main.folders_folder_id_seq OWNED BY main.folders.folder_id;
 
 
 --
--- Name: user_roles; Type: TABLE; Schema: main; Owner: postgres
+-- Name: user_roles; Type: TABLE; Schema: main; Owner: -
 --
 
 CREATE TABLE main.user_roles (
@@ -149,10 +139,8 @@ CREATE TABLE main.user_roles (
 );
 
 
-ALTER TABLE main.user_roles OWNER TO postgres;
-
 --
--- Name: user_roles_mapping; Type: TABLE; Schema: main; Owner: postgres
+-- Name: user_roles_mapping; Type: TABLE; Schema: main; Owner: -
 --
 
 CREATE TABLE main.user_roles_mapping (
@@ -162,10 +150,8 @@ CREATE TABLE main.user_roles_mapping (
 );
 
 
-ALTER TABLE main.user_roles_mapping OWNER TO postgres;
-
 --
--- Name: user_roles_role_id_seq; Type: SEQUENCE; Schema: main; Owner: postgres
+-- Name: user_roles_role_id_seq; Type: SEQUENCE; Schema: main; Owner: -
 --
 
 CREATE SEQUENCE main.user_roles_role_id_seq
@@ -177,17 +163,15 @@ CREATE SEQUENCE main.user_roles_role_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE main.user_roles_role_id_seq OWNER TO postgres;
-
 --
--- Name: user_roles_role_id_seq; Type: SEQUENCE OWNED BY; Schema: main; Owner: postgres
+-- Name: user_roles_role_id_seq; Type: SEQUENCE OWNED BY; Schema: main; Owner: -
 --
 
 ALTER SEQUENCE main.user_roles_role_id_seq OWNED BY main.user_roles.role_id;
 
 
 --
--- Name: users; Type: TABLE; Schema: main; Owner: postgres
+-- Name: users; Type: TABLE; Schema: main; Owner: -
 --
 
 CREATE TABLE main.users (
@@ -201,10 +185,8 @@ CREATE TABLE main.users (
 );
 
 
-ALTER TABLE main.users OWNER TO postgres;
-
 --
--- Name: users_user_id_seq; Type: SEQUENCE; Schema: main; Owner: postgres
+-- Name: users_user_id_seq; Type: SEQUENCE; Schema: main; Owner: -
 --
 
 CREATE SEQUENCE main.users_user_id_seq
@@ -216,45 +198,43 @@ CREATE SEQUENCE main.users_user_id_seq
     CACHE 1;
 
 
-ALTER SEQUENCE main.users_user_id_seq OWNER TO postgres;
-
 --
--- Name: users_user_id_seq; Type: SEQUENCE OWNED BY; Schema: main; Owner: postgres
+-- Name: users_user_id_seq; Type: SEQUENCE OWNED BY; Schema: main; Owner: -
 --
 
 ALTER SEQUENCE main.users_user_id_seq OWNED BY main.users.user_id;
 
 
 --
--- Name: files file_id; Type: DEFAULT; Schema: main; Owner: postgres
+-- Name: files file_id; Type: DEFAULT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.files ALTER COLUMN file_id SET DEFAULT nextval('main.files_file_id_seq'::regclass);
 
 
 --
--- Name: folders folder_id; Type: DEFAULT; Schema: main; Owner: postgres
+-- Name: folders folder_id; Type: DEFAULT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.folders ALTER COLUMN folder_id SET DEFAULT nextval('main.folders_folder_id_seq'::regclass);
 
 
 --
--- Name: user_roles role_id; Type: DEFAULT; Schema: main; Owner: postgres
+-- Name: user_roles role_id; Type: DEFAULT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.user_roles ALTER COLUMN role_id SET DEFAULT nextval('main.user_roles_role_id_seq'::regclass);
 
 
 --
--- Name: users user_id; Type: DEFAULT; Schema: main; Owner: postgres
+-- Name: users user_id; Type: DEFAULT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.users ALTER COLUMN user_id SET DEFAULT nextval('main.users_user_id_seq'::regclass);
 
 
 --
--- Name: files files_pkey; Type: CONSTRAINT; Schema: main; Owner: postgres
+-- Name: files files_pkey; Type: CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.files
@@ -262,7 +242,7 @@ ALTER TABLE ONLY main.files
 
 
 --
--- Name: folders folders_pkey; Type: CONSTRAINT; Schema: main; Owner: postgres
+-- Name: folders folders_pkey; Type: CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.folders
@@ -270,7 +250,7 @@ ALTER TABLE ONLY main.folders
 
 
 --
--- Name: user_roles_mapping user_roles_mapping_pkey; Type: CONSTRAINT; Schema: main; Owner: postgres
+-- Name: user_roles_mapping user_roles_mapping_pkey; Type: CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.user_roles_mapping
@@ -278,7 +258,7 @@ ALTER TABLE ONLY main.user_roles_mapping
 
 
 --
--- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: main; Owner: postgres
+-- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.user_roles
@@ -286,7 +266,7 @@ ALTER TABLE ONLY main.user_roles
 
 
 --
--- Name: user_roles user_roles_role_name_key; Type: CONSTRAINT; Schema: main; Owner: postgres
+-- Name: user_roles user_roles_role_name_key; Type: CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.user_roles
@@ -294,7 +274,7 @@ ALTER TABLE ONLY main.user_roles
 
 
 --
--- Name: users users_email_key; Type: CONSTRAINT; Schema: main; Owner: postgres
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.users
@@ -302,7 +282,7 @@ ALTER TABLE ONLY main.users
 
 
 --
--- Name: users users_pkey; Type: CONSTRAINT; Schema: main; Owner: postgres
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.users
@@ -310,14 +290,14 @@ ALTER TABLE ONLY main.users
 
 
 --
--- Name: files_embedding_idx; Type: INDEX; Schema: main; Owner: postgres
+-- Name: files_embedding_idx; Type: INDEX; Schema: main; Owner: -
 --
 
 CREATE INDEX files_embedding_idx ON main.files USING ivfflat (embedding main.vector_cosine_ops);
 
 
 --
--- Name: files fk_files_folder; Type: FK CONSTRAINT; Schema: main; Owner: postgres
+-- Name: files fk_files_folder; Type: FK CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.files
@@ -325,7 +305,7 @@ ALTER TABLE ONLY main.files
 
 
 --
--- Name: files fk_files_user; Type: FK CONSTRAINT; Schema: main; Owner: postgres
+-- Name: files fk_files_user; Type: FK CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.files
@@ -333,7 +313,7 @@ ALTER TABLE ONLY main.files
 
 
 --
--- Name: folders fk_folders_parent_folder; Type: FK CONSTRAINT; Schema: main; Owner: postgres
+-- Name: folders fk_folders_parent_folder; Type: FK CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.folders
@@ -341,7 +321,7 @@ ALTER TABLE ONLY main.folders
 
 
 --
--- Name: folders fk_folders_user; Type: FK CONSTRAINT; Schema: main; Owner: postgres
+-- Name: folders fk_folders_user; Type: FK CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.folders
@@ -349,7 +329,7 @@ ALTER TABLE ONLY main.folders
 
 
 --
--- Name: user_roles_mapping fk_user_roles_mapping_role; Type: FK CONSTRAINT; Schema: main; Owner: postgres
+-- Name: user_roles_mapping fk_user_roles_mapping_role; Type: FK CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.user_roles_mapping
@@ -357,7 +337,7 @@ ALTER TABLE ONLY main.user_roles_mapping
 
 
 --
--- Name: user_roles_mapping fk_user_roles_mapping_user; Type: FK CONSTRAINT; Schema: main; Owner: postgres
+-- Name: user_roles_mapping fk_user_roles_mapping_user; Type: FK CONSTRAINT; Schema: main; Owner: -
 --
 
 ALTER TABLE ONLY main.user_roles_mapping
