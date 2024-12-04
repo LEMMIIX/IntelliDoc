@@ -36,13 +36,19 @@ router.delete('/users/:id', adminMiddleware, async (req, res) => {
   }
 });
 
-
 // Admin-Endpunkt: Benutzer bearbeiten
 router.put('/users/:id', adminMiddleware, async (req, res) => {
-  const userId = req.params.id;
+  const userId = req.params.id; // Diese Zeile extrahiert die ID aus den URL-Parametern
+  console.log("Received userId:", userId);
+
   const { user_name, email, password } = req.body;
 
   try {
+    // Überprüfe, ob userId ein Integer ist
+    if (isNaN(parseInt(userId))) {
+      return res.status(400).json({ message: 'Ungültige Benutzer-ID.' });
+    }
+
     // Benutzer anhand der ID suchen
     const user = await User.findByPk(userId);
 
@@ -54,7 +60,7 @@ router.put('/users/:id', adminMiddleware, async (req, res) => {
     if (user_name) user.user_name = user_name;
     if (email) user.email = email;
 
-    // Passwort hashen, falls es geändert wurde
+    // Passwort aktualisieren, falls angegeben
     if (password) {
       const salt = await bcrypt.genSalt(10);
       user.password_hash = await bcrypt.hash(password, salt);

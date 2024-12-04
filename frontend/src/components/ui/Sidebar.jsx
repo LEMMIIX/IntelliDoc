@@ -41,6 +41,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   const backendUrl = "http://localhost:3000";
 
+  const goToAdminDashboard = () => {
+    navigate("/admin"); // Navigate to the Admin Dashboard route
+  };
+
   const handleUploadFile = async () => {
     let fileInfo;
 
@@ -234,6 +238,13 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
               >
                 <IoLogOutOutline />
                 <span>Abmelden</span>
+              </li>
+              <li
+                className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
+                onClick={() => navigate("/admin")} // Navigate to Admin Dashboard
+              >
+                <FaFolder />
+                <span>Admin Dashboard</span>
               </li>
             </ul>
           )}
