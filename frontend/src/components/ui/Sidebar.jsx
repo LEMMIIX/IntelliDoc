@@ -8,12 +8,18 @@ import { IoLogOutOutline } from "react-icons/io5";
 import { fetchAndRenderFolderTree } from "../../utils/fetchFoldersTree";
 import { userLogout } from "../../utils/userLogout";
 import { fetchAndRenderFolder } from "../../utils/fetchFoldersTree";
+import Swal from "sweetalert2";
+import { customFetch } from "../../utils/helpers";
+import { FaFolder } from "react-icons/fa";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const userName = localStorage.getItem("currentUserName") || "";
   const [folders, setFolders] = useState([]);
   const [showMenuUpload, setShowMenuUploads] = useState(false);
   const [profileOptions, setProfileOptions] = useState(false);
+  const [uploadFileHTML, setUploadFileHTML] = useState(
+    '<input class="width: fit" type="file" id="fileInput" class="swal2-input" accept="*/*">'
+  );
 
   const { folderId } = useParams();
   const navigate = useNavigate();
@@ -32,6 +38,159 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
     fetchFolders();
   }, []);
+
+  const backendUrl = "http://localhost:3000";
+
+  const handleUploadFile = async () => {
+    let fileInfo;
+
+    const { value: fileStep } = await Swal.fire({
+      title: "Choose a File",
+      html: '<input type="file" id="fileInput" class="swal2-input" accept="*/*">',
+      showCancelButton: true,
+      confirmButtonText: "Upload",
+      cancelButtonText: "Cancel",
+      focusConfirm: false,
+      preConfirm: async () => {
+        const selectedFile = document.getElementById("fileInput").files[0];
+
+        if (!selectedFile) {
+          Swal.showValidationMessage("Please select a file");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        try {
+          const response = await customFetch(`${backendUrl}/docupload/smart`, {
+            method: "POST",
+            body: formData,
+            credentials: "include",
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to upload file");
+          }
+
+          const data = await response.json();
+          fileInfo = data; // Extract the folders or data you need
+          return true; // Proceed to the next step
+        } catch (error) {
+          Swal.showValidationMessage("File upload failed. Please try again.");
+          console.error(error);
+          return false; // Stay on this step
+        }
+      },
+    });
+
+    if (!fileStep) return; // User cancelled
+
+    // Step 2: Send Additional Request
+    const { value: submitStep } = await Swal.fire({
+      title: "Suggested Folders",
+      html: `
+      <style>
+        .swal2-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+        }
+        .swal2-table th, .swal2-table td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        .swal2-table th {
+          background-color: #f4f4f4;
+          font-weight: bold;
+        }
+        .swal2-table tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+        .swal2-table tr:hover {
+          background-color: #f1f1f1;
+        }
+      </style>
+      <div>
+        <div></div>
+      </div>
+      <table class="swal2-table">
+        <thead>
+          <tr>
+            <th>Folder Name</th>
+            <th>Select</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            fileInfo?.folderSuggestions
+              ?.map(
+                (folder, index) => `
+                  <tr>
+                    <td>${folder.folderName}</td>
+                    <td>
+                     <input type="radio" id="selectedFolder" name="selectedFolder" value="${
+                       folder.folderId
+                     }" ${index === 0 ? "checked" : ""} />
+                    </td>
+                  </tr>
+                `
+              )
+              .join("") || "<tr><td colspan='2'>No folders available</td></tr>"
+          }
+        </tbody>
+      </table>
+    `,
+      showCancelButton: true,
+      confirmButtonText: "Submit",
+      cancelButtonText: "Cancel",
+      preConfirm: async () => {
+        const selectedFolder = document.querySelector(
+          'input[name="selectedFolder"]:checked'
+        );
+        const folderId = selectedFolder?.value;
+
+        if (!selectedFolder) {
+          Swal.showValidationMessage("Please select a Folder");
+          return;
+        }
+
+        try {
+          const response = await customFetch(
+            `${backendUrl}/docupload/assign-folder`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                fileId: String(fileInfo.fileId),
+                folderId,
+              }),
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Failed to upload file");
+          }
+
+          // const data = await response.json();
+          return true; // Pass to the final action
+        } catch (e) {
+          return false;
+        }
+      },
+    });
+
+    if (submitStep) {
+      Swal.fire("Success", "Your data has been submitted!", "success").then(
+        () => {
+          // Optionally refresh or close
+          console.log("Popup closed and action completed");
+        }
+      );
+    }
+  };
 
   return (
     <aside className={sidebarClasses}>
@@ -105,7 +264,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-sm">Upload Folder</span>
+                <span
+                  className="text-sm"
+                  onClick={() => {
+                    handleUploadFile();
+                  }}
+                >
+                  Upload Document
+                </span>
               </li>
             </ul>
           )}
@@ -133,30 +299,3 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 };
 
 export default Sidebar;
-
-//  <ul className="mb-6 flex flex-col gap-2">
-//    {/* <!-- Menu Item Dashboard --> */}
-//    <li onClick={() => setSidebarOpen(false)}>
-//      <NavLink
-//        to="/dashboard"
-//        className={`relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 hover:text-primary ${
-//          (pathname === "/" || pathname.includes("dashboard")) &&
-//          "bg-graydark dark:bg-meta-4"
-//        }`}
-//      >
-//        <PiSquaresFour className="text-2xl" />
-//        Dashboard
-//      </NavLink>
-//    </li>
-//    <li onClick={() => setSidebarOpen(false)}>
-//      <NavLink
-//        to="/upload"
-//        className={`relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 hover:text-primary ${
-//          pathname === "/upload" && "bg-graydark dark:bg-meta-4"
-//        }`}
-//      >
-//        <FiFile className="text-2xl" />
-//        Upload
-//      </NavLink>
-//    </li>
-//  </ul>;

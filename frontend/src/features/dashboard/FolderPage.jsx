@@ -14,6 +14,8 @@ import CreateFolderForm from "./CreateFolder";
 import FolderElement from "./FolderElement";
 import FileUpload from "./FileUpload";
 import { FaThList } from "react-icons/fa";
+import { FaHistory } from "react-icons/fa";
+import ParamsPopoverLayout from "../../components/ui/popver";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { getPathID } from "../../utils/helpers";
@@ -29,17 +31,18 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "../../components/ui/context-menu";
+
 const backendUrl = "http://localhost:3000";
 
 function Folder() {
   const { folderId } = useParams();
   const [loading, setLoading] = useState(true);
   const [folders, setFolders] = useState([]);
-    const navigate = useNavigate();
-    const [keywords, setKeywords] = useState('');
+  const navigate = useNavigate();
+  const [keywords, setKeywords] = useState("");
 
   const [selectedFolders, setSelectedFolders] = useState([]); // Um die Historie der ausgewählten Ordner zu verfolgen
-  /////
+
   const [isDeleting, setIsDeleting] = useState(false);
   // boolean to track if a file  is current downloading
   const [isDownloading, setIsDownloading] = useState(false);
@@ -57,7 +60,63 @@ function Folder() {
   const [showUploadFile, setShowUploadFile] = useState(false);
   const [currentlyPreviewedFile, setCurrentlyPreviewedFile] = useState(null); // Track current previewed file
   const [filePreviewContent, setFilePreviewContent] = useState(""); // File preview content
+  const [versionHistory, setVersionHistory] = useState([]);
+  const [sortedVersions, setSortedVersions] = useState([]);
+  console.log("version", sortedVersions);
+  const [popoverOpen, setPopoverOpen] = useState({});
+  const [loadingg, setLoadingg] = useState(false); // You can use this to track loading state
 
+  const handlePopoverToggle = (fileId) => {
+    setPopoverOpen((prevState) => ({
+      ...prevState,
+      [fileId]: !prevState[fileId], // Toggle the popover for the specific file
+    }));
+  };
+
+  const loadVersionHistory = async (fileId) => {
+    setLoadingg(true);
+    try {
+      // Assuming fetchVersionHistory fetches the version history based on the fileId
+      await fetchVersionHistory(fileId);
+    } catch (error) {
+      console.error("Error loading version history", error);
+    } finally {
+      setLoadingg(false);
+    }
+  };
+
+  useEffect(() => {
+    // Load version history when a specific file's popover is opened
+    Object.keys(popoverOpen).forEach((fileId) => {
+      if (popoverOpen[fileId]) {
+        loadVersionHistory(fileId);
+      }
+    });
+  }, [popoverOpen]);
+
+  const fetchVersionHistory = async (fileId) => {
+    // fetch version history for a file
+    try {
+      const response = await customFetch(
+        `${backendUrl}/docupload/versions/${fileId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      const data = await response.json();
+      console.log("data", data);
+      setVersionHistory(data.versions);
+      console.log("version1", versionHistory);
+    } catch (error) {
+      console.error("Error fetching version history:", error);
+    }
+  };
+  const handleFileSelect = (fileId) => {
+    // handle file selection to fetch version history
+    setSelectedFileId(fileId);
+    fetchVersionHistory(fileId);
+  };
   // Code Added | Start
   const [inputError, setInputError] = useState("");
   const [isPopupVisible, setIsPopupVisible] = useState(false);
@@ -65,14 +124,10 @@ function Folder() {
   const [selectedDocToRename, setSelectedDocToRename] = useState({});
 
   const popupRef = useRef(null);
-  // Code Added | End
-
   const folderContent = loading ? {} : getFolderContent(folders, folderId);
   const folderPathArray = folderContent?.folderPath?.split("/");
   console.log("folderContent", folderContent);
-  // const currentFolder = selectedFolders[selectedFolders.length - 1] || folderContent; // Dossier actuel
   const [render, setRender] = useState();
-
   const [folderStack, setFolderStack] = useState([folderContent?.children]); // rootFolders is the top-level folder data
   console.log(folderContent);
   useEffect(() => {
@@ -88,10 +143,8 @@ function Folder() {
         setLoading(false);
       }
     };
-
     fetchFolders();
   }, [folderId, isPopupVisible]);
-
   // Close popup when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -100,11 +153,9 @@ function Folder() {
         setInputError(""); // Clear error when popup closes
       }
     };
-
     if (isPopupVisible) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -113,7 +164,6 @@ function Folder() {
   const handleRenameFolderInput = (e) => {
     let newFileName = e.target.value;
     setNewFolderName(newFileName);
-
     switch (newFileName) {
       case selectedDocToRename.name:
         setInputError("Please provide a new file name!");
@@ -126,13 +176,11 @@ function Folder() {
         break;
     }
   };
-
   const handleRenameFolder = async () => {
     console.log("click to save!");
     if (inputError != "") {
       return;
     }
-
     setLoading(true);
     try {
       const response = await customFetch(`${backendUrl}/folders/rename`, {
@@ -166,18 +214,12 @@ function Folder() {
   // const [newFolderName, setNewFolderName] = useState("");
 
   const [isFileExplorerView, setIsFileExplorerView] = useState(true);
-
-  // const [selectedFolders, setSelectedFolders] = useState([]);
-  // const [selectedFolders, setSelectedFolders] = useState([folderContent]);
   const [cont, setCont] = useState(1);
-  // const [selectedFolders, setSelectedFolders] = useState([]);
   const [selectedFolderIds, setSelectedFolderIds] = useState([]);
-
   const handleFolderSelect = (folder, level) => {
     const newSelectedFolders = [...selectedFolders];
     newSelectedFolders[level] = folder; // Update the selected folder at this level
     setCont(level + 1); // Increase the level counter
-
     // Reset lower levels
     for (let i = level + 1; i < newSelectedFolders.length; i++) {
       newSelectedFolders[i] = undefined;
@@ -191,7 +233,6 @@ function Folder() {
     newSelectedFolderIds[level] = folder.id; // Store the selected folder ID for this level
     setSelectedFolderIds(newSelectedFolderIds);
   };
-
   const getChildren = (folder) => {
     return folder?.children || [];
   };
@@ -223,7 +264,7 @@ function Folder() {
 
   const handleFileClick = (file) => {
     setSelectedFileId(file.id); // Die ID der ausgewählten Datei aktualisieren
-    handleFilePreview(file.name); // Datei in der Vorschau anzeigen
+    handleFilePreview(file.id); // Datei in der Vorschau anzeigen
   };
   useEffect(() => {
     const storedValue = localStorage.getItem("isFileExplorerView");
@@ -238,8 +279,7 @@ function Folder() {
       localStorage.setItem("isFileExplorerView", newValue);
       return newValue;
     });
-    };
-
+  };
   useEffect(() => {
     setCurrentlyPreviewedFile(null);
     setFilePreviewContent(null);
@@ -253,15 +293,11 @@ function Folder() {
         setShowUploadFile(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-
-    // Entfernen Sie das Ereignis beim Demontieren
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [uploadRef]);
-
   const handleFolderDelete = async (folderId) => {
     if (confirm("Are you sure you want  delete this folder?")) {
       setIsDeleting(true);
@@ -291,53 +327,21 @@ function Folder() {
       }
     }
   };
-  const handleFDelete = async (fileId) => {
-    if (confirm("Are you sure you want to delete  folder?")) {
-      setIsDeleting(true);
-      try {
-        const response = await customFetch(
-          `${backendUrl}/folders/${folderId}`,
-          {
-            method: "DELETE",
-            credentials: "include",
-          }
-        );
-        if (!response.ok) {
-          throw new Error("Failed to delete folder");
-        }
-        const data = await response.json();
 
-        // Updates the folder structure
-        const folderTree = await fetchAndRenderFolderTree();
-        if (folderTree) {
-          setFolders(folderTree.folderTree);
-          setLoading(false);
-        }
-      } catch (error) {
-        console.error("Error deleting folder:", error);
-      } finally {
-        setIsDeleting(false);
-      }
-    }
-  };
   if (loading) {
     return <div>Loading...</div>;
   }
-
   const handleGoBack = () => {
     navigate(-1); // Zurück zur vorherigen Seite
   };
-
   const handlePathClick = (index) => {
     // Get the folder path up to the clicked index
     const newPath = folderContent?.folderPath.split("/");
     navigate(-(newPath.length - index - 1)); // Zurück zur vorherigen Seite
-
     // Here, you would typically also update the folderId based on the newPath or fetch the content for that path
     console.log(newPath.length, index); // For demonstration, logging the new path
     // You can update your state or call a function to fetch the new folder content based on newPath
   };
-
   const handleFilePreview = async (fileName) => {
     // Überprüfen, ob die Vorschau gerade die Datei anzeigt, auf die geklickt wurde
     if (currentlyPreviewedFile === fileName) {
@@ -346,10 +350,8 @@ function Folder() {
       setFilePreviewContent(null);
       return;
     }
-
     // Neue Datei wird angeklickt, also Vorschau aktualisieren
     setCurrentlyPreviewedFile(fileName);
-
     try {
       const fileExtension = fileName.split(".").pop().toLowerCase();
 
@@ -419,7 +421,6 @@ function Folder() {
       console.error("Error loading file:", error);
     }
   };
-
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
@@ -435,7 +436,6 @@ function Folder() {
 
       const blob = await response.blob(); // Retrieve file as blob
       const url = window.URL.createObjectURL(blob); // Create a URL for the blob
-
       // Create a temporary anchor element for downloading
       const a = document.createElement("a");
       a.href = url;
@@ -534,27 +534,6 @@ function Folder() {
     }
   };
 
-  // const handleEditClick = (folderId, currentFolderName) => {
-  //   Swal.fire({
-  //     title: "Edit Folder Name",
-  //     input: "text",
-  //     inputLabel: "New Folder Name",
-  //     inputValue: currentFolderName, // Set the current folder name as the default value
-  //     showCancelButton: true,
-  //     confirmButtonText: "Save",
-  //     cancelButtonText: "Cancel",
-  //     inputValidator: (value) => {
-  //       if (!value) {
-  //         return "Please enter a new folder name";
-  //       }
-  //     },
-  //   }).then((result) => {
-  //     if (result.isConfirmed) {
-  //       const newFolderName = result.value;
-  //       handleRenameSubmit(folderId, newFolderName); // Pass folderId and new name for renaming
-  //     }
-  //   });
-  // };
   // Funktion zur Anzeige des Formulars zum Erstellen eines Ordners mit SweetAlert
   const handleCreateFolderSwal = async () => {
     const { value: folderName } = await Swal.fire({
@@ -666,9 +645,10 @@ function Folder() {
     }
   };
   console.log(contextMenu);
+
   return (
     <>
-      <div>
+      <div className="pg-black">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg text-black"></h3>
         </div>
@@ -742,13 +722,13 @@ function Folder() {
               </div>
 
               {folderContent?.files?.length || 0 > 0 ? (
-                <div className="overflow-x-auto">
+                <div className="">
                   <table className="w-full text-black">
                     <thead>
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-2 px-4 text-black">Name</th>
                         <th className="text-left py-2 px-4">Actions</th>
-                        <th className="text-left py-2 px-4">Keywords</th>
+                        {/* <th className="text-left py-2 px-4">Keywords</th> */}
                       </tr>
                     </thead>
                     <tbody>
@@ -795,46 +775,164 @@ function Folder() {
                               >
                                 <GoDownload className="text-lg" />
                               </button>
+                              <div style={{ position: "relative" }}>
+                                <button
+                                  onClick={() => handlePopoverToggle(file.id)} // Toggle popover visibility for the specific file
+                                  style={{
+                                    padding: "10px",
+                                    borderRadius: "5px",
+                                    // background: "#007BFF",
+                                    color: "black",
+                                    border: "none",
+                                    cursor: "pointer",
+                                  }}
+                                >
+                                  <FaHistory /> {/* Historie-Icon */}
+                                </button>
+                                {popoverOpen[file.id] && ( // Check if the popover for the specific file is open
+                                  <ParamsPopoverLayout
+                                    open={popoverOpen[file.id]}
+                                    setOpen={() => handlePopoverToggle(file.id)}
+                                    top={"100%"}
+                                    left={"-23rem"}
+                                  >
+                                    <div
+                                      style={{
+                                        maxHeight: "200px",
+                                        overflowY: "auto",
+                                        padding: "10px",
+                                        background: "white",
+                                        border: "1px solid #ddd",
+                                        borderRadius: "8px",
+                                        boxShadow:
+                                          "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                        zIndex: 999,
+                                      }}
+                                    >
+                                      <div className="flex justify-between mx-8">
+                                        <p className="font-weight-800 text-lg">
+                                          Versionen
+                                        </p>
+                                        <p className="text-base">geändert</p>
+                                      </div>
+                                      {loading ? (
+                                        <p>Loading...</p>
+                                      ) : versionHistory?.length > 0 ? (
+                                        <ul
+                                          style={{
+                                            padding: "0",
+                                            margin: "10px 0",
+                                            listStyle: "none",
+                                          }}
+                                        >
+                                          {versionHistory?.map((version) => (
+                                            <li
+                                              className="flex justify-between mx-8"
+                                              key={version.file_id}
+                                              style={{
+                                                padding: "5px 0",
+                                                borderBottom: "1px solid #eee",
+                                              }}
+                                            >
+                                              <div className="flex items-center ">
+                                                <p>
+                                                  <IoIosDocument
+                                                    className={`text-lg ${
+                                                      file.name
+                                                        .split(".")
+                                                        .pop() === "pdf" &&
+                                                      "text-danger"
+                                                    } ${
+                                                      [
+                                                        "word",
+                                                        "docx",
+                                                        "odt",
+                                                        "txt",
+                                                      ].includes(
+                                                        file.name
+                                                          .split(".")
+                                                          .pop()
+                                                      ) && "text-blue-600"
+                                                    }`}
+                                                  />
+                                                </p>
+                                                <span className="pr-2">
+                                                  {file.name}
+                                                </span>{" "}
+                                                -
+                                                <p className="pl-2">
+                                                  {" "}
+                                                  version {version.version}
+                                                </p>
+                                              </div>
+                                              <p>
+                                                {new Date(
+                                                  version.created_at
+                                                ).toLocaleString()}
+                                              </p>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      ) : (
+                                        <p>No version history available.</p>
+                                      )}
+                                    </div>
+                                  </ParamsPopoverLayout>
+                                )}
+                              </div>
+
                               <button
                                 onClick={async () => {
-                                  // Extrahiere die Dateierweiterung und den Dateinamen ohne Erweiterung
-                                  const fileExtension = file.name.split(".").pop();
-                                  const fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, "");
-
                                   const { value: newName } = await Swal.fire({
                                     title: "Rename File",
                                     input: "text",
                                     inputLabel: "New File Name",
-                                    inputValue: fileNameWithoutExtension,
+                                    inputValue: file.name,
                                     showCancelButton: true,
                                     confirmButtonText: "Speichern",
                                     inputValidator: (value) => {
-                                      if (!value) return "You need to enter a file name!";
+                                      if (!value)
+                                        return "You need to enter a file name!";
                                     },
                                   });
 
                                   if (newName) {
-                                    // Füge die ursprüngliche Dateierweiterung wieder hinzu
-                                    const fullFilename = `${newName}.${fileExtension}`;
                                     try {
-                                      const response = await customFetch(`${backendUrl}/folders/rename`, {
-                                        method: "POST",
-                                        credentials: "include",
-                                        headers: {
-                                          "Content-Type": "application/json",
-                                        },
-                                        body: JSON.stringify({
-                                          documentId: file.id,
-                                          newFilename: fullFilename,
-                                        }),
-                                      });
-                                      if (!response.ok) throw new Error("Failed to rename file");
+                                      const response = await customFetch(
+                                        `${backendUrl}/folders/rename`,
+                                        {
+                                          method: "POST",
+                                          credentials: "include",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                          },
+                                          body: JSON.stringify({
+                                            documentId: file.id,
+                                            newFilename: newName,
+                                          }),
+                                        }
+                                      );
+                                      if (!response.ok)
+                                        throw new Error(
+                                          "Failed to rename file"
+                                        );
 
-                                      await Swal.fire("Success!", "File renamed successfully", "success");
+                                      await Swal.fire(
+                                        "Success!",
+                                        "File renamed successfully",
+                                        "success"
+                                      );
                                       window.location.reload();
                                     } catch (error) {
-                                      await Swal.fire("Error!", "Failed to rename file", "error");
-                                      console.error("Error renaming file:", error);
+                                      await Swal.fire(
+                                        "Error!",
+                                        "Failed to rename file",
+                                        "error"
+                                      );
+                                      console.error(
+                                        "Error renaming file:",
+                                        error
+                                      );
                                     }
                                   }
                                 }}
@@ -848,35 +946,9 @@ function Folder() {
                                 className="text-danger hover:bg-black/10 p-1 flex justify-center items-center rounded-full duration-150 transition-colors"
                               >
                                 <AiOutlineDelete className="text-lg" />
-                                      </button>
-                                      <button
-                                          onClick={async () => {
-                                
-                                              try {
-                                                  const response = await customFetch(
-                                                      `${backendUrl}/docupload/api/keywords-status/${file.id}`,
-                                                      {
-                                                          method: "GET",
-                                                          credentials: "include",
-                                                      }
-                                                  );
-                                                 
-                                                  const data = await response.json();
-                                                  console.log("--------------------------------");
-                                                  console.log(data);
-                                                  setKeywords(data.keywords); // hier nur inhalte (String mit keywords) werden vom data geholt. 
-                                              } catch (error) {
-                                                  error.message;  
-                                              }
-                                          }}
-                                      >
-                                          F 
-                                      </button>
+                              </button>
                             </div>
-                              </td>
-                              <td>
-                                  <p>{keywords}</p>
-                              </td>
+                          </td>
                         </tr>
                       ))}
                     </tbody>
@@ -889,6 +961,7 @@ function Folder() {
               )}
               {/* Files Section ends */}
             </div>
+
             {currentlyPreviewedFile && (
               <div className="my-4 bg-white p-4 rounded-xl shadow-md">
                 <button
@@ -908,7 +981,7 @@ function Folder() {
           <div className="mt-3 relative">
             <div className="grid2-scroll-x pb-4">
               <div
-                className="flex gap-6 p-4 min-w-max"
+                className="flex gap-2 p-4 min-w-max "
                 style={{
                   WebkitOverflowScrolling: "touch",
                 }}
@@ -1083,6 +1156,60 @@ function Folder() {
                         >
                           Delete
                         </ContextMenuItem>
+                        <ContextMenuItem
+                          onClick={async () => {
+                            const { value: folderName } = await Swal.fire({
+                              title: "Create New Folder",
+                              input: "text",
+                              inputLabel: "Folder Name",
+                              inputValue: folder.name,
+                              inputPlaceholder: "Enter folder name",
+                              showCancelButton: true,
+                              confirmButtonText: "Erstellen",
+                              inputValidator: (value) => {
+                                if (!value)
+                                  return "You need to enter a folder name!";
+                              },
+                            });
+
+                            if (folderName) {
+                              try {
+                                const response = await customFetch(
+                                  `${backendUrl}/folders/renameFolder`,
+                                  {
+                                    method: "POST",
+                                    credentials: "include",
+                                    headers: {
+                                      "Content-Type": "application/json",
+                                    },
+                                    body: JSON.stringify({
+                                      folderId: folder.id,
+                                      newFolderName: folderName,
+                                    }),
+                                  }
+                                );
+                                if (!response.ok)
+                                  throw new Error("Failed to rename folder");
+
+                                await Swal.fire(
+                                  "Success!",
+                                  "Folder Name Changed Success!",
+                                  "success"
+                                );
+                                window.location.reload();
+                              } catch (error) {
+                                await Swal.fire(
+                                  "Error!",
+                                  "Something went wrong while renaming the folder.",
+                                  "error"
+                                );
+                                console.error("Error creating folder:", error);
+                              }
+                            }
+                          }}
+                        >
+                          rename
+                        </ContextMenuItem>
                       </ContextMenuContent>
                     </ContextMenu>
                   ))}
@@ -1092,8 +1219,11 @@ function Folder() {
                 {[...Array(cont)]
                   .slice(Math.max(0, cont - 2))
                   .map((_, level) => {
+                    // const actualLevel =
+                    //   cont <= 2 ? level + 1 : cont - 2 + level;
                     const actualLevel =
-                      cont <= 2 ? level + 1 : cont - 2 + level;
+                      cont <= 2 ? level + 1 : cont - 1 + level;
+
                     return (
                       <div
                         key={actualLevel}
@@ -1194,7 +1324,67 @@ function Folder() {
                                   >
                                     New Folder
                                   </ContextMenuItem>
+                                  <ContextMenuItem
+                                    onClick={async () => {
+                                      const { value: folderName } =
+                                        await Swal.fire({
+                                          title: "Create New Folder",
+                                          input: "text",
+                                          inputLabel: "Folder Name",
+                                          inputValue: subFolder.name,
+                                          inputPlaceholder: "Enter folder name",
+                                          showCancelButton: true,
+                                          confirmButtonText: "Erstellen",
+                                          inputValidator: (value) => {
+                                            if (!value)
+                                              return "You need to enter a folder name!";
+                                          },
+                                        });
 
+                                      if (folderName) {
+                                        try {
+                                          const response = await customFetch(
+                                            `${backendUrl}/folders/renameFolder`,
+                                            {
+                                              method: "POST",
+                                              credentials: "include",
+                                              headers: {
+                                                "Content-Type":
+                                                  "application/json",
+                                              },
+                                              body: JSON.stringify({
+                                                folderId: subFolder.id,
+                                                newFolderName: folderName,
+                                              }),
+                                            }
+                                          );
+                                          if (!response.ok)
+                                            throw new Error(
+                                              "Failed to rename folder"
+                                            );
+
+                                          await Swal.fire(
+                                            "Success!",
+                                            "Folder Name Changed Success!",
+                                            "success"
+                                          );
+                                          window.location.reload();
+                                        } catch (error) {
+                                          await Swal.fire(
+                                            "Error!",
+                                            "Something went wrong while renaming the folder.",
+                                            "error"
+                                          );
+                                          console.error(
+                                            "Error creating folder:",
+                                            error
+                                          );
+                                        }
+                                      }
+                                    }}
+                                  >
+                                    rename
+                                  </ContextMenuItem>
                                   <ContextMenuItem
                                     onClick={async () => {
                                       const { value: file } = await Swal.fire({
@@ -1294,7 +1484,7 @@ function Folder() {
                                     onClick={() => {
                                       console.log("Clicked file:", file);
                                       handleFilePreview(file.name);
-                                      setSelectedFileId(file.id);
+                                      setSelectedFileId(file.name);
                                     }}
                                   >
                                     <IoIosDocument
@@ -1386,7 +1576,6 @@ function Folder() {
                                   >
                                     Download
                                   </ContextMenuItem>
-
                                   <ContextMenuItem
                                     onClick={async () => {
                                       const { value: newName } =
@@ -1405,7 +1594,7 @@ function Folder() {
                                       if (newName) {
                                         try {
                                           const response = await customFetch(
-                                            `${backendUrl}/folders/rename`,
+                                            ` ${backendUrl}/folders/rename `,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1495,10 +1684,108 @@ function Folder() {
                                   >
                                     Delete
                                   </ContextMenuItem>
+                                  <div key={file.id}>
+                                    <ContextMenuItem
+                                      onClick={() =>
+                                        handlePopoverToggle(file.id)
+                                      }
+                                    >
+                                      version
+                                    </ContextMenuItem>
+                                  </div>
                                 </ContextMenuContent>
                               </ContextMenu>
                             )
                           )}
+                        {folderContent.files.map((file, index) => (
+                          <>
+                            {popoverOpen[file.id] && ( // Check if the popover for the specific file is open
+                              <ParamsPopoverLayout
+                                open={popoverOpen[file.id]}
+                                setOpen={() => handlePopoverToggle(file.id)}
+                                top={"32%"}
+                                left={"51rem"}
+                              >
+                                <div
+                                  style={{
+                                    maxHeight: "200px",
+                                    overflowY: "auto",
+                                    padding: "10px",
+                                    background: "white",
+                                    border: "1px solid #ddd",
+                                    borderRadius: "8px",
+                                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                                    zIndex: 999,
+                                  }}
+                                >
+                                  <div className="flex justify-between mx-8">
+                                    <p className="font-weight-800 text-lg">
+                                      Versionen
+                                    </p>
+                                    <p className="text-base">geändert</p>
+                                  </div>
+                                  {loading ? (
+                                    <p>Loading...</p>
+                                  ) : versionHistory?.length > 0 ? (
+                                    <ul
+                                      style={{
+                                        padding: "0",
+                                        margin: "10px 0",
+                                        listStyle: "none",
+                                      }}
+                                    >
+                                      {versionHistory?.map((version) => (
+                                        <li
+                                          className="flex justify-between mx-8"
+                                          key={version.file_id}
+                                          style={{
+                                            padding: "5px 0",
+                                            borderBottom: "1px solid #eee",
+                                          }}
+                                        >
+                                          <div className="flex items-center ">
+                                            <p>
+                                              <IoIosDocument
+                                                className={`text-lg ${
+                                                  file.name.split(".").pop() ===
+                                                    "pdf" && "text-danger"
+                                                } ${
+                                                  [
+                                                    "word",
+                                                    "docx",
+                                                    "odt",
+                                                    "txt",
+                                                  ].includes(
+                                                    file.name.split(".").pop()
+                                                  ) && "text-blue-600"
+                                                }`}
+                                              />
+                                            </p>
+                                            <span className="pr-2">
+                                              {file.name}
+                                            </span>{" "}
+                                            -
+                                            <p className="pl-2">
+                                              {" "}
+                                              version {version.version}
+                                            </p>
+                                          </div>
+                                          <p>
+                                            {new Date(
+                                              version.created_at
+                                            ).toLocaleString()}
+                                          </p>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  ) : (
+                                    <p>No version history available.</p>
+                                  )}
+                                </div>
+                              </ParamsPopoverLayout>
+                            )}
+                          </>
+                        ))}
                       </div>
                     );
                   })}
@@ -1521,7 +1808,7 @@ function Folder() {
                     <h3 className="font-bold mb-4 text-xl">
                       {currentlyPreviewedFile}
                     </h3>
-                    <div className="text-base">{filePreviewContent}</div>
+                    <div className="text-lg">{filePreviewContent}</div>
                   </div>
                 )}
               </div>
@@ -1610,11 +1897,6 @@ function Folder() {
                 onClick={() => {
                   handleRenameFolder();
                 }}
-                // className={`bg-[#436BF5] text-white px-4 py-2 rounded-md hover:bg-[#426AF3] transition duration-200 ease-in-out mr-2 ${
-                //   (setLoading || inputError) &&
-                //   "cursor-not-allowed bg-opacity-50 hover:bg-opacity-50"
-                // }`}
-                // disabled={setLoading || inputError}
                 className="bg-[#436BF5] text-white px-4 py-2 rounded-md hover:bg-[#426AF3] transition duration-200 ease-in-out"
               >
                 {/* {setLoading ? "Loading..." : "Save"} */}
@@ -1636,6 +1918,6 @@ function Folder() {
       )}
     </>
   );
-  }
+}
 
 export default Folder;

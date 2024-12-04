@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 
 const backendUrl = "http://localhost:3000";
 
-function ProtectedRoute({ children, shouldBeAuthenticated, isAdminRoute = false }) {
+function ProtectedRoute({
+  children,
+  shouldBeAuthenticated,
+  isAdminRoute = false,
+}) {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -58,6 +62,11 @@ function ProtectedRoute({ children, shouldBeAuthenticated, isAdminRoute = false 
     console.log("User is not admin, redirecting to dashboard.");
     return <Navigate to="/dashboard" replace />;
   }
+
+  // if (isAdminRoute && isAuthenticated && isAdmin) {
+  //   console.log("User is admin, redirecting to admin.");
+  //   return <Navigate to="/admin" replace />;
+  // }
 
   if (!isAuthenticated && shouldBeAuthenticated) {
     console.log("User is not authenticated, redirecting to login.");

@@ -21,6 +21,7 @@ export function userLogin(username, password, navigate) {
       // we set an indicator for the current user
       localStorage.setItem("currentUserId", data.userId);
       localStorage.setItem("currentUserName", username);
+      localStorage.setItem("data", data);
 
       // Nutzer an "dashboard.html" weiterleiten
       navigate("/dashboard");

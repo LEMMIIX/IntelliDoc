@@ -7,10 +7,10 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
   const navigate = useNavigate();
   const [showFolderOptions, setShowFolderOptions] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("");
+  const [newFolderName, setNewFolderName] = useState(folderName);
   const [isLoading, setIsLoading] = useState(false);
   const [inputError, setInputError] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState("");
   const popupRef = useRef(null);
   const folderOptionsRef = useRef(null); // Reference for folder options
 
@@ -23,22 +23,32 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
 
     setIsLoading(true);
     try {
-      const response = await customFetch(`${BASE_URL}/folders/rename`, {
+      // Sende die Anfrage mit dem richtigen Content-Type
+      const response = await customFetch(`${BASE_URL}/folders/renameFolder`, {
         method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json", // Setze den richtigen Content-Type
+        },
         body: JSON.stringify({
-          documentId: folderId,
-          newFileName: newFolderName,
+          folderId: folderId,
+          newFolderName: newFolderName,
         }),
       });
-
       if (!response.ok) {
         throw new Error("Failed to rename folder");
       }
+      // Antwort vom Backend einlesen, falls erfolgreich
+      const data = await response.json();
       setIsPopupVisible(false);
       setIsLoading(false);
       alert("Folder Name Changed Success!");
+      window.location.reload();
     } catch (e) {
       console.log("error: ", e);
+      setErrorMessage(
+        e.message || "Something went wrong while renaming the folder."
+      );
       setIsLoading(false);
     }
   };
@@ -65,7 +75,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         setIsPopupVisible(false);
-        setInputError(""); // Clear error when popup closes
+        +setInputError(""); // Clear error when popup closes
       }
     };
 
@@ -170,7 +180,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
             >
               Delete
             </span>
-            {/* <span
+            <span
               className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
               onClick={() => {
                 setIsPopupVisible(true);
@@ -178,7 +188,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
               }}
             >
               Rename
-            </span> */}
+            </span>
           </div>
         )}
       </li>
@@ -188,9 +198,12 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
             className="bg-white rounded-md px-6 shadow-lg max-w-md w-full"
             ref={popupRef} // Reference to detect clicks outside
           >
-            <h2 className="text-lg font-normal py-4 text-left">
-              Rename "{folderName}" to:
+            <h2 className="text-2xl font-semibold	 py-4 text-center text-[hsl(0,0%,33%)]">
+              Rename Folder
             </h2>
+            <h1 className="text-sm font-normal py-4 text-center text-[hsl(0,0%,33%)]">
+              New folder Name
+            </h1>
             <div>
               <input
                 type="text"
@@ -206,8 +219,13 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
               {inputError && (
                 <span className="text-red-500 text-sm">{inputError}</span>
               )}
+              {errorMessage && (
+                <div className="error-message text-red-500 text-ms">
+                  {errorMessage}
+                </div>
+              )}
             </div>
-            <div className="flex justify-end mt-6 pb-5">
+            <div className="flex justify-center mt-6 pb-5">
               <button
                 onClick={handleRenameFolder}
                 className={`bg-[#436BF5] text-white px-4 py-2 rounded-md hover:bg-[#426AF3] transition duration-200 ease-in-out mr-2 ${
@@ -216,14 +234,14 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
                 }`}
                 disabled={isLoading || inputError}
               >
-                {isLoading ? "Loading..." : "Save"}
+                {isLoading ? "Loading..." : "Speichern"}
               </button>
               <button
                 onClick={() => {
                   setIsPopupVisible(false);
                   setInputError("");
                 }}
-                className="bg-gray-300 px-4 py-2 rounded-sm hover:bg-gray-400 transition duration-200 ease-in-out"
+                className="bg-[#6e7881] text-white px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200 ease-in-out"
               >
                 Cancel
               </button>
