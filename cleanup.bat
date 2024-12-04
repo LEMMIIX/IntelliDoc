@@ -5,27 +5,33 @@ setlocal enabledelayedexpansion
 set /p "keep=Keep all files and data? (Y/n): "
 if "!keep!"=="" set "keep=Y"
 
-if /i "!keep!"=="n" (
-    :: Second prompt with NO as default
+:: Convert input to lowercase
+set "keep=!keep:~0,1!"
+set "keep=!keep:N=n!"
+set "keep=!keep:Y=y!"
+
+if "!keep!"=="n" (
     set /p "confirm=Are you sure you want to delete all data? (y/N): "
     if "!confirm!"=="" set "confirm=N"
     
-    if /i "!confirm!"=="y" (
+    set "confirm=!confirm:~0,1!"
+    set "confirm=!confirm:Y=y!"
+    set "confirm=!confirm:N=n!"
+    
+    if "!confirm!"=="y" (
         echo Removing all data...
         docker compose down --volumes --remove-orphans
-        :: Export environment variable for docker compose
         set "COMPOSE_FORCE_DOWNLOAD=true"
+        docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
     ) else (
         echo Keeping data safe! Continuing with normal restart...
         docker compose down --remove-orphans
         set "COMPOSE_FORCE_DOWNLOAD=false"
+        docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
     )
 ) else (
     echo Stopping containers while preserving data...
     docker compose down --remove-orphans
     set "COMPOSE_FORCE_DOWNLOAD=false"
+    docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
 )
-
-echo Starting fresh containers...
-:: Use the environment variable normally
-docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build

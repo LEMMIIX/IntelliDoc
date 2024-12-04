@@ -1,24 +1,33 @@
 #!/bin/bash
+set -e
 
-# Only install requirements if FORCE_DOWNLOAD is true or if they're not already installed
-if [ "$FORCE_DOWNLOAD" = "true" ] || ! pip freeze | grep -q "sentence-transformers"; then
+echo "COMPOSE_FORCE_DOWNLOAD value: $COMPOSE_FORCE_DOWNLOAD"
+
+# Wait for PostgreSQL
+until pg_isready -h postgres -p 5432 -U postgres; do
+    echo "Waiting for PostgreSQL..."
+    sleep 2
+done
+
+# Always check if models exist, regardless of COMPOSE_FORCE_DOWNLOAD
+if [ "$COMPOSE_FORCE_DOWNLOAD" = "true" ] || [ ! -f "/app/models/all-mpnet-base-v2/pytorch_model.bin" ]; then
     echo "Installing Python requirements..."
-    pip install -r /docker-init/pip-requirements.txt
-else
-    echo "Python requirements already installed, skipping..."
-fi
-
-# Only download models if FORCE_DOWNLOAD is true or if they don't exist
-if [ "$FORCE_DOWNLOAD" = "true" ] || [ ! -f "/app/models/all-mpnet-base-v2/pytorch_model.bin" ]; then
+    pip install -r /app/docker-init/pip-requirements.txt
+    
     echo "Downloading models..."
     python3 /app/download_models/all-mpnet-base-v2.py
     python3 /app/download_models/paraphrase-multilingual-mpnet-base-v2.py
-else
-    echo "Models already exist, skipping download..."
+    
+    # Verify downloads succeeded
+    if [ ! -f "/app/models/all-mpnet-base-v2/pytorch_model.bin" ]; then
+        echo "Model download failed!"
+        exit 1
+    fi
 fi
 
-# Initialize database
-./docker-init/database-init.sh
+# Wait a bit longer for PostgreSQL to be fully ready
+sleep 5
 
 # Start the application
+echo "Starting application..."
 node app.js --optimize-for-size

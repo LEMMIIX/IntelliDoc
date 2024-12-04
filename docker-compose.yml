@@ -12,9 +12,14 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./database:/docker-entrypoint-initdb.d
       - ./docker-init:/docker-init
-    command: ["bash", "-c", "docker-entrypoint.sh postgres && /docker-init/database-init.sh"]
+    command: ["bash",
+      "-c",
+      "docker-entrypoint.sh postgres &
+        sleep 10 &&
+        /docker-init/database-init.sh &&
+        wait"]
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres && psql -U postgres -d postgres -c \"SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'main';\""]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -28,7 +33,7 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_SCHEMA: main
-      FORCE_DOWNLOAD: ${COMPOSE_FORCE_DOWNLOAD:-false}
+      COMPOSE_FORCE_DOWNLOAD: ${COMPOSE_FORCE_DOWNLOAD:-false}
     volumes:
       - model_data:/app/models
       - pip_cache:/pip_cache

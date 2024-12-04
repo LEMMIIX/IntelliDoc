@@ -31,22 +31,15 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 # We'll mount the pip cache volume at runtime
 ENV PIP_CACHE_DIR=/pip_cache
 
-# Install Python packages in virtual environment
-COPY docker-init/pip-requirements.txt /app/
-RUN --mount=type=cache,target=/pip_cache \
-    pip3 install --no-cache-dir -r /app/pip-requirements.txt
-
 # Models will be mounted as a volume
 RUN mkdir -p /app/models
 
 # Install sentence transformers
 ENV HF_TOKEN="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"
 COPY download_models/ /app/download_models/
-RUN python3 /app/download_models/all-mpnet-base-v2.py
-RUN python3 /app/download_models/paraphrase-multilingual-mpnet-base-v2.py
 
 EXPOSE 3000
 
-COPY docker-init/init.sh /app/
-RUN chmod +x /app/init.sh
-CMD ["/app/init.sh"]
+COPY docker-init/init.sh /app/docker-init/
+RUN chmod +x /app/docker-init/init.sh
+CMD ["/app/docker-init/init.sh"]
