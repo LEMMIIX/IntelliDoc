@@ -1,28 +1,18 @@
 import os
 import requests
+from typing import Optional
+import json
 import sys
+import shutil
 from huggingface_hub import snapshot_download
 
-def find_project_root():
-    """Find the project root by looking for node_modules"""
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    while current_dir != os.path.dirname(current_dir):  # Stop at root
-        if os.path.exists(os.path.join(current_dir, 'node_modules')):
-            return current_dir
-        current_dir = os.path.dirname(current_dir)
-    
-    # If no node_modules found, use the script's location as fallback
-    return os.path.dirname(os.path.abspath(__file__))
-
-# Model constants
-MODEL_NAME = "Xenova/paraphrase-multilingual-mpnet-base-v2"  # Direct Xenova model
-BASE_PATH = os.path.join(find_project_root(), 
+MODEL_NAME = "Xenova/paraphrase-multilingual-mpnet-base-v2"
+BASE_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
                         "node_modules", "@xenova", "transformers", "models",
                         "Xenova", "paraphrase-multilingual-mpnet-base-v2")
 ONNX_PATH = os.path.join(BASE_PATH, "onnx")
 
-# Required files - minimal set needed for transformers.js
+# Required files - simplified to just what's needed
 REQUIRED_FILES = [
     "config.json",
     "tokenizer.json",
@@ -30,10 +20,9 @@ REQUIRED_FILES = [
     "tokenizer_config.json"
 ]
 
-# ONNX files needed for inference
 ONNX_FILES = [
     "model.onnx",
-    "model_quantized.onnx"  # Used by transformers.js when quantized=true
+    "model_quantized.onnx"  # This is the one your JS code tries to use by default
 ]
 
 def ensure_dirs():
@@ -45,6 +34,7 @@ def ensure_dirs():
 def download_file(url: str, dest_path: str, chunk_size: int = 8192) -> bool:
     """Download a file with progress indication"""
     try:
+        # Use token from environment variable if available
         headers = {}
         if 'HF_TOKEN' in os.environ:
             headers['Authorization'] = f"Bearer {os.environ['HF_TOKEN']}"
@@ -57,6 +47,7 @@ def download_file(url: str, dest_path: str, chunk_size: int = 8192) -> bool:
         
         print(f"Downloading {os.path.basename(dest_path)}")
         print(f"Size: {total_size / (1024*1024):.1f} MB")
+        print(f"From: {url}")
         
         with open(dest_path, 'wb') as file:
             for data in response.iter_content(chunk_size):
@@ -72,7 +63,7 @@ def download_file(url: str, dest_path: str, chunk_size: int = 8192) -> bool:
     except Exception as e:
         print(f"Error downloading {url}: {str(e)}")
         if os.path.exists(dest_path):
-            os.remove(dest_path)  # Cleanup failed downloads
+            os.remove(dest_path)
         return False
 
 def download_model():
@@ -118,21 +109,6 @@ def download_model():
         
         # Verify structure
         print("\nVerifying files...")
-        
-        missing_files = []
-        for file in REQUIRED_FILES:
-            if not os.path.exists(os.path.join(BASE_PATH, file)):
-                missing_files.append(file)
-        
-        for file in ONNX_FILES:
-            if not os.path.exists(os.path.join(ONNX_PATH, file)):
-                missing_files.append(f"onnx/{file}")
-        
-        if missing_files:
-            print("\nWarning: Missing files:")
-            for file in missing_files:
-                print(f"  - {file}")
-        
         print("\nBase files:")
         base_files = os.listdir(BASE_PATH)
         for file in [f for f in base_files if os.path.isfile(os.path.join(BASE_PATH, f))]:
@@ -154,16 +130,6 @@ def download_model():
 
 if __name__ == "__main__":
     try:
-        # Install required packages if missing
-        requirements = ['requests', 'huggingface_hub']
-        for package in requirements:
-            try:
-                __import__(package)
-            except ImportError:
-                print(f"Installing {package}...")
-                import subprocess
-                subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-        
         download_model()
     except Exception as e:
         print(f"\nError: {str(e)}")
