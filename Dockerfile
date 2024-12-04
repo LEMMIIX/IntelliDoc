@@ -47,4 +47,6 @@ RUN python3 /app/download_models/paraphrase-multilingual-mpnet-base-v2.py
 
 EXPOSE 3000
 
-CMD ["node", "app.js", "--optimize-for-size"]
+COPY docker-init/init.sh /app/
+RUN chmod +x /app/init.sh
+CMD ["/app/init.sh"]

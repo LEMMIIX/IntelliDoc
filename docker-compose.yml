@@ -28,6 +28,7 @@ services:
         condition: service_healthy
     environment:
       POSTGRES_SCHEMA: main
+      FORCE_DOWNLOAD: ${COMPOSE_FORCE_DOWNLOAD:-false}
     volumes:
       - model_data:/app/models
       - pip_cache:/pip_cache

@@ -13,14 +13,19 @@ if /i "!keep!"=="n" (
     if /i "!confirm!"=="y" (
         echo Removing all data...
         docker compose down --volumes --remove-orphans
+        :: Export environment variable for docker compose
+        set "COMPOSE_FORCE_DOWNLOAD=true"
     ) else (
         echo Keeping data safe! Continuing with normal restart...
         docker compose down --remove-orphans
+        set "COMPOSE_FORCE_DOWNLOAD=false"
     )
 ) else (
     echo Stopping containers while preserving data...
     docker compose down --remove-orphans
+    set "COMPOSE_FORCE_DOWNLOAD=false"
 )
 
 echo Starting fresh containers...
+:: Use the environment variable normally
 docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
