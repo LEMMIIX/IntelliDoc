@@ -10,18 +10,19 @@ RUN npm run build
 FROM node:20
 WORKDIR /app
 
+# Install PostgreSQL client tools along with Python dependencies
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    python3-venv \
+    postgresql-client
+
 # Copy backend files
 COPY package*.json ./
 RUN npm install
 COPY . .
 # Copy built frontend from previous stage
 COPY --from=frontend-build /app/dist ./public
-
-# Add Python and virtual environment dependencies
-RUN apt-get update && apt-get install -y \
-    python3 \
-    python3-pip \
-    python3-venv
 
 # Create and activate virtual environment
 ENV VIRTUAL_ENV=/app/venv

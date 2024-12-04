@@ -9,8 +9,9 @@ until pg_isready -h postgres -p 5432 -U postgres; do
     sleep 2
 done
 
-# Always check if models exist, regardless of COMPOSE_FORCE_DOWNLOAD
-if [ "$COMPOSE_FORCE_DOWNLOAD" = "true" ] || [ ! -f "/app/models/all-mpnet-base-v2/pytorch_model.bin" ]; then
+# Check if models exist in the Node.js expected location
+MODEL_PATH="/app/node_modules/@xenova/transformers/models/Xenova"
+if [ "$COMPOSE_FORCE_DOWNLOAD" = "true" ] || [ ! -d "$MODEL_PATH" ]; then
     echo "Installing Python requirements..."
     pip install -r /app/docker-init/pip-requirements.txt
     
@@ -18,9 +19,9 @@ if [ "$COMPOSE_FORCE_DOWNLOAD" = "true" ] || [ ! -f "/app/models/all-mpnet-base-
     python3 /app/download_models/all-mpnet-base-v2.py
     python3 /app/download_models/paraphrase-multilingual-mpnet-base-v2.py
     
-    # Verify downloads succeeded
-    if [ ! -f "/app/models/all-mpnet-base-v2/pytorch_model.bin" ]; then
-        echo "Model download failed!"
+    # Verify downloads succeeded by checking Node.js model path
+    if [ ! -d "$MODEL_PATH" ]; then
+        echo "Model download failed! Expected path: $MODEL_PATH"
         exit 1
     fi
 fi
