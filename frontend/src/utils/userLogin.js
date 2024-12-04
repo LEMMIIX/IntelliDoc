@@ -1,12 +1,11 @@
 const backendUrl = "http://localhost:3000";
 export function userLogin(username, password, navigate) {
-  fetch(backendUrl + "/login", {
+  fetch(backendUrl + "/auth/login", {  // Changed from /login
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-
     body: JSON.stringify({ username, password }),
   })
     .then((response) => {
@@ -16,14 +15,9 @@ export function userLogin(username, password, navigate) {
       return response.json();
     })
     .then((data) => {
-      console.log("Success:", data);
-
-      // we set an indicator for the current user
       localStorage.setItem("currentUserId", data.userId);
       localStorage.setItem("currentUserName", username);
-      localStorage.setItem("data", data);
-
-      // Nutzer an "dashboard.html" weiterleiten
+      localStorage.setItem("isAdmin", data.isAdmin); // Store admin status
       navigate("/dashboard");
     })
     .catch((error) => {

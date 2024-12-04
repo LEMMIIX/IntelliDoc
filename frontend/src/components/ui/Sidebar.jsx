@@ -4,18 +4,19 @@ import { FaArrowLeft, FaRegFolder } from "react-icons/fa";
 import Logo from "./Logo";
 import { FiChevronDown, FiPlus } from "react-icons/fi";
 import { useEffect, useState } from "react";
-import { IoLogOutOutline } from "react-icons/io5";
+import { IoConstruct, IoConstructOutline, IoLogOutOutline } from "react-icons/io5";
 import { fetchAndRenderFolderTree } from "../../utils/fetchFoldersTree";
 import { userLogout } from "../../utils/userLogout";
 import { fetchAndRenderFolder } from "../../utils/fetchFoldersTree";
 import Swal from "sweetalert2";
 import { customFetch } from "../../utils/helpers";
-import { FaFolder } from "react-icons/fa";
+
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const userName = localStorage.getItem("currentUserName") || "";
   const [folders, setFolders] = useState([]);
   const [showMenuUpload, setShowMenuUploads] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [profileOptions, setProfileOptions] = useState(false);
   const [uploadFileHTML, setUploadFileHTML] = useState(
     '<input class="width: fit" type="file" id="fileInput" class="swal2-input" accept="*/*">'
@@ -29,17 +30,41 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   }`;
 
   useEffect(() => {
-    const fetchFolders = async () => {
-      const folderTree = await fetchAndRenderFolderTree();
-      if (folderTree) {
-        setFolders(folderTree);
+    const checkAdminStatus = async () => {
+      try {
+        const response = await customFetch(`${backendUrl}/api/current-user`, {
+          credentials: 'include'
+        });
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Admin status check:', data); // Debug log
+          setIsAdmin(data.isAdmin);
+        }
+      } catch (error) {
+        console.error('Error checking admin status:', error);
+        setIsAdmin(false);
       }
     };
-
-    fetchFolders();
+  
+    checkAdminStatus();
   }, []);
 
   const backendUrl = "http://localhost:3000";
+
+  const userLogout = async () => {
+    try {
+      const response = await customFetch('http://localhost:3000/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (response.ok) {
+        localStorage.clear(); // Clear all localStorage items
+        navigate('/auth/login');
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   const goToAdminDashboard = () => {
     navigate("/admin"); // Navigate to the Admin Dashboard route
@@ -231,22 +256,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             <FiChevronDown className="ml-auto" />
           </h3>
           {profileOptions && (
-            <ul className="bg-white my-4 rounded-lg p-2 space-y-3">
-              <li
-                className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger  items-center transition-colors duration-200"
-                onClick={() => userLogout(navigate)}
-              >
-                <IoLogOutOutline />
-                <span>Abmelden</span>
-              </li>
-              <li
-                className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
-                onClick={() => navigate("/admin")} // Navigate to Admin Dashboard
-              >
-                <FaFolder />
-                <span>Admin Dashboard</span>
-              </li>
-            </ul>
+        <ul className="bg-white my-4 rounded-lg p-2 space-y-3">
+          <li
+            className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger items-center transition-colors duration-200"
+            onClick={() => userLogout(navigate)}
+          >
+            <IoLogOutOutline />
+            <span>Abmelden</span>
+          </li>
+          
+          {/* Only show admin button if user is admin */}
+          {isAdmin && (
+            <li
+              className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
+              onClick={() => navigate("/admin")}
+            >
+              <IoConstructOutline />
+              <span>Admin Dashboard</span>
+            </li>
+          )}
+        </ul>
           )}
 
           {/* Add menu start */}
