@@ -1,0 +1,3 @@
+FROM nginx:alpine
+COPY nginx/intellidoc.conf /etc/nginx/conf.d/
+COPY --from=frontend-build /app/dist /usr/share/nginx/html
