@@ -60,7 +60,11 @@ function Login() {
             <p>Do you not have an account?</p>  <Link to="/signup" className="text-blue-500">
       Registrieren
    </Link>
-          </div>
+                  </div>
+                  {/* Button zum Weiterleiten zur Passwort-Zurücksetzen-Seite */}
+                  <div className="login_reset_password">
+                      <Link to="/Requestpassword" className="text-blue-500">Forgot Password?</Link>
+                  </div>
         </form>
       </div>
     </main>

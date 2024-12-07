@@ -3,385 +3,420 @@
 @tailwind utilities;
 
 @layer components {
-  .btn-gradient {
-    @apply text-white;
-    background-image: linear-gradient(147.2deg, #436bf5 43.08%, #233e9d 94.14%);
-  }
+    .btn-gradient {
+        @apply text-white;
+        background-image: linear-gradient(147.2deg, #436bf5 43.08%, #233e9d 94.14%);
+    }
 }
 
 :root {
-  font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
-  font-weight: 400;
-  --primary-color: #8bc6ec;
-  --secondary-color: #3b43db;
-  --text-color: #ffffff;
-  --accent-color: #4d47ff;
+    font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    --primary-color: #8bc6ec;
+    --secondary-color: #3b43db;
+    --text-color: #ffffff;
+    --accent-color: #4d47ff;
 }
 
 *,
 ::after,
 ::before {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 ul {
-  list-style: none;
+    list-style: none;
 }
 
 body {
-  min-height: 100vh;
+    min-height: 100vh;
 }
 
 /* reusable  start */
 .button {
-  background-image: linear-gradient(
-    to right,
-    #0575e6 0%,
-    var(--secondary-color) 51%,
-    #0575e6 100%
-  );
-  margin: 16px auto;
-  padding: 15px 45px;
-  text-align: center;
-  text-transform: uppercase;
-  transition: 0.5s;
-  cursor: pointer;
-  background-size: 200% auto;
-  color: white;
-  border-radius: 16px;
-  display: block;
-  text-decoration: none;
+    background-image: linear-gradient( to right, #0575e6 0%, var(--secondary-color) 51%, #0575e6 100% );
+    margin: 16px auto;
+    padding: 15px 45px;
+    text-align: center;
+    text-transform: uppercase;
+    transition: 0.5s;
+    cursor: pointer;
+    background-size: 200% auto;
+    color: white;
+    border-radius: 16px;
+    display: block;
+    text-decoration: none;
+    letter-spacing: 2px;
+    border: none;
+}
 
-  letter-spacing: 2px;
-  border: none;
-}
-.button:hover {
-  background-position: right center;
-  color: #fff;
-  text-decoration: none;
-}
+    .button:hover {
+        background-position: right center;
+        color: #fff;
+        text-decoration: none;
+    }
 /* reusable  end */
 
 /* Home style start */
 .home_main {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--primary-color);
-  background-image: linear-gradient(
-    135deg,
-    var(--primary-color) 0%,
-    var(--secondary-color) 100%
-  );
-  padding: 20px;
-  text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--primary-color);
+    background-image: linear-gradient( 135deg, var(--primary-color) 0%, var(--secondary-color) 100% );
+    padding: 20px;
+    text-align: center;
 }
 
 .home_title {
-  font-size: 2.5rem;
-  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
-  color: var(--text-color);
-  margin-bottom: 20px;
-  text-shadow: 2px 2px 6px rgba(0, 0, 100, 0.2);
-  letter-spacing: 2px;
+    font-size: 2.5rem;
+    font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+    color: var(--text-color);
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 6px rgba(0, 0, 100, 0.2);
+    letter-spacing: 2px;
 }
 
 .home_login_container {
-  background-color: rgba(255, 255, 255, 0.1);
-  padding: 30px;
-  border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 30px;
+    border-radius: 12px;
 }
 
-.home_login_container p {
-  font-size: 1.2rem;
-  color: var(--text-color);
-  font-weight: 600;
-  margin-bottom: 20px;
-}
+    .home_login_container p {
+        font-size: 1.2rem;
+        color: var(--text-color);
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
 
 .home_login_link {
-  text-decoration: none;
-  background-color: var(--accent-color);
-  color: white;
-  border-radius: 16px;
-  font-size: 1.2rem;
-  padding: 10px 20px;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  font-weight: 600;
+    text-decoration: none;
+    background-color: var(--accent-color);
+    color: white;
+    border-radius: 16px;
+    font-size: 1.2rem;
+    padding: 10px 20px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: 600;
 }
 
-.home_login_link:hover {
-  background-color: #4d2fff;
-  transform: scale(1.05);
-}
+    .home_login_link:hover {
+        background-color: #4d2fff;
+        transform: scale(1.05);
+    }
 
 .home_members {
-  margin-top: 40px;
-  color: var(--text-color);
-  font-size: 1rem;
-  line-height: 1.5;
-  font-weight: 500;
-  letter-spacing: 1px;
-  display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: 10px;
+    margin-top: 40px;
+    color: var(--text-color);
+    font-size: 1rem;
+    line-height: 1.5;
+    font-weight: 500;
+    letter-spacing: 1px;
+    display: grid;
+    grid-template-columns: repeat(2, auto);
+    gap: 10px;
 }
 
-.home_members li:first-child {
-  grid-column: span 2;
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-}
+    .home_members li:first-child {
+        grid-column: span 2;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
 /* Home style end */
 
 /* login style start */
 
 /* Base styles */
 .login_page {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  background-color: var(--primary-color);
-  background-image: linear-gradient(
-    135deg,
-    var(--primary-color) 0%,
-    var(--secondary-color) 100%
-  );
-  padding: 20px;
-  text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--primary-color);
+    background-image: linear-gradient( 135deg, var(--primary-color) 0%, var(--secondary-color) 100% );
+    padding: 20px;
+    text-align: center;
 }
 
 .login_container {
-  background-color: white;
-  padding: 24px;
-  border-radius: 24px;
-  width: 100%;
-  max-width: 500px;
-  position: relative;
+    background-color: white;
+    padding: 24px;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
 }
 
 .logo {
-  width: 80px;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 10px;
+    width: 80px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 10px;
 }
 
 .login_homepage_link {
-  position: absolute;
-  left: 16px;
-  top: 16px;
-  text-decoration: none;
-  display: flex;
-  align-items: center;
-  color: var(--secondary-color);
-  gap: 4px;
-  font-weight: 600;
-}
-.homepage_icon {
-  width: 32px;
-  border: 1px solid #777;
-  padding: 4px;
-  border-radius: 50%;
-  transition: transform 0.5s;
-}
-.homepage_icon:hover {
-  transform: scale(1.1);
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    color: var(--secondary-color);
+    gap: 4px;
+    font-weight: 600;
 }
 
+.homepage_icon {
+    width: 32px;
+    border: 1px solid #777;
+    padding: 4px;
+    border-radius: 50%;
+    transition: transform 0.5s;
+}
+
+    .homepage_icon:hover {
+        transform: scale(1.1);
+    }
+
 .login_input_container {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
 }
 
 .login_input_label {
-  font-size: 12px;
-  text-align: left;
-  color: #777;
+    font-size: 12px;
+    text-align: left;
+    color: #777;
 }
 
 .login_input {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
 }
 
-.login_input:focus {
-  box-shadow: 0px 0px 1px rgba(0, 0, 255);
-  border-color: #00f;
-  outline: none;
-}
+    .login_input:focus {
+        box-shadow: 0px 0px 1px rgba(0, 0, 255);
+        border-color: #00f;
+        outline: none;
+    }
 
 /* Responsive styles */
 @media (max-width: 600px) {
-  .login_container {
-    width: 90%;
-    padding: 20px 16px;
-  }
+    .login_container {
+        width: 90%;
+        padding: 20px 16px;
+    }
 
-  .logo {
-    width: 60px;
-  }
+    .logo {
+        width: 60px;
+    }
 
-  .login_input_label {
-    font-size: 14px;
-  }
+    .login_input_label {
+        font-size: 14px;
+    }
 }
 
 @media (max-width: 400px) {
-  .login_input {
-    padding: 10px;
-  }
+    .login_input {
+        padding: 10px;
+    }
 
-  .login_input_label {
-    font-size: 16px;
-  }
+    .login_input_label {
+        font-size: 16px;
+    }
 }
 
 .login_signup_question {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
+    display: flex;
+    justify-content: center;
+    gap: 4px;
 }
 
 .bg-muted\/40 {
-  background-color: rgb(0 0 0 / 0.04);
+    background-color: rgb(0 0 0 / 0.04);
 }
 
 .hover\:bg-accent:hover {
-  background-color: rgb(0 0 0 / 0.08);
+    background-color: rgb(0 0 0 / 0.08);
 }
 
 /* Add these to your existing styles */
 
 .bg-background {
-  background-color: #ffffff;
+    background-color: #ffffff;
 }
 
 .text-muted-foreground {
-  color: #6b7280;
+    color: #6b7280;
 }
 
 .bg-accent {
-  background-color: rgba(0, 0, 0, 0.08);
+    background-color: rgba(0, 0, 0, 0.08);
 }
 
 .hover\:bg-accent:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+    background-color: rgba(0, 0, 0, 0.08);
 }
 
 .grid-cols-\[2fr\,1fr\] {
-  grid-template-columns: 2fr 1fr;
+    grid-template-columns: 2fr 1fr;
 }
 
 .transition-all {
-  transition-property: all;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 300ms;
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 300ms;
 }
 
 /* Add this to your CSS */
 .scrollbar-hide::-webkit-scrollbar {
-  display: none;
+    display: none;
 }
 
 .scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 /* Add these styles for the scrollbar */
 .overflow-x-auto {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
 }
 
-.overflow-x-auto::-webkit-scrollbar {
-  height: 8px;
-}
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
 
-.overflow-x-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: transparent;
+    }
 
-.overflow-x-auto::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.5);
-  border-radius: 20px;
-  border: transparent;
-}
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background-color: rgba(155, 155, 155, 0.5);
+        border-radius: 20px;
+        border: transparent;
+    }
 
-.overflow-x-auto::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(155, 155, 155, 0.7);
-}
+        .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(155, 155, 155, 0.7);
+        }
 
 /* Add these styles for vertical scrollbars in columns */
 .overflow-y-auto {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(155, 155, 155, 0.5) transparent;
 }
 
-.overflow-y-auto::-webkit-scrollbar {
-  width: 6px;
-}
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
 
-.overflow-y-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: transparent;
+    }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.5);
-  border-radius: 20px;
-  border: transparent;
-}
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background-color: rgba(155, 155, 155, 0.5);
+        border-radius: 20px;
+        border: transparent;
+    }
 
-.overflow-y-auto::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(155, 155, 155, 0.7);
-}
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(155, 155, 155, 0.7);
+        }
 
 /* Add these styles for grid 2 scrollbars - they will always be visible */
 .grid2-scroll-x {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(155, 155, 155, 0.7) #f1f1f1;
-  overflow-x: scroll !important;
-  overflow-y: hidden !important; /* Hide vertical scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(155, 155, 155, 0.7) #f1f1f1;
+    overflow-x: scroll !important;
+    overflow-y: hidden !important; /* Hide vertical scrollbar */
 }
 
-.grid2-scroll-x::-webkit-scrollbar {
-  height: 10px; /* Make horizontal scrollbar slightly bigger */
-  display: block !important;
-}
+    .grid2-scroll-x::-webkit-scrollbar {
+        height: 10px; /* Make horizontal scrollbar slightly bigger */
+        display: block !important;
+    }
 
-.grid2-scroll-x::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 20px;
-}
+    .grid2-scroll-x::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 20px;
+    }
 
-.grid2-scroll-x::-webkit-scrollbar-thumb {
-  background-color: rgba(155, 155, 155, 0.7);
-  border-radius: 20px;
-  border: 2px solid #f1f1f1;
-}
+    .grid2-scroll-x::-webkit-scrollbar-thumb {
+        background-color: rgba(155, 155, 155, 0.7);
+        border-radius: 20px;
+        border: 2px solid #f1f1f1;
+    }
 
-.grid2-scroll-x::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(155, 155, 155, 0.9);
-}
+        .grid2-scroll-x::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(155, 155, 155, 0.9);
+        }
 
 /* Remove vertical scrollbars for grid2-scroll-y */
 .grid2-scroll-y {
-  overflow-y: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
 }
 
-.grid2-scroll-y::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+    .grid2-scroll-y::-webkit-scrollbar {
+        display: none; /* Chrome, Safari, Opera */
+    }
+.verification_page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--primary-color);
+    background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 20px;
+    text-align: center;
 }
+
+.verification_container {
+    background-color: white;
+    padding: 24px;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.verification_input {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.verification_button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+    .verification_button:hover {
+        background-color: #0056b3;
+    }
+

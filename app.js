@@ -4,7 +4,7 @@ const app = express();
 const bodyParser = require("body-parser");
 const path = require("path");
 const session = require("express-session");
-const { registerUser } = require("./backend/models/userRegistrationToDB");
+const { registerUser, verifyUserCode } = require("./backend/models/userRegistrationToDB");
 const { authenticateUser } = require("./backend/models/userAuthenticationToDB");
 const docUploadRoutes = require("./backend/routes/docUploadRoutes");
 const foldersRoutes = require("./backend/routes/foldersRoutes");
@@ -209,6 +209,27 @@ app.post("/login", async (req, res) => {
     console.error("Error during login:", error);
     res.status(500).json({ message: "An error occurred during login" });
   }
+});
+/// verify code
+app.post('/api/verify-code', async (req, res) => {
+    const { email, verificationCode } = req.body;
+
+    if (!email || !verificationCode) {
+        return res.status(400).json({ message: 'Email und verification key sind notwendig' });
+    }
+
+    try {
+        const result = await verifyUserCode(email, verificationCode);
+
+        if (result.success) {
+            res.status(200).json({ message: result.message });
+        } else {
+            res.status(400).json({ message: result.message });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'An error occurred during verification' });
+    }
 });
 /*
 app.get('/dashboard', authenticateMiddleware, (req, res) => {

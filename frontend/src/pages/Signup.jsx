@@ -15,12 +15,27 @@ function Signup() {
   
    // Formularübermittlung behandeln
    const handleSubmit = (e) => {
-      e.preventDefault();
+       e.preventDefault();
+       // Passwortanforderungen im Frontend
+       const passwordMinLength = 8;
+       const passwordRegex = /[A-Z]/; // muss mindestens einen Großbuchstaben enthalten
+       if (password.length < passwordMinLength) { // Überprüfen, ob das Passwort die Mindestlänge erfüllt
+           alert(`Das Passwort muss mindestens ${passwordMinLength} Zeichen lang sein.`);
+           return;
+       }
+       if (!password.match(passwordRegex)) { // Überprüfen, ob das Passwort mindestens einen Großbuchstaben enthält
+           alert("Das Passwort muss mindestens einen Großbuchstaben enthalten.");
+           return;
+       }
+
       if (password !== password2) { // Überprüfen, ob die Passwörter übereinstimmen
          alert("Passwörter stimmen nicht überein!"); // Warnung bei nicht übereinstimmenden Passwörtern
          return;
       }
-      userRegister(username, email, password, navigate); // Aufruf der Funktion userRegister, um den Benutzer zu registrieren
+       userRegister(username, email, password, () => {
+           // Nach erfolgreicher Registrierung den Benutzer zur Verifizierungsseite weiterleiten
+           navigate('/Verification', { state: { email } });
+       }); // Aufruf der Funktion userRegister, um den Benutzer zu registrieren
    };
 
    return (
