@@ -22,15 +22,26 @@ const UserRole = require("./database/UserRole");
 const UserRoleMapping = require("./database/UserRoleMapping");
 
 const PORT = process.env.PORT || 3000;
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 // Middleware Configuration
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: isDevelopment ? "http://localhost:5173" : true,
     methods: ["POST", "PUT", "GET", "DELETE", "OPTIONS", "HEAD"],
     credentials: true,
   })
 );
+
+// Basic security headers
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' localhost:* ws://localhost:*"
+  );
+  next();
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
@@ -91,24 +102,11 @@ const authenticateMiddleware = (req, res, next) => {
   }
 };
 
-// Routes
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "html", "login.html"));
-});
-
 app.get("/api/current-user", authenticateMiddleware, (req, res) => {
   res.json({
     userId: req.session.userId,
     isAdmin: req.session.isAdmin || false,
   });
-});
-
-app.use('/login', (req, res, next) => {
-  if (req.method === 'POST') {
-    req.url = '/auth/login';
-    return app._router.handle(req, res, next);
-  }
-  next();
 });
 
 // Route Middleware
@@ -118,6 +116,10 @@ app.use("/docupload", authenticateMiddleware, docUploadRoutes);
 app.use("/folders", authenticateMiddleware, foldersRoutes);
 app.use("/search", authenticateMiddleware, semanticSearchRoutes);
 app.use("/passwordReset", passwordResetRoutes);
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+});
 
 // Start Server
 app.listen(PORT, () => {
