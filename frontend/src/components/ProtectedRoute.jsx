@@ -63,11 +63,6 @@ function ProtectedRoute({
     return <Navigate to="/dashboard" replace />;
   }
 
-  // if (isAdminRoute && isAuthenticated && isAdmin) {
-  //   console.log("User is admin, redirecting to admin.");
-  //   return <Navigate to="/admin" replace />;
-  // }
-
   if (!isAuthenticated && shouldBeAuthenticated) {
     console.log("User is not authenticated, redirecting to login.");
     return <Navigate to="/login" replace />;

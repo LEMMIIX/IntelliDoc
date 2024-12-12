@@ -42,7 +42,7 @@ function Login() {
           </div>
           <div className="login_input_container">
             <label htmlFor="password" className="login_input_label">
-              Password:
+              Passwort:
             </label>
             <input
               type="password" // Input type for password
@@ -57,9 +57,10 @@ function Login() {
             Login
           </button>
           <div className="login_signup_question">
-            <p>Do you not have an account?</p>  <Link to="/signup" className="text-blue-500">
-      Registrieren
-   </Link>
+            <p>Do you not have an account?</p>{" "}
+            <Link to="/signup" className="text-blue-500">
+              Sign up
+            </Link>
           </div>
         </form>
       </div>

@@ -234,7 +234,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
                 }`}
                 disabled={isLoading || inputError}
               >
-                {isLoading ? "Loading..." : "Speichern"}
+                {isLoading ? "Loading..." : "Save"}
               </button>
               <button
                 onClick={() => {

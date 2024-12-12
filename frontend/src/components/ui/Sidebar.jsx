@@ -233,7 +233,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                 onClick={() => userLogout(navigate)}
               >
                 <IoLogOutOutline />
-                <span>Abmelden</span>
+                <span>Logout</span>
               </li>
             </ul>
           )}

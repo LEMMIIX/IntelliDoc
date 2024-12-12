@@ -34,7 +34,7 @@ function getRelevance(results) {
     let starNumbers = 0;
     let starColor = "orange";
     let fontSize = "";
-    let description = "am besten";
+    let description = "the best";
     if (index === 0 && bestScore >= 50) {
       // Best result over 50%: 3 stars in blue
       starNumbers = 5;
@@ -50,7 +50,7 @@ function getRelevance(results) {
     } else {
       // Low relevance: 1 star in yellow for anything under 30%
       starNumbers = 1;
-      description = "gut";
+      description = "good";
     }
 
     resultsArray.push({
@@ -83,25 +83,6 @@ const File = ({
   filePreviewContent = null,
   setFilePreviewContent = null,
 }) => {
-  //const distance = file?.distance * 100;
-  //let starNumbers = 0;
-  //let starColor = "orange";
-
-  //  if (distance >= 40 && distance < 60) {
-  //  starNumbers = 1;
-  //}
-  //if (distance >= 60 && distance < 80) {
-  //starNumbers = 2;
-  //}
-  //if (distance >= 80 && distance < 95) {
-  //starNumbers = 3;
-  //}
-  //if (distance >= 95 && distance <= 100) {
-  //starNumbers = 3;
-  //starColor = "blue";
-  //}
-  //console.log("starNumbers - star coloe", starNumbers, starColor);
-
   let starNumbers = 0;
   let starColor = "orange";
   let fontSize = "";
@@ -193,7 +174,7 @@ const File = ({
                 inputLabel: "New File Name",
                 inputValue: file.name,
                 showCancelButton: true,
-                confirmButtonText: "Speichern",
+                confirmButtonText: "Save",
                 inputValidator: (value) => {
                   if (!value) return "You need to enter a file name!";
                 },

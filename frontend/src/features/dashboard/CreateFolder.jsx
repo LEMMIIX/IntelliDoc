@@ -6,7 +6,7 @@ import { customFetch } from "../../utils/helpers";
 const backendUrl = "http://localhost:3000";
 
 const CreateFolderForm = ({ parentFolderId }) => {
-  console.log("parentFolderId", parentFolderId)
+  console.log("parentFolderId", parentFolderId);
   const [isCreating, setIsCreating] = useState(false);
 
   const [folderName, setFolderName] = useState("");
@@ -75,7 +75,7 @@ const CreateFolderForm = ({ parentFolderId }) => {
             "Creating"
           ) : (
             <>
-              <span>Erstellen</span>
+              <span>Create</span>
               <FaFolder />
             </>
           )}

@@ -61,16 +61,16 @@ function Dashboard() {
   }, []);
   const handleCreateFolderSwal = async (id) => {
     const { value: folderName } = await Swal.fire({
-      title: "Neuen Ordner erstellen",
+      title: "Create New Folder",
       input: "text",
-      inputLabel: "Ordnername",
-      inputPlaceholder: "Geben Sie den Namen des neuen Ordners ein",
+      inputLabel: "Folder Name",
+      inputPlaceholder: "Enter the name of the new folder",
       showCancelButton: true,
-      confirmButtonText: "Erstellen",
-      cancelButtonText: "Abbrechen",
+      confirmButtonText: "Create",
+      cancelButtonText: "Cancel",
       inputValidator: (value) => {
         if (!value) {
-          return "Der Ordnername ist erforderlich!";
+          return "The folder name is required!";
         }
       },
     });
@@ -94,21 +94,21 @@ function Dashboard() {
 
       const data = await response.json();
       if (data.folderId) {
-        Swal.fire("Erfolg", "Ordner erfolgreich erstellt", "Erfolg");
+        Swal.fire("Success", "Folder successfully created", "success");
         window.location.reload();
       } else {
         Swal.fire(
-          "Fehler",
-          data?.message || "Fehler beim Erstellen des Ordners",
-          "fehler"
+          "Error",
+          data?.message || "Error occurred while creating the folder",
+          "error"
         );
       }
     } catch (error) {
-      console.error("Fehler beim Erstellen des Ordners:", error);
+      console.error("Error occurred while creating the folder:", error);
       Swal.fire(
-        "Fehler",
-        "Beim Erstellen des Ordners ist ein Fehler aufgetreten.",
-        "fehler"
+        "Error",
+        "An error occurred while creating the folder.",
+        "error"
       );
     } finally {
       setIsCreating(false);
@@ -144,8 +144,6 @@ function Dashboard() {
   };
   const handleFileDelete = async (fileId) => {
     if (window.confirm("Are you sure you want to delete this file?")) {
-      // setIsDeleting(true);
-
       try {
         const response = await customFetch(
           backendUrl + `/docupload/delete/${fileId}`,
@@ -154,27 +152,82 @@ function Dashboard() {
         if (!response.ok) throw new Error("Failed to delete file");
         const data = await response.json();
 
-        // setCurrentlyPreviewedFile(null);
-        // setFilePreviewContent(null);
-
         const folderTree = await fetchAndRenderFolderTree();
-        // if (folderTree) {
-        //   setFolders(folderTree.folderTree);
-        //   setLoading(false);
-        // }
       } catch (error) {
         alert("Failed to delete file. Please try again later.");
       } finally {
-        // setIsDeleting(false);
       }
     }
   };
+  // const handleFileDelete = async (fileId) => {
+  //   // SweetAlert2-Dialog anzeigen
+  //   const result = await Swal.fire({
+  //     title: "Are you sure?",
+  //     text: "Do you really want to delete this file?",
+  //     icon: "warning",
+  //     showCancelButton: true, // Aktiviert die Cancel-Schaltfläche
+  //     confirmButtonColor: "#3085d6", // Farbe der OK-Schaltfläche
+  //     cancelButtonColor: "#d33", // Farbe der Cancel-Schaltfläche
+  //     confirmButtonText: "Yes, delete it!", // Text der OK-Schaltfläche
+  //     cancelButtonText: "Cancel", // Text der Cancel-Schaltfläche
+  //   });
+
+  //   if (result.isConfirmed) {
+  //     // Wenn der Benutzer die Aktion bestätigt hat
+  //     try {
+  //       // API-Aufruf, um die Datei zu löschen
+  //       const response = await customFetch(
+  //         `${backendUrl}/docupload/delete/${fileId}`,
+  //         { method: "DELETE", credentials: "include" }
+  //       );
+
+  //       // Überprüfen, ob der Server die Löschung bestätigt hat
+  //       if (!response.ok) throw new Error("Failed to delete file");
+
+  //       // Erfolgsmeldung anzeigen
+  //       await Swal.fire(
+  //         "Deleted!",
+  //         "The file has been deleted successfully.",
+  //         "success"
+  //       );
+
+  //       // Zusätzliche Logik, z. B. UI aktualisieren
+  //       const folderTree = await fetchAndRenderFolderTree();
+  //       setFolders(folderTree.folderTree); // Aktualisiert die Liste
+  //     } catch (error) {
+  //       console.error("Error deleting file:", error);
+
+  //       // Fehlermeldung anzeigen
+  //       await Swal.fire(
+  //         "Error",
+  //         "Failed to delete the file. Please try again.",
+  //         "error"
+  //       );
+  //     }
+  //   } else {
+  //     // Wenn der Benutzer die Aktion abgebrochen hat
+  //     console.log("File deletion was canceled.");
+  //   }
+  // };
+
   // console.log(JSON.parse(localStorage.getItem("isFileExplorerView")));
   const handleFolderDelete = async (folderId) => {
-    if (confirm("Are you sure you want to delete this folder?")) {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "Do you really want to delete this folder?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6", // Color for the Confirm button
+      cancelButtonColor: "#d33", // Color for the Cancel button
+      confirmButtonText: "Yes, delete it!", // Text for Confirm button
+      cancelButtonText: "Cancel", // Text for Cancel button
+    });
+
+    if (result.isConfirmed) {
+      // If the user clicks "Yes, delete it!"
       try {
         const response = await customFetch(
-          backendUrl + `/folders/${folderId}`,
+          `${backendUrl}/folders/${folderId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -183,17 +236,31 @@ function Dashboard() {
         if (!response.ok) {
           throw new Error("Failed to delete folder");
         }
+
         const data = await response.json();
-        // setSuccess(data.message);
+
+        // Fetch and update the folder tree
         const folderTree = await fetchAndRenderFolderTree();
         if (folderTree) {
           setFolders(folderTree.folderTree);
           setLoading(false);
         }
-        // Updates the folder structure
+
+        // Success message
+        await Swal.fire(
+          "Deleted!",
+          "The folder has been deleted successfully.",
+          "success"
+        );
       } catch (error) {
         console.error("Error deleting folder:", error);
-        // setError("Failed to delete folder. Please try again later.");
+
+        // Error message
+        await Swal.fire(
+          "Error",
+          "Failed to delete the folder. Please try again.",
+          "error"
+        );
       }
     }
   };
@@ -378,7 +445,7 @@ function Dashboard() {
             </div>
           ) : (
             <h3 className="text-[1rem] text-black/50 flex items-center justify-center h-[70vh]">
-              Suche läuft ...
+              Search in progress ...
             </h3>
           )}
           {currentlyPreviewedFile && (
