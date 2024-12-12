@@ -10,7 +10,7 @@ import { userLogout } from "../../utils/userLogout";
 import { fetchAndRenderFolder } from "../../utils/fetchFoldersTree";
 import Swal from "sweetalert2";
 import { customFetch } from "../../utils/helpers";
-
+import backendUrl from "../../production-config";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const userName = localStorage.getItem("currentUserName") || "";
@@ -48,8 +48,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   
     checkAdminStatus();
   }, []);
-
-  const backendUrl = "http://localhost:3000";
 
   const userLogout = async () => {
     try {

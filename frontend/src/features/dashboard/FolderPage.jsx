@@ -32,7 +32,7 @@ import {
   ContextMenuTrigger,
 } from "../../components/ui/context-menu";
 
-const backendUrl = "http://localhost:3000";
+import backendUrl from "../../production-config";
 
 function Folder() {
   const { folderId } = useParams();

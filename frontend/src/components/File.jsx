@@ -7,7 +7,7 @@ import { AiOutlineDelete } from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
 import { customFetch } from "../utils/helpers";
 import Swal from "sweetalert2";
-const backendUrl = "http://localhost:3000";
+import backendUrl from "../production-config";
 
 function getRelevance(results) {
   if (results.length === 0) {

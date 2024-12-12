@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 
-const backendUrl = "http://localhost:3000";
+import backendUrl from "../production-config";
 
 function ProtectedRoute({
   children,

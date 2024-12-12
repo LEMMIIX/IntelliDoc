@@ -1,4 +1,4 @@
-const backendUrl = "http://localhost:3000";
+import backendUrl from "../production-config";
 
 export async function userLogout(navigate) {
   try {

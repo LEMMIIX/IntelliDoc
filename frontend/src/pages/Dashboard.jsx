@@ -13,7 +13,7 @@ import Breadcrumbs from "../components/ui/Breadcrumbs";
 import File from "../components/File";
 import { IoClose } from "react-icons/io5";
 
-const backendUrl = "http://localhost:3000";
+import backendUrl from "../production-config";
 // this is the dashboard homepage
 function Dashboard() {
   const [folders, setFolders] = useState([]);

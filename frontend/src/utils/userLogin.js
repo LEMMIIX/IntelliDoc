@@ -1,4 +1,4 @@
-const backendUrl = "http://localhost:3000";
+import backendUrl from "../production-config";
 export function userLogin(username, password, navigate) {
   fetch(backendUrl + "/auth/login", {  // Changed from /login
     method: "POST",

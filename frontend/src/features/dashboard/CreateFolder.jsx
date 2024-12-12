@@ -3,7 +3,7 @@ import { useState } from "react";
 import { FaFolder } from "react-icons/fa";
 import { customFetch } from "../../utils/helpers";
 
-const backendUrl = "http://localhost:3000";
+import backendUrl from "../../production-config";
 
 const CreateFolderForm = ({ parentFolderId }) => {
   console.log("parentFolderId", parentFolderId)
