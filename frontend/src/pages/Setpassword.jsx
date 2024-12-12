@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+ï»¿import React, { useState } from 'react';
+import { useNavigate,Link } from 'react-router-dom';
 import '../styles/Setpassword.css';
 function Setpassword() {
     const [email, setEmail] = useState('');
@@ -23,7 +23,7 @@ function Setpassword() {
             });
 
             if (response.ok) {
-                setMessage('Passwort wurde erfolgreich zurückgesetzt!');
+                setMessage('Passwort wurde erfolgreich zurÃ¼ckgesetzt!');
                 navigate('/login');
             } else {
                 setMessage('Fehler: ' + (await response.text()));
@@ -35,46 +35,57 @@ function Setpassword() {
     };
 
     return (
-        <div className="setpassword_page">
-            <div className="setpassword_container">
-                <h1>Passwort zurücksetzen</h1>
-                <form onSubmit={handleSubmit}>
-                    <label htmlFor="email">E-Mail:</label>
-                    <input
-                        className="setpassword_input"
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <label htmlFor="verificationKey">Verifizierungsschlüssel:</label>
-                    <input
-                        className="setpassword_input"
-                        type="text"
-                        id="verificationKey"
-                        name="verificationKey"
-                        value={verificationcode}
-                        onChange={(e) => setVerificationKey(e.target.value)}
-                        required
-                    />
-                    <label htmlFor="newPassword">Neues Passwort:</label>
-                    <input
-                        className="setpassword_input"
-                        type="password"
-                        id="newPassword"
-                        name="newPassword"
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        required
-                    />
-                    <button className="setpassword_button" type="submit">Zurücksetzen</button>
-                </form>
-                {message && <p className="setpassword_message">{message}</p>}
+        <>
+            {/* Header */}
+            <header className="header">
+                <div className="header-content">
+                    <Link to="/" className="logo">IntelliDoc</Link>
+                </div>
+            </header>
+
+            {/* Main Content */}
+            <div className="setpassword_page">
+                <div className="setpassword_container">
+                    <h1>Passwort zurÃ¼cksetzen</h1>
+                    <form onSubmit={handleSubmit}>
+                        <label htmlFor="email">E-Mail:</label>
+                        <input
+                            className="setpassword_input"
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                        <label htmlFor="verificationKey">VerifizierungsschlÃ¼ssel:</label>
+                        <input
+                            className="setpassword_input"
+                            type="text"
+                            id="verificationKey"
+                            name="verificationKey"
+                            value={verificationcode}
+                            onChange={(e) => setVerificationKey(e.target.value)}
+                            required
+                        />
+                        <label htmlFor="newPassword">Neues Passwort:</label>
+                        <input
+                            className="setpassword_input"
+                            type="password"
+                            id="newPassword"
+                            name="newPassword"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                        />
+                        <button className="setpassword_button" type="submit">ZurÃ¼cksetzen</button>
+                    </form>
+                    {message && <p className="setpassword_message">{message}</p>}
+                </div>
             </div>
-        </div>
+        </>
     );
+
 }
 
 export default Setpassword;

@@ -1,0 +1,190 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f8f9fc;
+}
+
+.homepage {
+    text-align: center;
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    font-size: 1.2em;
+    gap : 15px;
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #007bff;
+}
+.logo-wrapper {
+    padding-left: 45px;
+}
+.nav-links-buttons {
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Abstand zwischen den Links und den Buttons */
+    margin-left: auto; /* Links und Buttons rechtsbündig */
+}
+
+.nav-links {
+    display: flex;
+    list-style: none;
+    gap: 25px;
+}
+
+.nav-item {
+    text-decoration: none;
+    color: #333;
+}
+.nav-buttons {
+    display: flex;
+    gap: 20px; /* Abstand zwischen den Buttons */
+}
+.nav-btn {
+    background-color: #007bff;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    gap : 10px;
+}
+.nav-btn2 {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    text-decoration: none;
+    gap : 10px;
+}
+
+/* Hero Section: inside the page*/
+.hero-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    gap: 70px;
+    background-color: #eef2f7;
+}
+
+.hero-content {
+    max-width: 500px;
+    text-align: left;
+    font-size:1.2em;
+}
+
+    .hero-content h1 {
+        font-size: 3em;
+        color: #333;
+    }
+
+    .hero-content p {
+        margin: 20px 0;
+        font-size: 1.2em;
+        color: #666;
+    }
+
+.cta-buttons {
+    display: flex;
+    gap: 15px;
+}
+
+.btn {
+    text-decoration: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+    .btn.primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn.secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+/* Hero Image */
+.hero-image img {
+    max-width: 400px;
+    height: auto;
+}
+
+/* Features Section */
+.features-section {
+    display: flex;
+    justify-content: center;
+    gap: 75px;
+    padding: 40px;
+    background-color: white;
+}
+
+.feature {
+    text-align: center;
+    max-width: 250px;
+}
+
+    .feature .icon {
+        font-size: 2em;
+        margin-bottom: 10px;
+        color: #007bff;
+    }
+
+    .feature h3 {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+        color: #333;
+    }
+
+    .feature p {
+        font-size: 0.9em;
+        color: #666;
+    }
+
+
+
+.footer {
+    background-color: #f4f4f4; /* Heller Hintergrund */
+    color: #333; /* Textfarbe */
+    text-align: center; /* Zentrierter Text */
+    padding: 35px 5px; /* Innenabstand oben und unten */
+    font-size: 0.9em; /* Kleinere Schriftgröße */
+    border-top: 1px solid #ccc; /* Dünne Trennlinie oben */
+    position: center; /* Bleibt am unteren Bildschirmrand */
+    width: 100%; /* Breite der Seite */
+    bottom: 0; /* Am unteren Rand */
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center; /* Links und Divider zentrieren */
+    align-items: center; /* Vertikal ausrichten */
+    gap: 15px; /* Abstand zwischen Kontakt, Divider und Impressum */
+}
+
+.footer-link {
+    text-decoration: none; /* Unterstrich entfernen */
+    color: #007bff; /* Blau für Links */
+    transition: color 0.3s ease;
+}
+
+    .footer-link:hover {
+        color: #0056b3; /* Dunkleres Blau bei Hover */
+    }
+
+.divider {
+    color: #666; 
+}
+

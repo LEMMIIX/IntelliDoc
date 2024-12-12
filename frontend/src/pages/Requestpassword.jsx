@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+ï»¿import React, { useState } from 'react';
+import { useNavigate,Link } from 'react-router-dom';
 import '../styles/Requestpassword.css';
 
 function Requestpassword() {
@@ -23,7 +23,7 @@ function Requestpassword() {
             });
 
             if (response.ok) {
-                setMessage('Passwort zurücksetzen E-Mail wurde gesendet!');
+                setMessage('Passwort zurÃ¼cksetzen E-Mail wurde gesendet!');
                 navigate('/Setpassword');
             } else {
                 setMessage('' + (await response.text()));
@@ -34,29 +34,36 @@ function Requestpassword() {
     };
 
     return (
-        <div className="requestpassword_page">
-            <div className="requestpassword_container">
-                <h1>Passwort zurücksetzen anfordern</h1>
-                <form onSubmit={handleSubmit}>
-                    <label htmlFor="email">E-Mail:</label>
-                    <input
-                        className="requestpassword_input"
-                        type="email"
-                        id="email"
-                        name="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                    <button className="requestpassword_button" type="submit">Anfordern</button>
-                </form>
-                <a href="/Setpassword" className="requestpassword_link">
-                    Neues Passwort
-                </a>
-                {message && <p>{message}</p>}
+        <>
+            {/* Header */}
+            <header className="header">
+                <div className="header-content">
+                    <Link to="/" className="logo">IntelliDoc</Link>
+                </div>
+            </header>
+
+            {/* Main Content */}
+            <div className="requestpassword_page">
+                <div className="requestpassword_container">
+                    <h1>Passwort zurÃ¼cksetzen anfordern</h1>
+                    <form onSubmit={handleSubmit}>
+                        <label htmlFor="email">E-Mail:</label>
+                        <input
+                            className="requestpassword_input"
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                        <button className="requestpassword_button" type="submit">Anfordern</button>
+                    </form>
+                    
+                    {message && <p>{message}</p>}
+                </div>
             </div>
-        </div>
+        </>
     );
 }
-
 export default Requestpassword;
