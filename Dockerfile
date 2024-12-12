@@ -14,38 +14,45 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Final stage
-FROM node:20
+FROM node:20-slim
 WORKDIR /app
 
-# Install tools
+# Install necessary tools
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
     python3-venv \
+    python3-full \
+    build-essential \
+    gcc \
     postgresql-client \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Environment setup
-ENV VIRTUAL_ENV=/app/venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-ENV PIP_CACHE_DIR=/pip_cache
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=1536"
 ENV HF_TOKEN="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"
+ENV VIRTUAL_ENV=/app/venv
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-# Set up directories and Python environment
-RUN python3 -m venv $VIRTUAL_ENV && \
-    mkdir -p /app/models \
-    /app/node_modules/@xenova/transformers/models/Xenova
+# Setup Python virtual environment
+RUN python3 -m venv $VIRTUAL_ENV
 
-# Copy files
+# Copy from build stages
 COPY --from=backend-deps /app/node_modules ./node_modules
 COPY --from=frontend-build /app/dist ./frontend/dist
+
+# Copy application files including requirements
+COPY database/*.sql /app/database/
+COPY download_models/*.py /app/download_models/
+COPY docker-init/pip-requirements.txt /app/docker-init/
+COPY get-pip.py .
 COPY . .
 
-# Install Python requirements
-COPY docker-init/pip-requirements.txt ./
-RUN pip install --no-cache-dir -r pip-requirements.txt requests huggingface_hub
+# Install pip and requirements in virtual environment
+RUN python3 get-pip.py && \
+    pip3 install --no-cache-dir -r /app/docker-init/pip-requirements.txt
 
 # Create initialization script
 RUN echo '#!/bin/bash\n\
@@ -56,21 +63,35 @@ until pg_isready -h postgres -p 5432 -U postgres; do\n\
     sleep 2\n\
 done\n\
 \n\
-# Check and download models if needed\n\
+# Initialize database and ensure schema exists\n\
+echo "Running database initialization..."\n\
+for sql_file in "/app/database/01-init.sql" "/app/database/02-extension-inst.sql" "/app/database/03-insert-test-users.sql"; do\n\
+    echo "Executing $sql_file..."\n\
+    if ! PGPASSWORD=pgres psql -h postgres -U postgres -d postgres -f "$sql_file"; then\n\
+        echo "Error executing $sql_file"\n\
+        exit 1\n\
+    fi\n\
+done\n\
+\n\
+# Verify schema initialization\n\
+echo "Verifying schema initialization..."\n\
+until PGPASSWORD=pgres psql -h postgres -U postgres -d postgres -c "SELECT FROM main.users LIMIT 1" > /dev/null 2>&1; do\n\
+    echo "Waiting for schema to be fully initialized..."\n\
+    sleep 2\n\
+done\n\
+\n\
+# Download models if needed\n\
 MODEL1="/app/node_modules/@xenova/transformers/models/Xenova/paraphrase-multilingual-mpnet-base-v2/tokenizer.json"\n\
 MODEL2="/app/node_modules/@xenova/transformers/models/Xenova/all-mpnet-base-v2/tokenizer.json"\n\
 \n\
 if [ ! -f "$MODEL1" ] || [ ! -f "$MODEL2" ]; then\n\
     echo "Models not found. Downloading..."\n\
-    cd /app\n\
     python3 -u download_models/paraphrase-multilingual-mpnet-base-v2.py\n\
     python3 -u download_models/all-mpnet-base-v2.py\n\
 fi\n\
 \n\
-# Start the application\n\
 exec node app.js --optimize-for-size\n\
-' > /app/entrypoint.sh && \
-chmod +x /app/entrypoint.sh
+' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 EXPOSE 3000
 CMD ["/app/entrypoint.sh"]

@@ -8,19 +8,16 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./database:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 5
     networks:
       - default
 
   backend:
-    build: 
-      context: .
-      dockerfile: Dockerfile
+    build: .
     depends_on:
       postgres:
         condition: service_healthy
@@ -28,9 +25,7 @@ services:
       POSTGRES_SCHEMA: main
       NODE_ENV: production
     volumes:
-      - ./node_modules/@xenova/transformers/models:/app/node_modules/@xenova/transformers/models
-      - pip_cache:/pip_cache
-      - venv_data:/app/venv
+      - model_data:/app/node_modules/@xenova/transformers/models
     ports:
       - "3000:3000"
     networks:
@@ -47,5 +42,4 @@ networks:
 
 volumes:
   postgres_data:
-  pip_cache:
-  venv_data:
+  model_data:
