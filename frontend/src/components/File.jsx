@@ -120,7 +120,7 @@ const File = ({
 
   const fetchSearchResults = async () => {
     try {
-      const response = await customFetch("http://localhost:3000/search/", {
+      const response = await customFetch(`${backendUrl}/api/search/`, {
         method: "POST",
         body: JSON.stringify({ query: searchQueryParam, limit: 10 }),
         headers: { "Content-Type": "application/json" },
@@ -202,7 +202,7 @@ const File = ({
               if (newName) {
                 try {
                   const response = await customFetch(
-                    `${backendUrl}/folders/rename`,
+                    `${backendUrl}/api/folders/rename`,
                     {
                       method: "POST",
                       credentials: "include",

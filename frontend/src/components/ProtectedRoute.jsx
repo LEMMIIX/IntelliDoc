@@ -16,7 +16,7 @@ function ProtectedRoute({
     const checkAuthStatus = async () => {
       try {
         console.log("Checking authentication status...");
-        const response = await fetch(`${backendUrl}/api/current-user`, {
+        const response = await fetch(`${backendUrl}/api/auth/current-user`, {
           credentials: "include",
         });
 

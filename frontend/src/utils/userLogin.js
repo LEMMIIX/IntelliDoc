@@ -1,6 +1,9 @@
 import backendUrl from "../production-config";
 export function userLogin(username, password, navigate) {
-  fetch(backendUrl + "/auth/login", {  // Changed from /login
+  const url = backendUrl + "/api/auth/login";
+  console.log('Attempting login to:', url);
+  
+  fetch(url, {
     method: "POST",
     credentials: "include",
     headers: {

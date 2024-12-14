@@ -51,7 +51,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
   const userLogout = async () => {
     try {
-      const response = await customFetch('http://localhost:3000/auth/logout', {
+      const response = await customFetch('${backendUrl}/api/auth/logout', {
         method: 'POST',
         credentials: 'include'
       });
@@ -90,7 +90,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         formData.append("file", selectedFile);
 
         try {
-          const response = await customFetch(`${backendUrl}/docupload/smart`, {
+          const response = await customFetch(`${backendUrl}/api/docupload/smart`, {
             method: "POST",
             body: formData,
             credentials: "include",
@@ -185,7 +185,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         try {
           const response = await customFetch(
-            `${backendUrl}/docupload/assign-folder`,
+            `${backendUrl}/api/docupload/assign-folder`,
             {
               method: "POST",
               body: JSON.stringify({

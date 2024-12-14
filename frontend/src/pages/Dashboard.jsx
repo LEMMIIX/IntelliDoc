@@ -117,7 +117,7 @@ function Dashboard() {
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
-        `${backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
+        `${backendUrl}/api/docupload/download/${encodeURIComponent(fileName)}`,
         {
           method: "GET",
           credentials: "include",
@@ -242,7 +242,7 @@ function Dashboard() {
         // Bildvorschau
         setFilePreviewContent(
           <img
-            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${backendUrl}/api/docupload/view/${encodeURIComponent(fileName)}`}
             alt="Image Preview"
             className="max-w-full mx-auto object-contain w-[500px] h-[300px]"
           />
@@ -251,7 +251,7 @@ function Dashboard() {
         // PDF-Vorschau
         setFilePreviewContent(
           <iframe
-            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${backendUrl}/api/docupload/view/${encodeURIComponent(fileName)}`}
             frameBorder="0"
             width="100%"
             height="600px"
@@ -260,7 +260,7 @@ function Dashboard() {
       } else if (fileExtension === "txt") {
         // Textdatei-Vorschau
         const response = await customFetch(
-          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${backendUrl}/api/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -280,7 +280,7 @@ function Dashboard() {
       } else if (fileExtension === "docx") {
         // DOCX-Vorschau
         const response = await customFetch(
-          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${backendUrl}/api/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -319,7 +319,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchSearchResults = async () => {
       try {
-        const response = await customFetch("http://localhost:3000/search/", {
+        const response = await customFetch(`${backendUrl}/api/search/`, {
           method: "POST",
           body: JSON.stringify({ query: searchQueryParam, limit: 10 }),
           headers: { "Content-Type": "application/json" },
