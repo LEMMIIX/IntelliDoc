@@ -52,9 +52,6 @@
       }
 
   export const customFetch = async (url, options = {}) => {
-    console.log('Fetching URL:', url);
-    console.log('With options:', options);
-
     const response = await fetch(url, {
       ...options,
       credentials: "include",

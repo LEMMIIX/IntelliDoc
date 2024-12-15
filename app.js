@@ -22,28 +22,15 @@ const UserRole = require("./database/UserRole");
 const UserRoleMapping = require("./database/UserRoleMapping");
 
 const PORT = process.env.PORT || 3000;
-const isDevelopment = process.env.NODE_ENV !== 'production';
 
 // Middleware Configuration
 app.use(
   cors({
-    origin: process.env.NODE_ENV === 'production' 
-      ? true  // Allow any origin in production, since we're controlling it via relative URLs
-      : 'http://localhost:5173',
+    origin: "http://localhost:5173",
     methods: ["POST", "PUT", "GET", "DELETE", "OPTIONS", "HEAD"],
     credentials: true,
   })
 );
-
-// Basic security headers
-app.use((req, res, next) => {
-  res.setHeader(
-    'Content-Security-Policy',
-    "default-src 'self'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' localhost:* ws://localhost:*"
-  );
-  next();
-});
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
@@ -55,11 +42,11 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      sameSite: 'lax',
-      secure: false,  // Set to false since you're using http
+      sameSite: false,
+      secure: false,
       httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000
-    }
+      maxAge: 24 * 60 * 60 * 1000,
+    },
   })
 );
 
@@ -97,21 +84,17 @@ app.use(
 
 // Authentication Middleware
 const authenticateMiddleware = (req, res, next) => {
-  console.log('Auth check:', {
-    sessionId: req.sessionID,
-    userId: req.session?.userId,
-    path: req.path,
-    method: req.method,
-    headers: req.headers
-  });
-
   if (req.session.userId) {
     next();
   } else {
-    console.log('Authentication failed - no userId in session');
     res.status(401).json({ message: "Unauthorized: Please log in" });
   }
 };
+
+// Routes
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "frontend", "html", "login.html"));
+});
 
 app.get("/api/current-user", authenticateMiddleware, (req, res) => {
   res.json({
@@ -120,17 +103,21 @@ app.get("/api/current-user", authenticateMiddleware, (req, res) => {
   });
 });
 
-// Route Middleware
-app.use("/api/auth", authRoutes);
-app.use("/api/admin", adminRoutes);
-app.use("/api/docupload", authenticateMiddleware, docUploadRoutes);
-app.use("/api/folders", authenticateMiddleware, foldersRoutes);
-app.use("/api/search", authenticateMiddleware, semanticSearchRoutes);
-app.use("/api/passwordReset", passwordResetRoutes);
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'dist', 'index.html'));
+app.use('/login', (req, res, next) => {
+  if (req.method === 'POST') {
+    req.url = '/auth/login';
+    return app._router.handle(req, res, next);
+  }
+  next();
 });
+
+// Route Middleware
+app.use('/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use("/docupload", authenticateMiddleware, docUploadRoutes);
+app.use("/folders", authenticateMiddleware, foldersRoutes);
+app.use("/search", authenticateMiddleware, semanticSearchRoutes);
+app.use("/passwordReset", passwordResetRoutes);
 
 // Start Server
 app.listen(PORT, () => {

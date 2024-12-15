@@ -7,7 +7,7 @@ import { AiOutlineDelete } from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
 import { customFetch } from "../utils/helpers";
 import Swal from "sweetalert2";
-import backendUrl from "../production-config";
+const backendUrl = "http://localhost:3000";
 
 function getRelevance(results) {
   if (results.length === 0) {
@@ -120,7 +120,7 @@ const File = ({
 
   const fetchSearchResults = async () => {
     try {
-      const response = await customFetch(`${backendUrl}/api/search/`, {
+      const response = await customFetch("http://localhost:3000/search/", {
         method: "POST",
         body: JSON.stringify({ query: searchQueryParam, limit: 10 }),
         headers: { "Content-Type": "application/json" },
@@ -202,7 +202,7 @@ const File = ({
               if (newName) {
                 try {
                   const response = await customFetch(
-                    `${backendUrl}/api/folders/rename`,
+                    `${backendUrl}/folders/rename`,
                     {
                       method: "POST",
                       credentials: "include",

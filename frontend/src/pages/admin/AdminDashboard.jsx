@@ -5,7 +5,7 @@ import { IoClose } from "react-icons/io5";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 
-import backendUrl from "../../production-config";
+const backendUrl = "http://localhost:3000";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);

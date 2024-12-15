@@ -1,6 +1,6 @@
 import { customFetch } from "./helpers";
 
-import backendUrl from "../production-config";
+const backendUrl = "http://localhost:3000";
 export async function fetchAndRenderFolderTree() {
   try {
     const response = await customFetch(backendUrl + "/folders/tree", {

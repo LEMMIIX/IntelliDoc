@@ -10,7 +10,7 @@ import { userLogout } from "../../utils/userLogout";
 import { fetchAndRenderFolder } from "../../utils/fetchFoldersTree";
 import Swal from "sweetalert2";
 import { customFetch } from "../../utils/helpers";
-import backendUrl from "../../production-config";
+
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const userName = localStorage.getItem("currentUserName") || "";
@@ -49,9 +49,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     checkAdminStatus();
   }, []);
 
+  const backendUrl = "http://localhost:3000";
+
   const userLogout = async () => {
     try {
-      const response = await customFetch('${backendUrl}/api/auth/logout', {
+      const response = await customFetch('http://localhost:3000/auth/logout', {
         method: 'POST',
         credentials: 'include'
       });
@@ -90,7 +92,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         formData.append("file", selectedFile);
 
         try {
-          const response = await customFetch(`${backendUrl}/api/docupload/smart`, {
+          const response = await customFetch(`${backendUrl}/docupload/smart`, {
             method: "POST",
             body: formData,
             credentials: "include",
@@ -185,7 +187,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
         try {
           const response = await customFetch(
-            `${backendUrl}/api/docupload/assign-folder`,
+            `${backendUrl}/docupload/assign-folder`,
             {
               method: "POST",
               body: JSON.stringify({

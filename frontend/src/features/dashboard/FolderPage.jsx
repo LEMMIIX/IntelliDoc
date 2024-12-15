@@ -32,7 +32,7 @@ import {
   ContextMenuTrigger,
 } from "../../components/ui/context-menu";
 
-import backendUrl from "../../production-config";
+const backendUrl = "http://localhost:3000";
 
 function Folder() {
   const { folderId } = useParams();
@@ -98,7 +98,7 @@ function Folder() {
     // fetch version history for a file
     try {
       const response = await customFetch(
-        `${backendUrl}/api/docupload/versions/${fileId}`,
+        `${backendUrl}/docupload/versions/${fileId}`,
         {
           method: "GET",
           credentials: "include",
@@ -183,7 +183,7 @@ function Folder() {
     }
     setLoading(true);
     try {
-      const response = await customFetch(`${backendUrl}/api/folders/rename`, {
+      const response = await customFetch(`${backendUrl}/folders/rename`, {
         method: "POST",
         body: JSON.stringify({
           documentId: selectedDocToRename.id,
@@ -303,7 +303,7 @@ function Folder() {
       setIsDeleting(true);
       try {
         const response = await customFetch(
-          `${backendUrl}/api/folders/${folderId}`,
+          `${backendUrl}/folders/${folderId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -359,7 +359,7 @@ function Folder() {
         // Bildvorschau
         setFilePreviewContent(
           <img
-            src={`${backendUrl}/api/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
             alt="Image Preview"
             className="max-w-full mx-auto object-contain w-[500px] h-[300px]"
           />
@@ -368,7 +368,7 @@ function Folder() {
         // PDF-Vorschau
         setFilePreviewContent(
           <iframe
-            src={`${backendUrl}/api/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
             frameBorder="0"
             width="100%"
             height="600px"
@@ -377,7 +377,7 @@ function Folder() {
       } else if (fileExtension === "txt") {
         // Textdatei-Vorschau
         const response = await customFetch(
-          `${backendUrl}/api/docupload/view/${encodeURIComponent(fileName)}`,
+          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -397,7 +397,7 @@ function Folder() {
       } else if (fileExtension === "docx") {
         // DOCX-Vorschau
         const response = await customFetch(
-          `${backendUrl}/api/docupload/view/${encodeURIComponent(fileName)}`,
+          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -424,7 +424,7 @@ function Folder() {
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
-        `${backendUrl}/api/docupload/download/${encodeURIComponent(fileName)}`,
+        `${backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
         {
           method: "GET",
           credentials: "include",
@@ -512,7 +512,7 @@ function Folder() {
 
   const handleRenameSubmit = async (folderId, newFolderName) => {
     try {
-      const response = await customFetch(`${backendUrl}/api/folders/rename`, {
+      const response = await customFetch(`${backendUrl}/folders/rename`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -628,7 +628,7 @@ function Folder() {
         formData.append("folderId", folderId);
 
         // `customFetch`-Aufruf für Datei-Upload
-        return customFetch(`${backendUrl}/api/docupload`, {
+        return customFetch(`${backendUrl}/docupload`, {
           method: "POST",
           body: formData,
           credentials: "include",
@@ -902,7 +902,7 @@ function Folder() {
                                     // Füge die ursprüngliche Dateierweiterung wieder hinzu
                                     const fullFilename = `${newName}.${fileExtension}`;
                                     try {
-                                      const response = await customFetch(`${backendUrl}/api/folders/rename`, {
+                                      const response = await customFetch(`${backendUrl}/folders/rename`, {
                                         method: "POST",
                                         credentials: "include",
                                         headers: {
@@ -1016,7 +1016,7 @@ function Folder() {
                             if (folderName) {
                               try {
                                 const response = await customFetch(
-                                  `${backendUrl}/api/folders/create`,
+                                  `${backendUrl}/folders/create`,
                                   {
                                     method: "POST",
                                     credentials: "include",
@@ -1070,7 +1070,7 @@ function Folder() {
                                 formData.append("folderId", folder.id);
 
                                 const response = await customFetch(
-                                  `${backendUrl}/api/docupload`,
+                                  `${backendUrl}/docupload`,
                                   {
                                     method: "POST",
                                     credentials: "include",
@@ -1115,7 +1115,7 @@ function Folder() {
                             if (result.isConfirmed) {
                               try {
                                 const response = await customFetch(
-                                  `${backendUrl}/api/folders/${folder.id}`,
+                                  `${backendUrl}/folders/${folder.id}`,
                                   {
                                     method: "DELETE",
                                     credentials: "include",
@@ -1162,7 +1162,7 @@ function Folder() {
                             if (folderName) {
                               try {
                                 const response = await customFetch(
-                                  `${backendUrl}/api/folders/renameFolder`,
+                                  `${backendUrl}/folders/renameFolder`,
                                   {
                                     method: "POST",
                                     credentials: "include",
@@ -1270,7 +1270,7 @@ function Folder() {
                                       if (folderName) {
                                         try {
                                           const response = await customFetch(
-                                            `${backendUrl}/api/folders/create`,
+                                            `${backendUrl}/folders/create`,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1331,7 +1331,7 @@ function Folder() {
                                       if (folderName) {
                                         try {
                                           const response = await customFetch(
-                                            `${backendUrl}/api/folders/renameFolder`,
+                                            `${backendUrl}/folders/renameFolder`,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1393,7 +1393,7 @@ function Folder() {
                                           );
 
                                           const response = await customFetch(
-                                            `${backendUrl}/api/docupload`,
+                                            `${backendUrl}/docupload`,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1432,7 +1432,7 @@ function Folder() {
                                     onClick={async () => {
                                       try {
                                         const response = await customFetch(
-                                          `${backendUrl}/api/folders/${subFolder.id}`,
+                                          `${backendUrl}/folders/${subFolder.id}`,
                                           {
                                             method: "DELETE",
                                             credentials: "include",
@@ -1492,7 +1492,7 @@ function Folder() {
                                     onClick={async () => {
                                       try {
                                         const response = await customFetch(
-                                          `${backendUrl}/api/docupload/view/${file.name}`,
+                                          `${backendUrl}/docupload/view/${file.name}`,
                                           {
                                             credentials: "include",
                                           }
@@ -1524,7 +1524,7 @@ function Folder() {
                                     onClick={async () => {
                                       try {
                                         const response = await customFetch(
-                                          `${backendUrl}/api/docupload/download/${file.name}`,
+                                          `${backendUrl}/docupload/download/${file.name}`,
                                           {
                                             credentials: "include",
                                           }
@@ -1581,7 +1581,7 @@ function Folder() {
                                       if (newName) {
                                         try {
                                           const response = await customFetch(
-                                            ` ${backendUrl}/api/folders/rename `,
+                                            ` ${backendUrl}/folders/rename `,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1638,7 +1638,7 @@ function Folder() {
                                       if (result.isConfirmed) {
                                         try {
                                           const response = await customFetch(
-                                            `${backendUrl}/api/docupload/delete/${file.id}`,
+                                            `${backendUrl}/docupload/delete/${file.id}`,
                                             {
                                               method: "DELETE",
                                               credentials: "include",

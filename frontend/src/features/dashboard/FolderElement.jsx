@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useState, useEffect, useRef } from "react";
 import { customFetch } from "../../utils/helpers";
-import BASE_URL from "../../production-config";
 
 function FolderElement({ folderId, folderName, handleFolderDelete }) {
   const navigate = useNavigate();
@@ -14,6 +13,8 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
   const [errorMessage, setErrorMessage] = useState("");
   const popupRef = useRef(null);
   const folderOptionsRef = useRef(null); // Reference for folder options
+
+  const BASE_URL = "http://localhost:3000";
 
   const handleRenameFolder = async () => {
     if (inputError != "") {

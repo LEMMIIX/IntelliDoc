@@ -4,7 +4,7 @@ import { FiFile } from "react-icons/fi";
 import { fetchAndRenderFolderTree } from "../../utils/fetchFoldersTree";
 import { customFetch } from "../../utils/helpers";
 
-import backendUrl from "../../production-config";
+const backendUrl = "http://localhost:3000";
 
 const FileUpload = ({ folderId }) => {
   const [isUploading, setIsUploading] = useState(false);
