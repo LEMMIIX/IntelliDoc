@@ -12,8 +12,8 @@ import Swal from "sweetalert2";
 import Breadcrumbs from "../components/ui/Breadcrumbs";
 import File from "../components/File";
 import { IoClose } from "react-icons/io5";
+import prodconfig from "../production-config";
 
-const backendUrl = "http://localhost:3000";
 // this is the dashboard homepage
 function Dashboard() {
   const [folders, setFolders] = useState([]);
@@ -83,7 +83,7 @@ function Dashboard() {
   const createFolder = async (folderName, id) => {
     setIsCreating(true);
     try {
-      const response = await customFetch(backendUrl + "/folders/create", {
+      const response = await customFetch(`${prodconfig.backendUrl}/folders/create`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -117,7 +117,7 @@ function Dashboard() {
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
-        `${backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
+        `${prodconfig.backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
         {
           method: "GET",
           credentials: "include",
@@ -148,7 +148,7 @@ function Dashboard() {
 
       try {
         const response = await customFetch(
-          backendUrl + `/docupload/delete/${fileId}`,
+          `${prodconfig.backendUrl}/docupload/delete/${fileId}`,
           { method: "DELETE", credentials: "include" }
         );
         if (!response.ok) throw new Error("Failed to delete file");
@@ -174,7 +174,7 @@ function Dashboard() {
     if (confirm("Are you sure you want to delete this folder?")) {
       try {
         const response = await customFetch(
-          backendUrl + `/folders/${folderId}`,
+          `${prodconfig.backendUrl}/folders/${folderId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -242,7 +242,7 @@ function Dashboard() {
         // Bildvorschau
         setFilePreviewContent(
           <img
-            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
             alt="Image Preview"
             className="max-w-full mx-auto object-contain w-[500px] h-[300px]"
           />
@@ -251,7 +251,7 @@ function Dashboard() {
         // PDF-Vorschau
         setFilePreviewContent(
           <iframe
-            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
             frameBorder="0"
             width="100%"
             height="600px"
@@ -260,7 +260,7 @@ function Dashboard() {
       } else if (fileExtension === "txt") {
         // Textdatei-Vorschau
         const response = await customFetch(
-          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -280,7 +280,7 @@ function Dashboard() {
       } else if (fileExtension === "docx") {
         // DOCX-Vorschau
         const response = await customFetch(
-          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -319,7 +319,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchSearchResults = async () => {
       try {
-        const response = await customFetch("http://localhost:3000/search/", {
+        const response = await customFetch(`${prodconfig.backendUrl}/search/`, {
           method: "POST",
           body: JSON.stringify({ query: searchQueryParam, limit: 10 }),
           headers: { "Content-Type": "application/json" },

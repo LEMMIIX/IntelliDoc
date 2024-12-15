@@ -4,8 +4,7 @@ import { FaPlus } from "react-icons/fa6";
 import { IoClose } from "react-icons/io5";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-
-const backendUrl = "http://localhost:3000";
+import prodconfig from "../../production-config";
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -23,7 +22,7 @@ const AdminDashboard = () => {
   const fetchUsers = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${backendUrl}/api/admin/users`, {
+      const response = await fetch(`${prodconfig.backendUrl}/api/admin/users`, {
         credentials: "include",
       });
       const data = await response.json();
@@ -47,7 +46,7 @@ const AdminDashboard = () => {
 
     if (confirmed.isConfirmed) {
       try {
-        await fetch(`${backendUrl}/api/admin/users/${id}`, {
+        await fetch(`${prodconfig.backendUrl}/api/admin/users/${id}`, {
           method: "DELETE",
           credentials: "include",
         });
@@ -63,7 +62,7 @@ const AdminDashboard = () => {
   const updateUser = async () => {
     try {
       const response = await fetch(
-        `${backendUrl}/api/admin/users/${editingUser.user_id}`,
+        `${prodconfig.backendUrl}/api/admin/users/${editingUser.user_id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -98,7 +97,7 @@ const AdminDashboard = () => {
 
   const handleLogout = async () => {
     try {
-      await fetch(`${backendUrl}/api/logout`, { method: "POST", credentials: "include" });
+      await fetch(`${prodconfig.backendUrl}/api/logout`, { method: "POST", credentials: "include" });
       navigate("/login"); // Zurück zur Login-Seite
     } catch (error) {
       console.error("Fehler beim Ausloggen:", error);

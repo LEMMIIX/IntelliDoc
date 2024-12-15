@@ -1,7 +1,8 @@
-const backendUrl = 'http://localhost:3000'
+import prodconfig from "../production-config";
+
 export function userRegister(username,email,password,navigate) {
 
-    fetch(backendUrl+'/register', {
+    fetch(`${prodconfig.backendUrl}/auth/register`, {
        method: 'POST',
        credentials:"include",
        headers: {

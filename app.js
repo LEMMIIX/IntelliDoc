@@ -91,11 +91,6 @@ const authenticateMiddleware = (req, res, next) => {
   }
 };
 
-// Routes
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "html", "login.html"));
-});
-
 app.get("/api/current-user", authenticateMiddleware, (req, res) => {
   res.json({
     userId: req.session.userId,
@@ -113,11 +108,16 @@ app.use('/login', (req, res, next) => {
 
 // Route Middleware
 app.use('/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/admin', adminRoutes);
 app.use("/docupload", authenticateMiddleware, docUploadRoutes);
 app.use("/folders", authenticateMiddleware, foldersRoutes);
 app.use("/search", authenticateMiddleware, semanticSearchRoutes);
 app.use("/passwordReset", passwordResetRoutes);
+
+app.get("*", (req, res) => {
+  console.log(`Catch-All Route hit: ${req.url}`);
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+});
 
 // Start Server
 app.listen(PORT, () => {

@@ -3,8 +3,7 @@ import { useState, useEffect, Fragment } from "react";
 import { FiFile } from "react-icons/fi";
 import { fetchAndRenderFolderTree } from "../../utils/fetchFoldersTree";
 import { customFetch } from "../../utils/helpers";
-
-const backendUrl = "http://localhost:3000";
+import prodconfig from "../../production-config";
 
 const FileUpload = ({ folderId }) => {
   const [isUploading, setIsUploading] = useState(false);
@@ -24,7 +23,7 @@ const FileUpload = ({ folderId }) => {
     formData.append("file", selectedFile);
     formData.append("folderId", folderId);
 
-    customFetch(backendUrl + "/docupload", {
+    customFetch(`${prodconfig.backendUrl}/docupload`, {
       credentials: "include",
       method: "POST",
       body: formData,

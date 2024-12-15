@@ -1,9 +1,9 @@
 import { customFetch } from "./helpers";
+import prodconfig from "../production-config";
 
-const backendUrl = "http://localhost:3000";
 export async function fetchAndRenderFolderTree() {
   try {
-    const response = await customFetch(backendUrl + "/folders/tree", {
+    const response = await customFetch(`${prodconfig.backendUrl}/folders/tree`, {
       method: "GET",
       credentials: "include",
     });
@@ -20,7 +20,7 @@ export async function fetchAndRenderFolderTree() {
 }
 export async function fetchAndRenderFolder() {
   try {
-    const response = await customFetch(backendUrl + "/folders", {
+    const response = await customFetch(`${prodconfig.backendUrl}/folders`, {
       method: "GET",
       credentials: "include",
     });

@@ -4,7 +4,6 @@ WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
-ENV NODE_ENV=production
 RUN npm run build
 
 # Build backend dependencies
