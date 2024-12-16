@@ -1,16 +1,17 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../../ConnectPostgres'); 
+const db = require('../../ConnectPostgres');
+const adminMiddleware = require('../models/modelAdmin');
 
 // Monitoring-Endpunkt: Aktive Datenbank-Sitzungen abrufen
-router.get('/db-sessions', async (req, res) => {
+router.get('/db-sessions', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT datname, usename, state, query, query_start
       FROM pg_stat_activity
       WHERE state != 'idle'
     `);
-    res.json(result.rows); // Die Zeilen der Ergebnisse zurückgeben
+    res.json(result.rows);
   } catch (error) {
     console.error('Fehler beim Abrufen der DB-Sitzungen:', error);
     res.status(500).json({ message: 'Fehler beim Abrufen der DB-Sitzungen.' });
@@ -18,7 +19,7 @@ router.get('/db-sessions', async (req, res) => {
 });
 
 // Monitoring-Endpunkt: Datenbankstatistiken abrufen
-router.get('/db-stats', async (req, res) => {
+router.get('/db-stats', adminMiddleware, async (req, res) => {
   try {
     const result = await db.query(`
       SELECT 
@@ -30,7 +31,7 @@ router.get('/db-stats', async (req, res) => {
         blks_hit AS blocks_hit
       FROM pg_stat_database
     `);
-    res.json(result.rows); // Die Zeilen der Ergebnisse zurückgeben
+    res.json(result.rows);
   } catch (error) {
     console.error('Fehler beim Abrufen der DB-Statistiken:', error);
     res.status(500).json({ message: 'Fehler beim Abrufen der DB-Statistiken.' });

@@ -43,7 +43,6 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
 // Session Configuration
 app.use(
@@ -125,6 +124,8 @@ app.use("/folders", authenticateMiddleware, foldersRoutes);
 app.use("/search", authenticateMiddleware, semanticSearchRoutes);
 app.use("/passwordReset", passwordResetRoutes);
 app.use('/monitor', monitorRoutes);
+
+app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
 app.get("*", (req, res) => {
   console.log(`Catch-All Route hit: ${req.url}`);
