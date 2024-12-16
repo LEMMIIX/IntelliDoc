@@ -12,8 +12,8 @@ import Swal from "sweetalert2";
 import Breadcrumbs from "../components/ui/Breadcrumbs";
 import File from "../components/File";
 import { IoClose } from "react-icons/io5";
+import prodconfig from "../production-config";
 
-const backendUrl = "http://localhost:3000";
 // this is the dashboard homepage
 function Dashboard() {
   const [folders, setFolders] = useState([]);
@@ -61,16 +61,16 @@ function Dashboard() {
   }, []);
   const handleCreateFolderSwal = async (id) => {
     const { value: folderName } = await Swal.fire({
-      title: "Create New Folder",
+      title: "Neuen Ordner erstellen",
       input: "text",
-      inputLabel: "Folder Name",
-      inputPlaceholder: "Enter the name of the new folder",
+      inputLabel: "Ordnername",
+      inputPlaceholder: "Geben Sie den Namen des neuen Ordners ein",
       showCancelButton: true,
-      confirmButtonText: "Create",
-      cancelButtonText: "Cancel",
+      confirmButtonText: "Erstellen",
+      cancelButtonText: "Abbrechen",
       inputValidator: (value) => {
         if (!value) {
-          return "The folder name is required!";
+          return "Der Ordnername ist erforderlich!";
         }
       },
     });
@@ -83,7 +83,7 @@ function Dashboard() {
   const createFolder = async (folderName, id) => {
     setIsCreating(true);
     try {
-      const response = await customFetch(backendUrl + "/folders/create", {
+      const response = await customFetch(`${prodconfig.backendUrl}/folders/create`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -94,21 +94,21 @@ function Dashboard() {
 
       const data = await response.json();
       if (data.folderId) {
-        Swal.fire("Success", "Folder successfully created", "success");
+        Swal.fire("Erfolg", "Ordner erfolgreich erstellt", "Erfolg");
         window.location.reload();
       } else {
         Swal.fire(
-          "Error",
-          data?.message || "Error occurred while creating the folder",
-          "error"
+          "Fehler",
+          data?.message || "Fehler beim Erstellen des Ordners",
+          "fehler"
         );
       }
     } catch (error) {
-      console.error("Error occurred while creating the folder:", error);
+      console.error("Fehler beim Erstellen des Ordners:", error);
       Swal.fire(
-        "Error",
-        "An error occurred while creating the folder.",
-        "error"
+        "Fehler",
+        "Beim Erstellen des Ordners ist ein Fehler aufgetreten.",
+        "fehler"
       );
     } finally {
       setIsCreating(false);
@@ -117,7 +117,7 @@ function Dashboard() {
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
-        `${backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
+        `${prodconfig.backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
         {
           method: "GET",
           credentials: "include",
@@ -144,72 +144,31 @@ function Dashboard() {
   };
   const handleFileDelete = async (fileId) => {
     if (window.confirm("Are you sure you want to delete this file?")) {
+      // setIsDeleting(true);
+
       try {
         const response = await customFetch(
-          backendUrl + `/docupload/delete/${fileId}`,
+          `${prodconfig.backendUrl}/docupload/delete/${fileId}`,
           { method: "DELETE", credentials: "include" }
         );
         if (!response.ok) throw new Error("Failed to delete file");
         const data = await response.json();
 
+        // setCurrentlyPreviewedFile(null);
+        // setFilePreviewContent(null);
+
         const folderTree = await fetchAndRenderFolderTree();
+        // if (folderTree) {
+        //   setFolders(folderTree.folderTree);
+        //   setLoading(false);
+        // }
       } catch (error) {
         alert("Failed to delete file. Please try again later.");
       } finally {
+        // setIsDeleting(false);
       }
     }
   };
-  // const handleFileDelete = async (fileId) => {
-  //   // SweetAlert2-Dialog anzeigen
-  //   const result = await Swal.fire({
-  //     title: "Are you sure?",
-  //     text: "Do you really want to delete this file?",
-  //     icon: "warning",
-  //     showCancelButton: true, // Aktiviert die Cancel-Schaltfläche
-  //     confirmButtonColor: "#3085d6", // Farbe der OK-Schaltfläche
-  //     cancelButtonColor: "#d33", // Farbe der Cancel-Schaltfläche
-  //     confirmButtonText: "Yes, delete it!", // Text der OK-Schaltfläche
-  //     cancelButtonText: "Cancel", // Text der Cancel-Schaltfläche
-  //   });
-
-  //   if (result.isConfirmed) {
-  //     // Wenn der Benutzer die Aktion bestätigt hat
-  //     try {
-  //       // API-Aufruf, um die Datei zu löschen
-  //       const response = await customFetch(
-  //         `${backendUrl}/docupload/delete/${fileId}`,
-  //         { method: "DELETE", credentials: "include" }
-  //       );
-
-  //       // Überprüfen, ob der Server die Löschung bestätigt hat
-  //       if (!response.ok) throw new Error("Failed to delete file");
-
-  //       // Erfolgsmeldung anzeigen
-  //       await Swal.fire(
-  //         "Deleted!",
-  //         "The file has been deleted successfully.",
-  //         "success"
-  //       );
-
-  //       // Zusätzliche Logik, z. B. UI aktualisieren
-  //       const folderTree = await fetchAndRenderFolderTree();
-  //       setFolders(folderTree.folderTree); // Aktualisiert die Liste
-  //     } catch (error) {
-  //       console.error("Error deleting file:", error);
-
-  //       // Fehlermeldung anzeigen
-  //       await Swal.fire(
-  //         "Error",
-  //         "Failed to delete the file. Please try again.",
-  //         "error"
-  //       );
-  //     }
-  //   } else {
-  //     // Wenn der Benutzer die Aktion abgebrochen hat
-  //     console.log("File deletion was canceled.");
-  //   }
-  // };
-
   // console.log(JSON.parse(localStorage.getItem("isFileExplorerView")));
   const handleFolderDelete = async (folderId) => {
     const result = await Swal.fire({
@@ -227,7 +186,7 @@ function Dashboard() {
       // If the user clicks "Yes, delete it!"
       try {
         const response = await customFetch(
-          `${backendUrl}/folders/${folderId}`,
+          `${prodconfig.backendUrl}/folders/${folderId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -309,7 +268,7 @@ function Dashboard() {
         // Bildvorschau
         setFilePreviewContent(
           <img
-            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
             alt="Image Preview"
             className="max-w-full mx-auto object-contain w-[500px] h-[300px]"
           />
@@ -318,7 +277,7 @@ function Dashboard() {
         // PDF-Vorschau
         setFilePreviewContent(
           <iframe
-            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
             frameBorder="0"
             width="100%"
             height="600px"
@@ -327,7 +286,7 @@ function Dashboard() {
       } else if (fileExtension === "txt") {
         // Textdatei-Vorschau
         const response = await customFetch(
-          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -347,7 +306,7 @@ function Dashboard() {
       } else if (fileExtension === "docx") {
         // DOCX-Vorschau
         const response = await customFetch(
-          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -386,7 +345,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchSearchResults = async () => {
       try {
-        const response = await customFetch("http://localhost:3000/search/", {
+        const response = await customFetch(`${prodconfig.backendUrl}/search/`, {
           method: "POST",
           body: JSON.stringify({ query: searchQueryParam, limit: 10 }),
           headers: { "Content-Type": "application/json" },
@@ -445,7 +404,7 @@ function Dashboard() {
             </div>
           ) : (
             <h3 className="text-[1rem] text-black/50 flex items-center justify-center h-[70vh]">
-              Search in progress ...
+              Suche läuft ...
             </h3>
           )}
           {currentlyPreviewedFile && (

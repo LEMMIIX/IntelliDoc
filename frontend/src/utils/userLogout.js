@@ -1,8 +1,8 @@
-const backendUrl = "http://localhost:3000";
+import prodconfig from "../production-config";
 
 export async function userLogout(navigate) {
   try {
-    const response = await fetch(backendUrl + "/logout", {
+    const response = await fetch(`${prodconfig.backendUrl}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });

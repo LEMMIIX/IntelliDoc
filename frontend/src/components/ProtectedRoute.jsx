@@ -1,7 +1,6 @@
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-
-const backendUrl = "http://localhost:3000";
+import prodconfig from "../production-config";
 
 function ProtectedRoute({
   children,
@@ -16,7 +15,7 @@ function ProtectedRoute({
     const checkAuthStatus = async () => {
       try {
         console.log("Checking authentication status...");
-        const response = await fetch(`${backendUrl}/api/current-user`, {
+        const response = await fetch(`${prodconfig.backendUrl}/api/current-user`, {
           credentials: "include",
         });
 

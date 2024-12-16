@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { FaFolder } from "react-icons/fa";
 import { customFetch } from "../../utils/helpers";
-
-const backendUrl = "http://localhost:3000";
+import prodconfig from "../../production-config";
 
 const CreateFolderForm = ({ parentFolderId }) => {
   console.log("parentFolderId", parentFolderId);
@@ -17,7 +16,7 @@ const CreateFolderForm = ({ parentFolderId }) => {
     e.preventDefault();
     setIsCreating(true);
     try {
-      const response = await customFetch(backendUrl + "/folders/create", {
+      const response = await customFetch(`${prodconfig.backendUrl}/folders/create`, {
         method: "POST",
         credentials: "include",
         headers: {

@@ -31,8 +31,7 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "../../components/ui/context-menu";
-
-const backendUrl = "http://localhost:3000";
+import prodconfig from "../../production-config";
 
 function Folder() {
   const { folderId } = useParams();
@@ -98,7 +97,7 @@ function Folder() {
     // fetch version history for a file
     try {
       const response = await customFetch(
-        `${backendUrl}/docupload/versions/${fileId}`,
+        `${prodconfig.backendUrl}/docupload/versions/${fileId}`,
         {
           method: "GET",
           credentials: "include",
@@ -122,6 +121,7 @@ function Folder() {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [selectedDocToRename, setSelectedDocToRename] = useState({});
+
   const popupRef = useRef(null);
   const folderContent = loading ? {} : getFolderContent(folders, folderId);
   const folderPathArray = folderContent?.folderPath?.split("/");
@@ -182,7 +182,7 @@ function Folder() {
     }
     setLoading(true);
     try {
-      const response = await customFetch(`${backendUrl}/folders/rename`, {
+      const response = await customFetch(`${prodconfig.backendUrl}/folders/rename`, {
         method: "POST",
         body: JSON.stringify({
           documentId: selectedDocToRename.id,
@@ -210,6 +210,8 @@ function Folder() {
   };
 
   const [editingFolderId, setEditingFolderId] = useState(null); // To track which folder is being edited
+  // const [newFolderName, setNewFolderName] = useState("");
+
   const [isFileExplorerView, setIsFileExplorerView] = useState(true);
   const [cont, setCont] = useState(1);
   const [selectedFolderIds, setSelectedFolderIds] = useState([]);
@@ -224,6 +226,7 @@ function Folder() {
 
     navigate(`/folders/${folder.id}`);
     setSelectedFolders(newSelectedFolders);
+
     // Update selected folder IDs
     const newSelectedFolderIds = [...selectedFolderIds];
     newSelectedFolderIds[level] = folder.id; // Store the selected folder ID for this level
@@ -294,7 +297,6 @@ function Folder() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [uploadRef]);
-
   const handleFolderDelete = async (folderId) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -311,7 +313,7 @@ function Folder() {
       setIsDeleting(true);
       try {
         const response = await customFetch(
-          `${backendUrl}/folders/${folderId}`,
+          `${prodconfig.backendUrl}/folders/${folderId}`,
           {
             method: "DELETE",
             credentials: "include",
@@ -320,9 +322,11 @@ function Folder() {
         if (!response.ok) {
           throw new Error("Failed to delete folder");
         }
+        const data = await response.json();
+
+        // Updates the folder structure
         const folderTree = await fetchAndRenderFolderTree();
         if (folderTree) {
-          // Update the folder structure
           setFolders(folderTree.folderTree);
           setLoading(false);
         }
@@ -365,7 +369,7 @@ function Folder() {
         // Bildvorschau
         setFilePreviewContent(
           <img
-            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
             alt="Image Preview"
             className="max-w-full mx-auto object-contain w-[500px] h-[300px]"
           />
@@ -374,7 +378,7 @@ function Folder() {
         // PDF-Vorschau
         setFilePreviewContent(
           <iframe
-            src={`${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
             frameBorder="0"
             width="100%"
             height="600px"
@@ -383,7 +387,7 @@ function Folder() {
       } else if (fileExtension === "txt") {
         // Textdatei-Vorschau
         const response = await customFetch(
-          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -403,7 +407,7 @@ function Folder() {
       } else if (fileExtension === "docx") {
         // DOCX-Vorschau
         const response = await customFetch(
-          `${backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
           {
             credentials: "include",
           }
@@ -430,7 +434,7 @@ function Folder() {
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
-        `${backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
+        `${prodconfig.backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
         {
           method: "GET",
           credentials: "include",
@@ -466,23 +470,21 @@ function Folder() {
       cancelButtonText: "Cancel", // Text for Cancel button
     });
 
-    if (result.isConfirmed) {
-      // If the user confirms deletion
+  const handleFileDelete = async (fileId) => {
+    if (window.confirm("Are you sure you want to delete this file?")) {
       setIsDeleting(true);
 
       try {
         const response = await customFetch(
-          `${backendUrl}/docupload/delete/${fileId}`,
+          `${prodconfig.backendUrl}/docupload/delete/${fileId}`,
           { method: "DELETE", credentials: "include" }
         );
         if (!response.ok) throw new Error("Failed to delete file");
         const data = await response.json();
 
-        // Clear currently previewed file and content
         setCurrentlyPreviewedFile(null);
         setFilePreviewContent(null);
 
-        // Fetch and update the folder structure
         const folderTree = await fetchAndRenderFolderTree();
         if (folderTree) {
           setFolders(folderTree.folderTree);
@@ -545,7 +547,7 @@ function Folder() {
 
   const handleRenameSubmit = async (folderId, newFolderName) => {
     try {
-      const response = await customFetch(`${backendUrl}/folders/rename`, {
+      const response = await customFetch(`${prodconfig.backendUrl}/folders/rename`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -657,7 +659,7 @@ function Folder() {
         formData.append("folderId", folderId);
 
         // `customFetch`-Aufruf für Datei-Upload
-        return customFetch(`${backendUrl}/docupload`, {
+        return customFetch(`${prodconfig.backendUrl}/docupload`, {
           method: "POST",
           body: formData,
           credentials: "include",
@@ -810,6 +812,7 @@ function Folder() {
                                   style={{
                                     padding: "10px",
                                     borderRadius: "5px",
+                                    // background: "#007BFF",
                                     color: "black",
                                     border: "none",
                                     cursor: "pointer",
@@ -920,7 +923,7 @@ function Folder() {
                                     inputLabel: "New File Name",
                                     inputValue: fileNameWithoutExtension, // Zeigt nur den Namen ohne Erweiterung an
                                     showCancelButton: true,
-                                    confirmButtonText: "Save",
+                                    confirmButtonText: "Speichern",
                                     inputValidator: (value) => {
                                       if (!value) return "You need to enter a file name!";
                                     },
@@ -930,7 +933,7 @@ function Folder() {
                                     // Füge die ursprüngliche Dateierweiterung wieder hinzu
                                     const fullFilename = `${newName}.${fileExtension}`;
                                     try {
-                                      const response = await customFetch(`${backendUrl}/folders/rename`, {
+                                      const response = await customFetch(`${prodconfig.backendUrl}/folders/rename`, {
                                         method: "POST",
                                         credentials: "include",
                                         headers: {
@@ -971,7 +974,7 @@ function Folder() {
                 </div>
               ) : (
                 <p className="text-center text-lg text-black my-4">
-                  This folder does not contain any documents yet. :(
+                  Dieser Ordner enthält noch keine Dokumente. :(
                 </p>
               )}
               {/* Files Section ends */}
@@ -1034,7 +1037,7 @@ function Folder() {
                               inputLabel: "Folder Name",
                               inputPlaceholder: "Enter folder name",
                               showCancelButton: true,
-                              confirmButtonText: "Create",
+                              confirmButtonText: "Erstellen",
                               inputValidator: (value) => {
                                 if (!value)
                                   return "You need to enter a folder name!";
@@ -1044,7 +1047,7 @@ function Folder() {
                             if (folderName) {
                               try {
                                 const response = await customFetch(
-                                  `${backendUrl}/folders/create`,
+                                  `${prodconfig.backendUrl}/folders/create`,
                                   {
                                     method: "POST",
                                     credentials: "include",
@@ -1098,7 +1101,7 @@ function Folder() {
                                 formData.append("folderId", folder.id);
 
                                 const response = await customFetch(
-                                  `${backendUrl}/docupload`,
+                                  `${prodconfig.backendUrl}/docupload`,
                                   {
                                     method: "POST",
                                     credentials: "include",
@@ -1132,7 +1135,7 @@ function Folder() {
                           onClick={async () => {
                             const result = await Swal.fire({
                               title: "Are you sure?",
-                              text: "Do you really want to delete this folder?",
+                              text: "You won't be able to revert this!",
                               icon: "warning",
                               showCancelButton: true,
                               confirmButtonColor: "#3085d6",
@@ -1143,7 +1146,7 @@ function Folder() {
                             if (result.isConfirmed) {
                               try {
                                 const response = await customFetch(
-                                  `${backendUrl}/folders/${folder.id}`,
+                                  `${prodconfig.backendUrl}/folders/${folder.id}`,
                                   {
                                     method: "DELETE",
                                     credentials: "include",
@@ -1180,7 +1183,7 @@ function Folder() {
                               inputValue: folder.name,
                               inputPlaceholder: "Enter folder name",
                               showCancelButton: true,
-                              confirmButtonText: "Create",
+                              confirmButtonText: "Erstellen",
                               inputValidator: (value) => {
                                 if (!value)
                                   return "You need to enter a folder name!";
@@ -1190,7 +1193,7 @@ function Folder() {
                             if (folderName) {
                               try {
                                 const response = await customFetch(
-                                  `${backendUrl}/folders/renameFolder`,
+                                  `${prodconfig.backendUrl}/folders/renameFolder`,
                                   {
                                     method: "POST",
                                     credentials: "include",
@@ -1288,7 +1291,7 @@ function Folder() {
                                           inputLabel: "Folder Name",
                                           inputPlaceholder: "Enter folder name",
                                           showCancelButton: true,
-                                          confirmButtonText: "Create",
+                                          confirmButtonText: "Erstellen",
                                           inputValidator: (value) => {
                                             if (!value)
                                               return "You need to enter a folder name!";
@@ -1298,7 +1301,7 @@ function Folder() {
                                       if (folderName) {
                                         try {
                                           const response = await customFetch(
-                                            `${backendUrl}/folders/create`,
+                                            `${prodconfig.backendUrl}/folders/create`,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1349,7 +1352,7 @@ function Folder() {
                                           inputValue: subFolder.name,
                                           inputPlaceholder: "Enter folder name",
                                           showCancelButton: true,
-                                          confirmButtonText: "Create",
+                                          confirmButtonText: "Erstellen",
                                           inputValidator: (value) => {
                                             if (!value)
                                               return "You need to enter a folder name!";
@@ -1359,7 +1362,7 @@ function Folder() {
                                       if (folderName) {
                                         try {
                                           const response = await customFetch(
-                                            `${backendUrl}/folders/renameFolder`,
+                                            `${prodconfig.backendUrl}/folders/renameFolder`,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1421,7 +1424,7 @@ function Folder() {
                                           );
 
                                           const response = await customFetch(
-                                            `${backendUrl}/docupload`,
+                                            `${prodconfig.backendUrl}/docupload`,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1473,7 +1476,7 @@ function Folder() {
                                         // If the user confirms deletion
                                         try {
                                           const response = await customFetch(
-                                            `${backendUrl}/folders/${subFolder.id}`,
+                                            `${prodconfig.backendUrl}/folders/${subFolder.id}`,
                                             {
                                               method: "DELETE",
                                               credentials: "include",
@@ -1549,7 +1552,7 @@ function Folder() {
                                     onClick={async () => {
                                       try {
                                         const response = await customFetch(
-                                          `${backendUrl}/docupload/view/${file.name}`,
+                                          `${prodconfig.backendUrl}/docupload/view/${file.name}`,
                                           {
                                             credentials: "include",
                                           }
@@ -1581,7 +1584,7 @@ function Folder() {
                                     onClick={async () => {
                                       try {
                                         const response = await customFetch(
-                                          `${backendUrl}/docupload/download/${file.name}`,
+                                          `${prodconfig.backendUrl}/docupload/download/${file.name}`,
                                           {
                                             credentials: "include",
                                           }
@@ -1638,7 +1641,7 @@ function Folder() {
                                       if (newName) {
                                         try {
                                           const response = await customFetch(
-                                            ` ${backendUrl}/folders/rename `,
+                                            `${prodconfig.backendUrl}/folders/rename`,
                                             {
                                               method: "POST",
                                               credentials: "include",
@@ -1695,7 +1698,7 @@ function Folder() {
                                       if (result.isConfirmed) {
                                         try {
                                           const response = await customFetch(
-                                            `${backendUrl}/docupload/delete/${file.id}`,
+                                            `${prodconfig.backendUrl}/docupload/delete/${file.id}`,
                                             {
                                               method: "DELETE",
                                               credentials: "include",
@@ -1872,7 +1875,7 @@ function Folder() {
               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               onClick={handleCreateFolderSwal}
             >
-              Create New Folder
+              Neuen Ordner erstellen
             </button>
 
             {/* Datei hochladen */}
@@ -1880,7 +1883,7 @@ function Folder() {
               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               onClick={() => handleFileUploadSwal(contextMenu.folderId)}
             >
-              Upload File
+              Datei hochladen
             </button>
 
             {/* Bestehender Button für "Bearbeiten" */}
@@ -1898,7 +1901,7 @@ function Folder() {
               className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               onClick={() => handleFolderDelete(contextMenu.folderId)}
             >
-              Delete
+              Löschen
             </button>
           </div>
         )}

@@ -1,9 +1,8 @@
 import { customFetch } from "./helpers";
-
-const backendUrl = "http://localhost:3000";
+import prodconfig from "../production-config";
 
 export function getCurrentUser() {
-  return customFetch(backendUrl + "/api/current-user")
+  return customFetch(`${prodconfig.backendUrl}/api/current-user`)
     .then((response) => {
       console.log(response);
       if (!response.ok) {

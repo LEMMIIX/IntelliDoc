@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useState, useEffect, useRef } from "react";
 import { customFetch } from "../../utils/helpers";
+import prodconfig from "../../production-config";
 
 function FolderElement({ folderId, folderName, handleFolderDelete }) {
   const navigate = useNavigate();
@@ -14,8 +15,6 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
   const popupRef = useRef(null);
   const folderOptionsRef = useRef(null); // Reference for folder options
 
-  const BASE_URL = "http://localhost:3000";
-
   const handleRenameFolder = async () => {
     if (inputError != "") {
       return;
@@ -24,7 +23,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
     setIsLoading(true);
     try {
       // Sende die Anfrage mit dem richtigen Content-Type
-      const response = await customFetch(`${BASE_URL}/folders/renameFolder`, {
+      const response = await customFetch(`${prodconfig.backendUrl}/folders/renameFolder`, {
         method: "POST",
         credentials: "include",
         headers: {
