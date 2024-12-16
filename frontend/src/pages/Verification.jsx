@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
+import prodconfig from "../production-config";
 import "../styles/verification.css";
 
 function Verification() {
@@ -11,7 +12,7 @@ function Verification() {
 
     const handleVerification = async () => {
         try {
-            const response = await fetch("http://localhost:3000/api/verify-code", { 
+            const response = await fetch(`${prodconfig.backendUrl}/api/verify-code`, { 
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

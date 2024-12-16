@@ -112,11 +112,6 @@ app.get("/api/admin/status", (req, res) => {
   }
 });
 
-// Routes
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "html", "login.html"));
-});
-
 app.get("/api/current-user", authenticateMiddleware, (req, res) => {
   res.json({
     userId: req.session.userId,

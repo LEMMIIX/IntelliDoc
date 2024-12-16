@@ -1,6 +1,8 @@
 ﻿import React, { useState } from 'react';
 import { useNavigate,Link } from 'react-router-dom';
-import '../styles/Setpassword.css';
+import prodconfig from "../production-config";
+import '../styles/setpassword.css';
+
 function Setpassword() {
     const [email, setEmail] = useState('');
     const [verificationcode, setVerificationKey] = useState('');
@@ -14,7 +16,7 @@ function Setpassword() {
         const data = { email, verificationcode, newPassword };
 
         try {
-            const response = await fetch("http://localhost:3000/passwordReset/newPassword", {
+            const response = await fetch(`${prodconfig.backendUrl}/passwordReset/newPassword`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
