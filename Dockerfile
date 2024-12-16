@@ -38,6 +38,8 @@ RUN python3 -m venv $VIRTUAL_ENV && \
     /app/node_modules/@xenova/transformers/models/Xenova
 
 # Copy files
+# Copy database dump and setup files
+COPY database/*.sql /app/database/
 COPY --from=backend-deps /app/node_modules ./node_modules
 COPY --from=frontend-build /app/dist ./frontend/dist
 COPY . .
@@ -52,6 +54,22 @@ RUN echo '#!/bin/bash\n\
 # Wait for PostgreSQL\n\
 until pg_isready -h postgres -p 5432 -U postgres; do\n\
     echo "Waiting for PostgreSQL..."\n\
+    sleep 2\n\
+done\n\
+\n\
+echo "Running database initialization..."\n\
+for sql_file in "/app/database/01-init.sql" "/app/database/02-extension-inst.sql" "/app/database/03-insert-test-users.sql"; do\n\
+    echo "Executing $sql_file..."\n\
+    if ! PGPASSWORD=pgres psql -h postgres -U postgres -d postgres -f "$sql_file"; then\n\
+        echo "Error executing $sql_file"\n\
+        exit 1\n\
+    fi\n\
+done\n\
+\n\
+# Verify schema initialization\n\
+echo "Verifying schema initialization..."\n\
+until PGPASSWORD=pgres psql -h postgres -U postgres -d postgres -c "SELECT FROM main.users LIMIT 1" > /dev/null 2>&1; do\n\
+    echo "Waiting for schema to be fully initialized..."\n\
     sleep 2\n\
 done\n\
 \n\
