@@ -13,6 +13,7 @@ const foldersRoutes = require("./backend/routes/foldersRoutes");
 const semanticSearchRoutes = require('./backend/routes/semanticSearchRoutes');
 const adminRoutes = require('./backend/routes/adminRoutes');
 const passwordResetRoutes = require('./backend/models/passwordReset');
+const {registerUser, verifyUserCode} = require ('./backend/models/userRegistrationToDB.js');
 
 // Import models
 const User = require("./database/User");
