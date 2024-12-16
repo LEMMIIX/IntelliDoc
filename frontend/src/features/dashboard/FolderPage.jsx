@@ -298,18 +298,7 @@ function Folder() {
     };
   }, [uploadRef]);
   const handleFolderDelete = async (folderId) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "Do you really want to delete this folder?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, delete it!",
-      cancelButtonText: "Cancel",
-    });
-
-    if (result.isConfirmed) {
+    if (confirm("Are you sure you want  delete this folder?")) {
       setIsDeleting(true);
       try {
         const response = await customFetch(
@@ -458,17 +447,6 @@ function Folder() {
       console.error("Download error:", error);
     }
   };
-  const handleFileDelete = async (fileId) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "Do you really want to delete this file?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6", // Color for the Confirm button
-      cancelButtonColor: "#d33", // Color for the Cancel button
-      confirmButtonText: "Yes, delete it!", // Text for Confirm button
-      cancelButtonText: "Cancel", // Text for Cancel button
-    });
 
   const handleFileDelete = async (fileId) => {
     if (window.confirm("Are you sure you want to delete this file?")) {
@@ -490,22 +468,8 @@ function Folder() {
           setFolders(folderTree.folderTree);
           setLoading(false);
         }
-
-        // Success message
-        await Swal.fire(
-          "Deleted!",
-          "The file has been deleted successfully.",
-          "success"
-        );
       } catch (error) {
-        console.error("Error deleting file:", error);
-
-        // Error message
-        await Swal.fire(
-          "Error",
-          "Failed to delete the file. Please try again.",
-          "error"
-        );
+        alert("Failed to delete file. Please try again later.");
       } finally {
         setIsDeleting(false);
       }
@@ -572,16 +536,16 @@ function Folder() {
   // Funktion zur Anzeige des Formulars zum Erstellen eines Ordners mit SweetAlert
   const handleCreateFolderSwal = async () => {
     const { value: folderName } = await Swal.fire({
-      title: "Create New Folder",
+      title: "Neuen Ordner erstellen",
       input: "text",
-      inputLabel: "Folder Name",
-      inputPlaceholder: "Enter the name of the folder",
+      inputLabel: "Ordnername",
+      inputPlaceholder: "Geben Sie den Namen des Ordners ein",
       showCancelButton: true,
-      confirmButtonText: "Create",
-      cancelButtonText: "Cancel",
+      confirmButtonText: "Erstellen",
+      cancelButtonText: "Abbrechen",
       inputValidator: (value) => {
         if (!value) {
-          return "The folder name is required!";
+          return "Der Ordnername ist erforderlich!";
         }
       },
     });
@@ -614,20 +578,24 @@ function Folder() {
       navigate(`/folders/${contextMenu.folderId}`);
       const data = await response.json();
       if (data.folderId) {
-        Swal.fire("Success", "Folder successfully created", "success");
+        Swal.fire("Erfolgreich", "Ordner erfolgreich erstellt", "erfolgreich");
       } else {
         Swal.fire(
-          "Error",
-          data?.message || "An error occurred while creating the folder.",
-          "error"
+          "Erreur",
+          data?.message ||
+            "Beim Erstellen des Ordners ist ein Fehler aufgetreten.",
+          "fehler"
         );
       }
     } catch (error) {
-      console.error("An error occurred while creating the folder:", error);
+      console.error(
+        "Beim Erstellen des Ordners ist ein Fehler aufgetreten:",
+        error
+      );
       Swal.fire(
-        "Error",
-        "An error occurred while creating the folder.",
-        "error"
+        "Fehler",
+        "Beim Erstellen des Ordners ist ein Fehler aufgetreten.",
+        "Fehler"
       );
     } finally {
       setIsCreating(false);
@@ -731,7 +699,7 @@ function Folder() {
                 {/* Files Section starts */}
                 <div className="flex justify-between items-center">
                   <h3 className="my-5 flex items-center gap-1 tracking-wide text-lg text-black">
-                    Documents
+                    Dokumente
                   </h3>
                   <button
                     className="bg-success p-2 rounded-full flex justify-center items-center cursor-pointer hover:bg-opacity-90 duration-200 transition-opacity"
@@ -842,9 +810,9 @@ function Folder() {
                                     >
                                       <div className="flex justify-between mx-8">
                                         <p className="font-weight-800 text-lg">
-                                          Versions
+                                          Versionen
                                         </p>
-                                        <p className="text-base">changed</p>
+                                        <p className="text-base">geändert</p>
                                       </div>
                                       {loading ? (
                                         <p>Loading...</p>
@@ -1461,53 +1429,24 @@ function Folder() {
 
                                   <ContextMenuItem
                                     onClick={async () => {
-                                      const result = await Swal.fire({
-                                        title: "Are you sure?",
-                                        text: "Do you really want to delete this folder?",
-                                        icon: "warning",
-                                        showCancelButton: true,
-                                        confirmButtonColor: "#3085d6", // Color for Confirm button
-                                        cancelButtonColor: "#d33", // Color for Cancel button
-                                        confirmButtonText: "Yes, delete it!", // Text for Confirm button
-                                        cancelButtonText: "Cancel", // Text for Cancel button
-                                      });
-
-                                      if (result.isConfirmed) {
-                                        // If the user confirms deletion
-                                        try {
-                                          const response = await customFetch(
-                                            `${prodconfig.backendUrl}/folders/${subFolder.id}`,
-                                            {
-                                              method: "DELETE",
-                                              credentials: "include",
-                                            }
+                                      try {
+                                        const response = await customFetch(
+                                          `${prodconfig.backendUrl}/folders/${subFolder.id}`,
+                                          {
+                                            method: "DELETE",
+                                            credentials: "include",
+                                          }
+                                        );
+                                        if (!response.ok)
+                                          throw new Error(
+                                            "Failed to delete folder"
                                           );
-                                          if (!response.ok)
-                                            throw new Error(
-                                              "Failed to delete folder"
-                                            );
-
-                                          // Success feedback
-                                          await Swal.fire(
-                                            "Deleted!",
-                                            "The folder has been deleted successfully.",
-                                            "success"
-                                          );
-
-                                          window.location.reload(); // Reload the page after deletion
-                                        } catch (error) {
-                                          console.error(
-                                            "Error deleting folder:",
-                                            error
-                                          );
-
-                                          // Error feedback
-                                          await Swal.fire(
-                                            "Error",
-                                            "Failed to delete the folder. Please try again.",
-                                            "error"
-                                          );
-                                        }
+                                        window.location.reload();
+                                      } catch (error) {
+                                        console.error(
+                                          "Error deleting folder:",
+                                          error
+                                        );
                                       }
                                     }}
                                   >
@@ -1687,7 +1626,7 @@ function Folder() {
                                     onClick={async () => {
                                       const result = await Swal.fire({
                                         title: "Are you sure?",
-                                        text: "Do you really want to delete this file?",
+                                        text: "You won't be able to revert this!",
                                         icon: "warning",
                                         showCancelButton: true,
                                         confirmButtonColor: "#3085d6",
@@ -1767,9 +1706,9 @@ function Folder() {
                                 >
                                   <div className="flex justify-between mx-8">
                                     <p className="font-weight-800 text-lg">
-                                      Versions
+                                      Versionen
                                     </p>
-                                    <p className="text-base">changed</p>
+                                    <p className="text-base">geändert</p>
                                   </div>
                                   {loading ? (
                                     <p>Loading...</p>
@@ -1965,6 +1904,6 @@ function Folder() {
       )}
     </>
   );
-}}
+}
 
 export default Folder;

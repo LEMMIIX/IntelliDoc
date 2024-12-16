@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import "../styles/index.css";
+import "../styles/verification.css";
 
 function Verification() {
     const location = useLocation(); // Verwendet die location-API von react-router-dom
@@ -43,7 +43,7 @@ function Verification() {
         <main className="verification_page">
             <div className="verification_container">
                 <h1>Verifizierung erforderlich</h1>
-                <p>Bitte �berpr�fen Sie Ihre E-Mail-Adresse und geben Sie den Verifizierungscode ein.</p>
+                <p>Bitte überprüfen Sie Ihre E-Mail-Adresse und geben Sie den Verifizierungscode ein.</p>
                 <div>
                     <input
                         type="email"
@@ -60,15 +60,10 @@ function Verification() {
                         className="verification_input"
                     />
                     <button onClick={handleVerification} className="verification_button">
-                        Best�tigen
+                        Bestätigen
                     </button>
                 </div>
-                <div>
-                    <p>Haben Sie die E-Mail nicht erhalten?</p>
-                    <Link to='/resend-verification' className="text-blue-500">
-                        Erneut senden
-                    </Link>
-                </div>
+
             </div>
         </main>
     );
