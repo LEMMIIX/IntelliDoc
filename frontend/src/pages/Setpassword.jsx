@@ -24,10 +24,10 @@ function Setpassword() {
 
             if (response.ok) {
                 setMessage('Passwort wurde erfolgreich zurückgesetzt!');
-                navigate('/login');
+                navigate('/auth/login');
             } else {
                 setMessage('Fehler: ' + (await response.text()));
-                navigate('/login');
+                navigate('/auth/login');
             }
         } catch (error) {
             setMessage('Fehler: ' + error.message);

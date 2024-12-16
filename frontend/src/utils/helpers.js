@@ -64,7 +64,7 @@
       localStorage.removeItem("currentUserName");
   
       // alert("Please Login in again, votre session is finished.");
-      window.location.href = "/login"; // Redirect to login
+      window.location.href = "/auth/login"; // Redirect to login
     }
   
     return response;

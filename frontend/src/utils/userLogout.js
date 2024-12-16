@@ -13,7 +13,7 @@ export async function userLogout(navigate) {
     console.log(data);
     localStorage.removeItem("currentUserId");
     localStorage.removeItem("currentUserName");
-    navigate("/login");
+    navigate("/auth/login");
   } catch (err) {
     console.log(err);
   }

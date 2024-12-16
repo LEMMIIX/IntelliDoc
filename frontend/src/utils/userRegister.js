@@ -18,7 +18,7 @@ export function userRegister(username,email,password,navigate) {
             console.log('Success:', data);
 
             alert('Registration successful! Please Login');
-            navigate('/login');
+            navigate('/auth/login');
 
                         // window.location.href = '/dashboard';
 

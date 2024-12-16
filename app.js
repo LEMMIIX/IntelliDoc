@@ -124,14 +124,6 @@ app.get("/api/current-user", authenticateMiddleware, (req, res) => {
   });
 });
 
-app.use('/login', (req, res, next) => {
-  if (req.method === 'POST') {
-    req.url = '/auth/login';
-    return app._router.handle(req, res, next);
-  }
-  next();
-});
-
 // Registration Route
 app.post("/register", async (req, res) => {
   console.log("Received registration request:", req.body);

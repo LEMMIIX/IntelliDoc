@@ -24,11 +24,11 @@ function Verification() {
             if (response.status === 200) {
                 // Verifizierung erfolgreich
                 alert("Verifizierung erfolgreich!");
-                navigate("/login");
+                navigate("/auth/login");
             } else if (response.status === 400) {
                 // Wenn es einen Fehler bei der Verifizierung gab
                 const data = await response.json();
-                alert(data.message || "Ungültiger Verifizierungscode.");
+                alert(data.message || "Ungï¿½ltiger Verifizierungscode.");
             } else {
                 // Fehlerhafte HTTP-Antwort
                 alert("Fehler bei der Verifizierung. Bitte versuchen Sie es erneut.");
@@ -43,7 +43,7 @@ function Verification() {
         <main className="verification_page">
             <div className="verification_container">
                 <h1>Verifizierung erforderlich</h1>
-                <p>Bitte überprüfen Sie Ihre E-Mail-Adresse und geben Sie den Verifizierungscode ein.</p>
+                <p>Bitte ï¿½berprï¿½fen Sie Ihre E-Mail-Adresse und geben Sie den Verifizierungscode ein.</p>
                 <div>
                     <input
                         type="email"
@@ -60,7 +60,7 @@ function Verification() {
                         className="verification_input"
                     />
                     <button onClick={handleVerification} className="verification_button">
-                        Bestätigen
+                        Bestï¿½tigen
                     </button>
                 </div>
                 <div>

@@ -15,8 +15,8 @@ function Home() {
                             <li><Link to="#" className="nav-item"></Link></li>
                         </ul>
                     <div className="nav-buttons">
-                        <Link to="/Signup" className="btn nav-btn">Registrieren</Link>
-                        <Link to="/Login" className="btn nav-btn2">Anmelden</Link>
+                        <Link to="/auth/signup" className="btn nav-btn">Registrieren</Link>
+                        <Link to="/auth/login" className="btn nav-btn2">Anmelden</Link>
                         </div>
                     </div>
                 </nav>
@@ -32,8 +32,8 @@ function Home() {
                         Verabschieden Sie sich von Chaos und begrüßen Sie Effizienz!
                     </p>
                     <div className="cta-buttons">
-                        <Link to="/Signup" className="btn primary">Jetzt Starten</Link>
-                        <Link to="/Login" className="btn secondary">Anmelden</Link>
+                        <Link to="/auth/signup" className="btn primary">Jetzt Starten</Link>
+                        <Link to="/auth/login" className="btn secondary">Anmelden</Link>
                     </div>
                 </div>
                 <div className="hero-image">

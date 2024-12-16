@@ -60,7 +60,7 @@ function Login() {
                 <div className="login-column">
                     <h2>Neu hier?</h2>
                     <h3>Erstellen Sie ein Konto und legen Sie los!</h3>
-                    <Link to="/signup">Registrieren</Link>
+                    <Link to="/auth/signup">Registrieren</Link>
                 </div>
             </div>
             </div>
