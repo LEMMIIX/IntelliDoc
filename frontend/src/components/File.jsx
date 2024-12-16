@@ -168,11 +168,15 @@ const File = ({
           </button>
           <button
             onClick={async () => {
+              // Extrahiere die Dateierweiterung und den Dateinamen ohne Erweiterung
+              const fileExtension = file.name.split(".").pop(); // Extrahiert die Dateierweiterung
+              const fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, ""); // Entfernt die Erweiterung aus dem Namen
+
               const { value: newName } = await Swal.fire({
                 title: "Rename File",
                 input: "text",
                 inputLabel: "New File Name",
-                inputValue: file.name,
+                inputValue: fileNameWithoutExtension, // Zeigt nur den Namen ohne Erweiterung an
                 showCancelButton: true,
                 confirmButtonText: "Save",
                 inputValidator: (value) => {
@@ -181,28 +185,23 @@ const File = ({
               });
 
               if (newName) {
+                // Füge die ursprüngliche Dateierweiterung wieder hinzu
+                const fullFilename = `${newName}.${fileExtension}`;
                 try {
-                  const response = await customFetch(
-                    `${prodconfig.backendUrl}/folders/rename`,
-                    {
-                      method: "POST",
-                      credentials: "include",
-                      headers: {
-                        "Content-Type": "application/json",
-                      },
-                      body: JSON.stringify({
-                        documentId: file.id,
-                        newFilename: newName,
-                      }),
-                    }
-                  );
+                  const response = await customFetch(`${prodconfig.backendUrl}/folders/rename`, {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      documentId: file.id,
+                      newFilename: fullFilename, // Sende den neuen Namen mit der ursprünglichen Erweiterung
+                    }),
+                  });
                   if (!response.ok) throw new Error("Failed to rename file");
 
-                  await Swal.fire(
-                    "Success!",
-                    "File renamed successfully",
-                    "success"
-                  );
+                  await Swal.fire("Success!", "File renamed successfully", "success");
                   window.location.reload();
                 } catch (error) {
                   await Swal.fire("Error!", "Failed to rename file", "error");
