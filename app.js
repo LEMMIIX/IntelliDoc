@@ -13,6 +13,7 @@ const foldersRoutes = require("./backend/routes/foldersRoutes");
 const semanticSearchRoutes = require('./backend/routes/semanticSearchRoutes');
 const adminRoutes = require('./backend/routes/adminRoutes');
 const passwordResetRoutes = require('./backend/models/passwordReset');
+const monitorRoutes = require('./backend/routes/monitorRoutes.js');
 
 // Import models
 const User = require("./database/User");
@@ -113,6 +114,7 @@ app.use("/docupload", authenticateMiddleware, docUploadRoutes);
 app.use("/folders", authenticateMiddleware, foldersRoutes);
 app.use("/search", authenticateMiddleware, semanticSearchRoutes);
 app.use("/passwordReset", passwordResetRoutes);
+app.use('/monitor', monitorRoutes);
 
 app.get("*", (req, res) => {
   console.log(`Catch-All Route hit: ${req.url}`);
