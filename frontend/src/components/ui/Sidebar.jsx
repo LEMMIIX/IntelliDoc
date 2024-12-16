@@ -11,7 +11,6 @@ import { fetchAndRenderFolder } from "../../utils/fetchFoldersTree";
 import Swal from "sweetalert2";
 import { customFetch } from "../../utils/helpers";
 
-
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const userName = localStorage.getItem("currentUserName") || "";
   const [folders, setFolders] = useState([]);

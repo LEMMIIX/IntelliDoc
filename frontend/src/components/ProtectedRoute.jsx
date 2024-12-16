@@ -44,6 +44,7 @@ function ProtectedRoute({
     checkAuthStatus();
   }, [shouldBeAuthenticated]);
 
+  // Warte, bis die State-Updates abgeschlossen sind
   useEffect(() => {
     console.log("State updated:", { isAuthenticated, isAdmin, isAdminRoute });
   }, [isAuthenticated, isAdmin, isAdminRoute]);
@@ -56,7 +57,7 @@ function ProtectedRoute({
     );
   }
 
-  // Admin route check
+  // Admin-Check nach Abschluss der State-Updates
   if (isAdminRoute && isAuthenticated && !isAdmin) {
     console.log("User is not admin, redirecting to dashboard.");
     return <Navigate to="/dashboard" replace />;
@@ -65,7 +66,7 @@ function ProtectedRoute({
   // Authentication checks
   if (!isAuthenticated && shouldBeAuthenticated) {
     console.log("User is not authenticated, redirecting to login.");
-    return <Navigate to="/auth/login" replace />; // Updated path
+    return <Navigate to="/auth/login" replace />;
   }
 
   if (isAuthenticated && !shouldBeAuthenticated) {
