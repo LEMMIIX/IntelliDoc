@@ -13,6 +13,7 @@ const foldersRoutes = require("./backend/routes/foldersRoutes");
 const semanticSearchRoutes = require('./backend/routes/semanticSearchRoutes');
 const adminRoutes = require('./backend/routes/adminRoutes');
 const passwordResetRoutes = require('./backend/models/passwordReset');
+const monitorRoutes = require('./backend/routes/monitorRoutes.js');
 
 // Import models
 const User = require("./database/User");
@@ -31,6 +32,16 @@ app.use(
     credentials: true,
   })
 );
+
+// Basic security headers
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; style-src 'self' 'unsafe-inline' fonts.googleapis.com; font-src 'self' fonts.gstatic.com; img-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' localhost:* ws://localhost:*"
+  );
+  next();
+});
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
@@ -108,11 +119,12 @@ app.use('/login', (req, res, next) => {
 
 // Route Middleware
 app.use('/auth', authRoutes);
-app.use('/admin', adminRoutes);
+app.use('/api/admin', adminRoutes);
 app.use("/docupload", authenticateMiddleware, docUploadRoutes);
 app.use("/folders", authenticateMiddleware, foldersRoutes);
 app.use("/search", authenticateMiddleware, semanticSearchRoutes);
 app.use("/passwordReset", passwordResetRoutes);
+app.use('/monitor', monitorRoutes);
 
 app.get("*", (req, res) => {
   console.log(`Catch-All Route hit: ${req.url}`);

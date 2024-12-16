@@ -627,7 +627,7 @@ function Folder() {
         formData.append("folderId", folderId);
 
         // `customFetch`-Aufruf für Datei-Upload
-        return customFetch(`${backendUrl}/docupload`, {
+        return customFetch(`${prodconfig.backendUrl}/docupload`, {
           method: "POST",
           body: formData,
           credentials: "include",
