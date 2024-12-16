@@ -1,0 +1,69 @@
+﻿import React, { useState } from 'react';
+import { useNavigate,Link } from 'react-router-dom';
+import '../styles/Requestpassword.css';
+
+function Requestpassword() {
+    const [email, setEmail] = useState('');
+    const [message, setMessage] = useState('');
+    const navigate = useNavigate();
+
+    // Handle form submission
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+
+        const data = { email };
+
+        try {
+            const response = await fetch("http://localhost:3000/passwordReset/request-verification", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            if (response.ok) {
+                setMessage('Passwort zurücksetzen E-Mail wurde gesendet!');
+                navigate('/Setpassword');
+            } else {
+                setMessage('' + (await response.text()));
+            }
+        } catch (error) {
+            setMessage('' + error.message);
+        }
+    };
+
+    return (
+        <>
+            {/* Header */}
+            <header className="header">
+                <div className="header-content">
+                    <Link to="/" className="logo">IntelliDoc</Link>
+                </div>
+            </header>
+
+            {/* Main Content */}
+            <div className="requestpassword_page">
+                <div className="requestpassword_container">
+                    <h1>Passwort zurücksetzen anfordern</h1>
+                    <form onSubmit={handleSubmit}>
+                        <label htmlFor="email">E-Mail:</label>
+                        <input
+                            className="requestpassword_input"
+                            type="email"
+                            id="email"
+                            name="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                        <button className="requestpassword_button" type="submit">Anfordern</button>
+                    </form>
+                    
+                    {message && <p>{message}</p>}
+                </div>
+            </div>
+        </>
+    );
+}
+export default Requestpassword;

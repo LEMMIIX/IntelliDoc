@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
     }
 
     try {
-        const verificationKey = crypto.randomBytes(20).toString('hex');
+        //const verificationKey = crypto.randomBytes(20).toString('hex');
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const user = await User.create({ 

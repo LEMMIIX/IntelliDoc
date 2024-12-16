@@ -2,6 +2,10 @@ import { Routes, Route, Navigate } from "react-router-dom"; // Added Navigate he
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
+import Verification from "./pages/Verification";
+import Requestpassword from "./pages/Requestpassword";
+import Setpassword from "./pages/Setpassword";
+
 import Layout from "./components/ui/Layout";
 import FileUpload from "./features/dashboard/FileUpload";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -36,6 +40,8 @@ const App = () => {
           <Route index path="/dashboard" element={<Dashboard />} />
           <Route index path="/folders/:folderId" element={<FolderPage />} />
           <Route path="/upload" element={<FileUpload />} />
+          <Route path="/reset-password" element={<Setpassword />} />
+          
         </Route>
 
         {/* Auth Routes */}
@@ -54,12 +60,33 @@ const App = () => {
               <Signup />
             </ProtectedRoute>
           }
-        />
-
-        {/* Legacy routes for backward compatibility */}
-        <Route path="/login" element={<Navigate to="/auth/login" replace />} />
-        <Route path="/signup" element={<Navigate to="/auth/signup" replace />} />
-      </Routes>
+              />
+              <Route
+                  path="/Verification"
+                  element={
+                      <ProtectedRoute shouldBeAuthenticated={false}>
+                          <Verification />
+                      </ProtectedRoute>
+                  }
+              />
+              <Route
+                    path="/Requestpassword"
+                    element={
+                        <ProtectedRoute shouldBeAuthenticated={false}>
+                            <Requestpassword />
+                        </ProtectedRoute>
+                    }
+              />
+              <Route
+                    path="/Setpassword"
+                        element={
+                            <ProtectedRoute shouldBeAuthenticated={false}>
+                                <Setpassword />
+                            </ProtectedRoute>
+                        }  
+                        />
+          </Routes>
+         
     </div>
   );
 };
