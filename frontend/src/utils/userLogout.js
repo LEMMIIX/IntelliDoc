@@ -7,7 +7,7 @@ export async function userLogout(navigate) {
       credentials: "include",
     });
     if (!response.ok) {
-      throw new Error("Can not logout now , try later!");
+      throw new Error("Kann jetzt nicht abmelden, versuche es später!");
     }
     const data = await response.json();
     console.log(data);

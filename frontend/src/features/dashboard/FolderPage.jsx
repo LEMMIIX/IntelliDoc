@@ -78,7 +78,7 @@ function Folder() {
       // Assuming fetchVersionHistory fetches the version history based on the fileId
       await fetchVersionHistory(fileId);
     } catch (error) {
-      console.error("Error loading version history", error);
+      console.error("Fehler beim Laden des Versionsverlaufs", fehler);
     } finally {
       setLoadingg(false);
     }
@@ -108,7 +108,7 @@ function Folder() {
       setVersionHistory(data.versions);
       console.log("version1", versionHistory);
     } catch (error) {
-      console.error("Error fetching version history:", error);
+      console.error("Fehler beim Abrufen des Versionsverlaufs:", fehler);
     }
   };
   const handleFileSelect = (fileId) => {
@@ -138,7 +138,8 @@ function Folder() {
           setLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching folder tree:", error);
+        console.error("Fehler beim Abrufen der Ordnerstruktur:", fehler);
+
         setLoading(false);
       }
     };
@@ -165,10 +166,10 @@ function Folder() {
     setNewFolderName(newFileName);
     switch (newFileName) {
       case selectedDocToRename.name:
-        setInputError("Please provide a new file name!");
+        setInputError("Bitte gib einen neuen Dateinamen an!");
         break;
       case "":
-        setInputError("No file name provided!");
+        setInputError("Kein Dateiname angegeben!");
         break;
       default:
         setInputError("");
@@ -176,36 +177,39 @@ function Folder() {
     }
   };
   const handleRenameFolder = async () => {
-    console.log("click to save!");
+    console.log("Klicke, um zu speichern!");
     if (inputError != "") {
       return;
     }
     setLoading(true);
     try {
-      const response = await customFetch(`${prodconfig.backendUrl}/folders/rename`, {
-        method: "POST",
-        body: JSON.stringify({
-          documentId: selectedDocToRename.id,
-          newFilename: newFolderName,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/rename`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            documentId: selectedDocToRename.id,
+            newFilename: newFolderName,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
-        throw new Error("'Error renaming document");
+        throw new Error("Fehler beim Umbenennen des Dokuments");
       }
       setIsPopupVisible(false);
       setLoading(false);
       setNewFolderName("");
-      alert("Documemt Name Changed Success!");
+      alert("Dokumentname erfolgreich geändert!");
     } catch (e) {
       console.log("error: ", e);
       setLoading(false);
       setIsPopupVisible(false);
       setNewFolderName("");
-      alert("Failed to rename document");
+      alert("Fehler beim Umbenennen des Dokuments");
     }
   };
 
@@ -298,7 +302,7 @@ function Folder() {
     };
   }, [uploadRef]);
   const handleFolderDelete = async (folderId) => {
-    if (confirm("Are you sure you want  delete this folder?")) {
+    if (confirm("Bist du sicher, dass du diesen Ordner löschen möchtest?")) {
       setIsDeleting(true);
       try {
         const response = await customFetch(
@@ -309,27 +313,40 @@ function Folder() {
           }
         );
         if (!response.ok) {
-          throw new Error("Failed to delete folder");
+          throw new Error("Fehler beim Löschen des Ordners");
         }
         const data = await response.json();
 
-        // Updates the folder structure
+        // Fetch and update the folder tree
         const folderTree = await fetchAndRenderFolderTree();
         if (folderTree) {
           setFolders(folderTree.folderTree);
           setLoading(false);
         }
+
+        // Success message
+        await Swal.fire(
+          "Gelöscht!",
+          "Der Ordner wurde erfolgreich gelöscht.",
+          "success"
+        );
       } catch (error) {
-        console.error("Error deleting folder:", error);
-      } finally {
-        setIsDeleting(false);
+        console.error("Fehler beim Löschen des Ordners:", error);
+
+        // Error message
+        await Swal.fire(
+          "Fehler",
+          "Fehler beim Löschen des Ordners. Bitte versuche es erneut.",
+          "error"
+        );
       }
     }
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>Wird geladen...</div>;
   }
+
   const handleGoBack = () => {
     navigate(-1); // Zurück zur vorherigen Seite
   };
@@ -358,7 +375,9 @@ function Folder() {
         // Bildvorschau
         setFilePreviewContent(
           <img
-            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+              fileName
+            )}`}
             alt="Image Preview"
             className="max-w-full mx-auto object-contain w-[500px] h-[300px]"
           />
@@ -367,7 +386,9 @@ function Folder() {
         // PDF-Vorschau
         setFilePreviewContent(
           <iframe
-            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+              fileName
+            )}`}
             frameBorder="0"
             width="100%"
             height="600px"
@@ -376,7 +397,9 @@ function Folder() {
       } else if (fileExtension === "txt") {
         // Textdatei-Vorschau
         const response = await customFetch(
-          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+            fileName
+          )}`,
           {
             credentials: "include",
           }
@@ -396,7 +419,9 @@ function Folder() {
       } else if (fileExtension === "docx") {
         // DOCX-Vorschau
         const response = await customFetch(
-          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+            fileName
+          )}`,
           {
             credentials: "include",
           }
@@ -417,20 +442,22 @@ function Folder() {
         setFilePreviewContent(<p>File: {fileName}</p>);
       }
     } catch (error) {
-      console.error("Error loading file:", error);
+      console.error("Fehler beim Laden der Datei:", error);
     }
   };
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
-        `${prodconfig.backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
+        `${prodconfig.backendUrl}/docupload/download/${encodeURIComponent(
+          fileName
+        )}`,
         {
           method: "GET",
           credentials: "include",
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to download file");
+        throw new Error("Fehler beim Herunterladen der Datei");
       }
 
       const blob = await response.blob(); // Retrieve file as blob
@@ -444,12 +471,14 @@ function Folder() {
       window.URL.revokeObjectURL(url); // Clean up the URL object
       a.remove(); // Remove the temporary anchor element from the DOM
     } catch (error) {
-      console.error("Download error:", error);
+      console.error("Download-Fehler:", error);
     }
   };
 
   const handleFileDelete = async (fileId) => {
-    if (window.confirm("Are you sure you want to delete this file?")) {
+    if (
+      window.confirm("Bist du sicher, dass du diese Datei löschen möchtest?")
+    ) {
       setIsDeleting(true);
 
       try {
@@ -457,21 +486,34 @@ function Folder() {
           `${prodconfig.backendUrl}/docupload/delete/${fileId}`,
           { method: "DELETE", credentials: "include" }
         );
-        if (!response.ok) throw new Error("Failed to delete file");
+        if (!response.ok) throw new Error("Fehler beim Löschen der Datei");
         const data = await response.json();
 
         setCurrentlyPreviewedFile(null);
         setFilePreviewContent(null);
 
+        // Fetch and update the folder tree
         const folderTree = await fetchAndRenderFolderTree();
         if (folderTree) {
           setFolders(folderTree.folderTree);
           setLoading(false);
         }
+
+        // Success message
+        await Swal.fire(
+          "Gelöscht!",
+          "Die Datei wurde erfolgreich gelöscht.",
+          "success"
+        );
       } catch (error) {
-        alert("Failed to delete file. Please try again later.");
-      } finally {
-        setIsDeleting(false);
+        console.error("Fehler beim Löschen der datei:", error);
+
+        // Error message
+        await Swal.fire(
+          "Fehler",
+          "Fehler beim Löschen der datei . Bitte versuche es erneut.",
+          "error"
+        );
       }
     }
   };
@@ -511,25 +553,28 @@ function Folder() {
 
   const handleRenameSubmit = async (folderId, newFolderName) => {
     try {
-      const response = await customFetch(`${prodconfig.backendUrl}/folders/rename`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          documentId: folderId,
-          newFilename: newFolderName,
-        }),
-      });
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/rename`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            documentId: folderId,
+            newFilename: newFolderName,
+          }),
+        }
+      );
 
       alert(response.data.message);
       setEditingFolderId(null); // Close the input after renaming
       setNewFolderName(""); // Clear the input field
       window.location.reload(); // Reload to reflect the changes
     } catch (error) {
-      console.error("Error renaming folder:", error);
-      alert("Failed to rename folder.");
+      console.error("Fehler beim Umbenennen des Ordners:", error);
+      alert("Fehler beim Umbenennen des Ordners.");
     }
   };
 
@@ -539,7 +584,7 @@ function Folder() {
       title: "Neuen Ordner erstellen",
       input: "text",
       inputLabel: "Ordnername",
-      inputPlaceholder: "Geben Sie den Namen des Ordners ein",
+      inputPlaceholder: "Gib den Namen des Ordners ein",
       showCancelButton: true,
       confirmButtonText: "Erstellen",
       cancelButtonText: "Abbrechen",
@@ -581,7 +626,7 @@ function Folder() {
         Swal.fire("Erfolgreich", "Ordner erfolgreich erstellt", "erfolgreich");
       } else {
         Swal.fire(
-          "Erreur",
+          "Fehler",
           data?.message ||
             "Beim Erstellen des Ordners ist ein Fehler aufgetreten.",
           "fehler"
@@ -604,11 +649,11 @@ function Folder() {
 
   const handleFileUploadSwal = async (id) => {
     const { value: formValues } = await Swal.fire({
-      title: "Upload File",
+      title: "Datei hochladen",
       html: '<input type="file" id="fileInput" class="swal2-input" accept="*/*">',
       showCancelButton: true,
-      confirmButtonText: "Upload",
-      cancelButtonText: "Cancel",
+      confirmButtonText: "Hochladen",
+      cancelButtonText: "Abbrechen",
       focusConfirm: false,
       preConfirm: () => {
         const selectedFile = document.getElementById("fileInput").files[0];
@@ -616,7 +661,7 @@ function Folder() {
 
         if (!selectedFile || !folderId) {
           Swal.showValidationMessage(
-            "Please select a file and enter a folder ID."
+            "Wähle eine Datei aus und gib eine Ordner-ID ein."
           );
           return;
         }
@@ -636,7 +681,7 @@ function Folder() {
     });
 
     if (formValues) {
-      Swal.fire("Success", "File uploaded successfully!", "success").then(
+      Swal.fire("Erfolg", "Datei erfolgreich hochgeladen!", "erfolg").then(
         () => {
           window.location.reload();
         }
@@ -667,7 +712,7 @@ function Folder() {
             <div>
               {/* Folders Section starts */}
               <h3 className="mb-4 flex items-center gap-1 tracking-wide text-lg text-black">
-                All Folders
+                Alle Ordner
               </h3>
               <ul className="grid grid-cols-1 pl-0 xsm:grid-cols-3 gap-4 md:gap-7 md:grid-cols-5">
                 {(folderContent?.children || []).map((folder) => (
@@ -685,7 +730,7 @@ function Folder() {
                   className="bg-white border-lg p-4 flex flex-col gap-1 justify-center items-center rounded-lg hover:opacity-80 border border-transparent hover:border-primary focus:border-primary focus:outline-primary cursor-pointer duration-200 transition-opacity shadow-sm "
                 >
                   <FaPlus className="w-full text-primary text-5xl" />
-                  <span>New Folder</span>
+                  <span>Neuer Ordner</span>
                 </li>
               </ul>
               {createNewFolder && (
@@ -726,7 +771,7 @@ function Folder() {
                     <thead>
                       <tr className="border-b border-slate-200">
                         <th className="text-left py-2 px-4 text-black">Name</th>
-                        <th className="text-left py-2 px-4">Actions</th>
+                        <th className="text-left py-2 px-4">Aktionen</th>
                         {/* <th className="text-left py-2 px-4">Keywords</th> */}
                       </tr>
                     </thead>
@@ -873,7 +918,7 @@ function Folder() {
                                           ))}
                                         </ul>
                                       ) : (
-                                        <p>No version history available.</p>
+                                        <p>Kein Versionsverlauf verfügbar.</p>
                                       )}
                                     </div>
                                   </ParamsPopoverLayout>
@@ -882,43 +927,64 @@ function Folder() {
                               <button
                                 onClick={async () => {
                                   // Extrahiere die Dateierweiterung und den Dateinamen ohne Erweiterung
-                                  const fileExtension = file.name.split(".").pop(); // Extrahiert die Dateierweiterung
-                                  const fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, ""); // Entfernt die Erweiterung aus dem Namen
+                                  const fileExtension = file.name
+                                    .split(".")
+                                    .pop(); // Extrahiert die Dateierweiterung
+                                  const fileNameWithoutExtension =
+                                    file.name.replace(`.${fileExtension}`, ""); // Entfernt die Erweiterung aus dem Namen
 
                                   const { value: newName } = await Swal.fire({
-                                    title: "Rename File",
+                                    title: "Datei umbenennen",
                                     input: "text",
-                                    inputLabel: "New File Name",
+                                    inputLabel: "Neuer Dateiname",
                                     inputValue: fileNameWithoutExtension, // Zeigt nur den Namen ohne Erweiterung an
                                     showCancelButton: true,
                                     confirmButtonText: "Speichern",
                                     inputValidator: (value) => {
-                                      if (!value) return "You need to enter a file name!";
+                                      if (!value)
+                                        return "Du musst einen Dateinamen eingeben!";
                                     },
                                   });
-
                                   if (newName) {
                                     // Füge die ursprüngliche Dateierweiterung wieder hinzu
                                     const fullFilename = `${newName}.${fileExtension}`;
                                     try {
-                                      const response = await customFetch(`${prodconfig.backendUrl}/folders/rename`, {
-                                        method: "POST",
-                                        credentials: "include",
-                                        headers: {
-                                          "Content-Type": "application/json",
-                                        },
-                                        body: JSON.stringify({
-                                          documentId: file.id,
-                                          newFilename: fullFilename, // Sende den neuen Namen mit der ursprünglichen Erweiterung
-                                        }),
-                                      });
-                                      if (!response.ok) throw new Error("Failed to rename file");
+                                      const response = await customFetch(
+                                        `${prodconfig.backendUrl}/folders/rename`,
+                                        {
+                                          method: "POST",
+                                          credentials: "include",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                          },
+                                          body: JSON.stringify({
+                                            documentId: file.id,
+                                            newFilename: fullFilename, // Sende den neuen Namen mit der ursprünglichen Erweiterung
+                                          }),
+                                        }
+                                      );
+                                      if (!response.ok)
+                                        throw new Error(
+                                          "Fehler beim Umbenennen der Datei"
+                                        );
 
-                                      await Swal.fire("Success!", "File renamed successfully", "success");
+                                      await Swal.fire(
+                                        "Erfolg!",
+                                        "Datei erfolgreich umbenannt",
+                                        "erfolg"
+                                      );
                                       window.location.reload();
                                     } catch (error) {
-                                      await Swal.fire("Error!", "Failed to rename file", "error");
-                                      console.error("Error renaming file:", error);
+                                      await Swal.fire(
+                                        "Fehler!",
+                                        "Datei konnte nicht umbenannt werden",
+                                        "fehler"
+                                      );
+
+                                      console.error(
+                                        "Fehler beim Umbenennen der Datei:",
+                                        error
+                                      );
                                     }
                                   }
                                 }}
@@ -1000,15 +1066,15 @@ function Folder() {
                         <ContextMenuItem
                           onClick={async () => {
                             const { value: folderName } = await Swal.fire({
-                              title: "Create New Folder",
+                              title: "Neuen Ordner erstellen",
                               input: "text",
-                              inputLabel: "Folder Name",
-                              inputPlaceholder: "Enter folder name",
+                              inputLabel: "Ordnername",
+                              inputPlaceholder: "Ordnernamen eingeben",
                               showCancelButton: true,
                               confirmButtonText: "Erstellen",
                               inputValidator: (value) => {
                                 if (!value)
-                                  return "You need to enter a folder name!";
+                                  return "Du musst einen Ordnernamen eingeben!";
                               },
                             });
 
@@ -1029,36 +1095,42 @@ function Folder() {
                                   }
                                 );
                                 if (!response.ok)
-                                  throw new Error("Failed to create folder");
+                                  throw new Error(
+                                    "Fehler beim Erstellen des Ordners"
+                                  );
 
                                 await Swal.fire(
-                                  "Success!",
-                                  "Folder created successfully",
-                                  "success"
+                                  "Erfolg!",
+                                  "Ordner erfolgreich erstellt",
+                                  "erfolg"
                                 );
                                 window.location.reload();
                               } catch (error) {
                                 await Swal.fire(
-                                  "Error!",
-                                  "Failed to create folder",
-                                  "error"
+                                  "Fehler!",
+                                  "Ordner konnte nicht erstellt werden",
+                                  "fehler"
                                 );
-                                console.error("Error creating folder:", error);
+
+                                console.error(
+                                  "Fehler beim Erstellen des Ordners:",
+                                  error
+                                );
                               }
                             }
                           }}
                         >
-                          New Folder
+                          Neuer Ordner
                         </ContextMenuItem>
 
                         <ContextMenuItem
                           onClick={async () => {
                             const { value: file } = await Swal.fire({
-                              title: "Select File",
+                              title: "Datei auswählen",
                               input: "file",
                               inputAttributes: {
                                 accept: "*/*",
-                                "aria-label": "Upload your file",
+                                "aria-label": "Datei hochladen",
                               },
                             });
 
@@ -1077,38 +1149,43 @@ function Folder() {
                                   }
                                 );
                                 if (!response.ok)
-                                  throw new Error("Failed to upload file");
+                                  throw new Error(
+                                    "Fehler beim Hochladen der Datei"
+                                  );
 
                                 await Swal.fire(
-                                  "Success!",
-                                  "File uploaded successfully",
-                                  "success"
+                                  "Erfolg!",
+                                  "Datei erfolgreich hochgeladen",
+                                  "erfolg"
                                 );
                                 window.location.reload();
                               } catch (error) {
                                 await Swal.fire(
-                                  "Error!",
-                                  "Failed to upload file",
-                                  "error"
+                                  "Fehler!",
+                                  "Datei konnte nicht hochgeladen werden",
+                                  "fehler"
                                 );
-                                console.error("Error uploading file:", error);
+                                console.error(
+                                  "Fehler beim Hochladen der Datei:",
+                                  error
+                                );
                               }
                             }
                           }}
                         >
-                          New Document
+                          Neues Dokument
                         </ContextMenuItem>
 
                         <ContextMenuItem
                           onClick={async () => {
                             const result = await Swal.fire({
-                              title: "Are you sure?",
-                              text: "You won't be able to revert this!",
+                              title: "Bist du sicher?",
+                              text: "Dies kann nicht rückgängig gemacht werden!",
                               icon: "warning",
                               showCancelButton: true,
                               confirmButtonColor: "#3085d6",
                               cancelButtonColor: "#d33",
-                              confirmButtonText: "Yes, delete it!",
+                              confirmButtonText: "Ja, lösche es!",
                             });
 
                             if (result.isConfirmed) {
@@ -1121,40 +1198,45 @@ function Folder() {
                                   }
                                 );
                                 if (!response.ok)
-                                  throw new Error("Failed to delete folder");
+                                  throw new Error(
+                                    "Fehler beim Löschen des Ordners"
+                                  );
 
                                 Swal.fire(
-                                  "Deleted!",
-                                  "Folder has been deleted.",
+                                  "Gelöscht!",
+                                  "Ordner wurde gelöscht.",
                                   "success"
                                 );
                                 window.location.reload();
                               } catch (error) {
                                 Swal.fire(
-                                  "Error!",
-                                  "Failed to delete folder",
+                                  "Fehler!",
+                                  "Ordner konnte nicht gelöscht werden",
                                   "error"
                                 );
-                                console.error("Error deleting folder:", error);
+                                console.error(
+                                  "Fehler beim Löschen des Ordners:",
+                                  error
+                                );
                               }
                             }
                           }}
                         >
-                          Delete
+                          Löschen
                         </ContextMenuItem>
                         <ContextMenuItem
                           onClick={async () => {
                             const { value: folderName } = await Swal.fire({
-                              title: "Create New Folder",
+                              title: "Neuen Ordner erstellen",
                               input: "text",
-                              inputLabel: "Folder Name",
+                              inputLabel: "Ordnername",
                               inputValue: folder.name,
-                              inputPlaceholder: "Enter folder name",
+                              inputPlaceholder: "Ordnernamen eingeben",
                               showCancelButton: true,
                               confirmButtonText: "Erstellen",
                               inputValidator: (value) => {
                                 if (!value)
-                                  return "You need to enter a folder name!";
+                                  return "Du musst einen Ordnernamen eingeben!";
                               },
                             });
 
@@ -1175,26 +1257,31 @@ function Folder() {
                                   }
                                 );
                                 if (!response.ok)
-                                  throw new Error("Failed to rename folder");
+                                  throw new Error(
+                                    "Fehler beim Umbenennen des Ordners"
+                                  );
 
                                 await Swal.fire(
-                                  "Success!",
-                                  "Folder Name Changed Success!",
+                                  "Erfolg!",
+                                  "Ordnername erfolgreich geändert!",
                                   "success"
                                 );
                                 window.location.reload();
                               } catch (error) {
                                 await Swal.fire(
-                                  "Error!",
-                                  "Something went wrong while renaming the folder.",
+                                  "Fehler!",
+                                  "Beim Umbenennen des Ordners ist etwas schiefgelaufen.",
                                   "error"
                                 );
-                                console.error("Error creating folder:", error);
+                                console.error(
+                                  "Fehler beim Erstellen des Ordners:",
+                                  error
+                                );
                               }
                             }
                           }}
                         >
-                          rename
+                          Umbenennen
                         </ContextMenuItem>
                       </ContextMenuContent>
                     </ContextMenu>
@@ -1254,15 +1341,16 @@ function Folder() {
                                     onClick={async () => {
                                       const { value: folderName } =
                                         await Swal.fire({
-                                          title: "Create New Folder",
+                                          title: "Neuen Ordner erstellen",
                                           input: "text",
-                                          inputLabel: "Folder Name",
-                                          inputPlaceholder: "Enter folder name",
+                                          inputLabel: "Ordnername",
+                                          inputPlaceholder:
+                                            "Ordnernamen eingeben",
                                           showCancelButton: true,
                                           confirmButtonText: "Erstellen",
                                           inputValidator: (value) => {
                                             if (!value)
-                                              return "You need to enter a folder name!";
+                                              return " Du musst einen Ordnernamen eingeben!";
                                           },
                                         });
 
@@ -1285,45 +1373,46 @@ function Folder() {
                                           );
                                           if (!response.ok)
                                             throw new Error(
-                                              "Failed to create folder"
+                                              "Fehler beim Erstellen des Ordners"
                                             );
 
                                           await Swal.fire(
-                                            "Success!",
-                                            "Folder created successfully",
+                                            "Erfolg!",
+                                            "Ordner erfolgreich erstellt",
                                             "success"
                                           );
                                           window.location.reload();
                                         } catch (error) {
                                           await Swal.fire(
-                                            "Error!",
-                                            "Failed to create folder",
+                                            "Fehler!",
+                                            "Ordner konnte nicht erstellt werden",
                                             "error"
                                           );
                                           console.error(
-                                            "Error creating folder:",
+                                            "Fehler beim Erstellen des Ordners:",
                                             error
                                           );
                                         }
                                       }
                                     }}
                                   >
-                                    New Folder
+                                    Neuer Ordner
                                   </ContextMenuItem>
                                   <ContextMenuItem
                                     onClick={async () => {
                                       const { value: folderName } =
                                         await Swal.fire({
-                                          title: "Create New Folder",
+                                          title: "Neuen Ordner erstellen",
                                           input: "text",
-                                          inputLabel: "Folder Name",
+                                          inputLabel: "Ordnername",
                                           inputValue: subFolder.name,
-                                          inputPlaceholder: "Enter folder name",
+                                          inputPlaceholder:
+                                            "Ordnernamen eingeben",
                                           showCancelButton: true,
                                           confirmButtonText: "Erstellen",
                                           inputValidator: (value) => {
                                             if (!value)
-                                              return "You need to enter a folder name!";
+                                              return "Du musst einen Ordnernamen eingeben!";
                                           },
                                         });
 
@@ -1346,39 +1435,39 @@ function Folder() {
                                           );
                                           if (!response.ok)
                                             throw new Error(
-                                              "Failed to rename folder"
+                                              "Fehler beim Umbenennen des Ordners"
                                             );
 
                                           await Swal.fire(
-                                            "Success!",
-                                            "Folder Name Changed Success!",
+                                            "Erfolg!",
+                                            "Ordnername erfolgreich geändert!",
                                             "success"
                                           );
                                           window.location.reload();
                                         } catch (error) {
                                           await Swal.fire(
-                                            "Error!",
-                                            "Something went wrong while renaming the folder.",
+                                            "Fehler!",
+                                            "Beim Umbenennen des Ordners ist etwas schiefgelaufen.",
                                             "error"
                                           );
                                           console.error(
-                                            "Error creating folder:",
+                                            "Fehler beim Erstellen des Ordners:",
                                             error
                                           );
                                         }
                                       }
                                     }}
                                   >
-                                    rename
+                                    Umbenennen
                                   </ContextMenuItem>
                                   <ContextMenuItem
                                     onClick={async () => {
                                       const { value: file } = await Swal.fire({
-                                        title: "Select File",
+                                        title: "Datei auswählen",
                                         input: "file",
                                         inputAttributes: {
                                           accept: "*/*",
-                                          "aria-label": "Upload your file",
+                                          "aria-label": "Lade deine Datei hoch",
                                         },
                                       });
 
@@ -1405,26 +1494,26 @@ function Folder() {
                                             );
 
                                           await Swal.fire(
-                                            "Success!",
-                                            "File uploaded successfully",
+                                            "Erfolg!",
+                                            "Datei erfolgreich hochgeladen",
                                             "success"
                                           );
                                           window.location.reload();
                                         } catch (error) {
                                           await Swal.fire(
-                                            "Error!",
-                                            "Failed to upload file",
+                                            "Fehler!",
+                                            "Datei konnte nicht hochgeladen werden",
                                             "error"
                                           );
                                           console.error(
-                                            "Error uploading file:",
+                                            "Fehler beim Hochladen der Datei:",
                                             error
                                           );
                                         }
                                       }
                                     }}
                                   >
-                                    New Document
+                                    Neues Dokument
                                   </ContextMenuItem>
 
                                   <ContextMenuItem
@@ -1439,18 +1528,18 @@ function Folder() {
                                         );
                                         if (!response.ok)
                                           throw new Error(
-                                            "Failed to delete folder"
+                                            "Fehler beim Löschen des Ordners"
                                           );
                                         window.location.reload();
                                       } catch (error) {
                                         console.error(
-                                          "Error deleting folder:",
+                                          "Fehler beim Löschen des Ordners:",
                                           error
                                         );
                                       }
                                     }}
                                   >
-                                    Delete
+                                    Löschen
                                   </ContextMenuItem>
                                 </ContextMenuContent>
                               </ContextMenu>
@@ -1498,25 +1587,25 @@ function Folder() {
                                         );
                                         if (!response.ok)
                                           throw new Error(
-                                            "Failed to view file"
+                                            "Fehler beim Anzeigen der Datei"
                                           );
                                         const content = await response.text();
                                         setFilePreviewContent(content);
                                         setCurrentlyPreviewedFile(file.name);
                                       } catch (error) {
                                         await Swal.fire(
-                                          "Error!",
-                                          "Failed to view file",
+                                          "Fehler!",
+                                          "Fehler beim Anzeigen der Datei",
                                           "error"
                                         );
                                         console.error(
-                                          "Error viewing file:",
+                                          "Fehler beim Anzeigen der Datei:",
                                           error
                                         );
                                       }
                                     }}
                                   >
-                                    View
+                                    Anzeigen
                                   </ContextMenuItem>
 
                                   <ContextMenuItem
@@ -1530,7 +1619,7 @@ function Folder() {
                                         );
                                         if (!response.ok)
                                           throw new Error(
-                                            "Failed to download file"
+                                            "Fehler beim Herunterladen der Datei"
                                           );
                                         const blob = await response.blob();
                                         const url =
@@ -1543,37 +1632,37 @@ function Folder() {
                                         window.URL.revokeObjectURL(url);
                                         a.remove();
                                         await Swal.fire(
-                                          "Success!",
-                                          "File downloaded successfully",
+                                          "Erfolg!",
+                                          "Datei erfolgreich heruntergeladen",
                                           "success"
                                         );
                                       } catch (error) {
                                         await Swal.fire(
-                                          "Error!",
-                                          "Failed to download file",
+                                          "Fehler!",
+                                          "Fehler beim Herunterladen der Datei",
                                           "error"
                                         );
                                         console.error(
-                                          "Error downloading file:",
+                                          "Fehler beim Herunterladen der Datei:",
                                           error
                                         );
                                       }
                                     }}
                                   >
-                                    Download
+                                    Herunterladen
                                   </ContextMenuItem>
                                   <ContextMenuItem
                                     onClick={async () => {
                                       const { value: newName } =
                                         await Swal.fire({
-                                          title: "Rename File",
+                                          title: "Datei umbenennen",
                                           input: "text",
-                                          inputLabel: "New File Name",
+                                          inputLabel: "Neuer Dateiname",
                                           inputValue: file.name,
                                           showCancelButton: true,
                                           inputValidator: (value) => {
                                             if (!value)
-                                              return "You need to enter a file name!";
+                                              return "Du musst einen Dateinamen eingeben!";
                                           },
                                         });
 
@@ -1596,42 +1685,42 @@ function Folder() {
                                           );
                                           if (!response.ok)
                                             throw new Error(
-                                              "Failed to rename file"
+                                              "Fehler beim Umbenennen der Datei"
                                             );
 
                                           await Swal.fire(
-                                            "Success!",
-                                            "File renamed successfully",
+                                            "Erfolg!",
+                                            "Datei erfolgreich umbenannt",
                                             "success"
                                           );
                                           window.location.reload();
                                         } catch (error) {
                                           await Swal.fire(
-                                            "Error!",
-                                            "Failed to rename file",
+                                            "Fehler!",
+                                            "Datei konnte nicht umbenannt werden",
                                             "error"
                                           );
                                           console.error(
-                                            "Error renaming file:",
+                                            "Fehler beim Umbenennen der Datei:",
                                             error
                                           );
                                         }
                                       }
                                     }}
                                   >
-                                    Rename
+                                    Umbenennen
                                   </ContextMenuItem>
 
                                   <ContextMenuItem
                                     onClick={async () => {
                                       const result = await Swal.fire({
-                                        title: "Are you sure?",
-                                        text: "You won't be able to revert this!",
+                                        title: "Bist du sicher?",
+                                        text: "Dies kann nicht rückgängig gemacht werden!",
                                         icon: "warning",
                                         showCancelButton: true,
                                         confirmButtonColor: "#3085d6",
                                         cancelButtonColor: "#d33",
-                                        confirmButtonText: "Yes, delete it!",
+                                        confirmButtonText: "Ja, lösche es!",
                                       });
 
                                       if (result.isConfirmed) {
@@ -1645,30 +1734,30 @@ function Folder() {
                                           );
                                           if (!response.ok)
                                             throw new Error(
-                                              "Failed to delete file"
+                                              "Fehler beim Löschen der Datei"
                                             );
 
                                           await Swal.fire(
-                                            "Deleted!",
-                                            "File has been deleted.",
+                                            "Gelöscht!",
+                                            "Datei wurde gelöscht.",
                                             "success"
                                           );
                                           window.location.reload();
                                         } catch (error) {
                                           await Swal.fire(
-                                            "Error!",
-                                            "Failed to delete file",
+                                            "Fehler!",
+                                            "Datei konnte nicht gelöscht werden",
                                             "error"
                                           );
                                           console.error(
-                                            "Error deleting file:",
+                                            "Fehler beim Löschen der Datei:",
                                             error
                                           );
                                         }
                                       }
                                     }}
                                   >
-                                    Delete
+                                    Löschen
                                   </ContextMenuItem>
                                   <div key={file.id}>
                                     <ContextMenuItem
@@ -1765,7 +1854,7 @@ function Folder() {
                                       ))}
                                     </ul>
                                   ) : (
-                                    <p>No version history available.</p>
+                                    <p>Kein Versionsverlauf verfügbar.</p>
                                   )}
                                 </div>
                               </ParamsPopoverLayout>
@@ -1832,7 +1921,7 @@ function Folder() {
                 handleEditClick(contextMenu.folderId, contextMenu.name)
               }
             >
-              Rename
+              Umbenennen
             </button>
 
             {/* Bestehender Button für "Löschen" */}
@@ -1860,7 +1949,7 @@ function Folder() {
             ref={popupRef} // Reference to detect clicks outside
           >
             <h2 className="text-lg font-normal py-4 text-left">
-              Rename "{selectedDocToRename?.name?.substring(0, 10)}" to:
+              Umbenennen von „{selectedDocToRename?.name?.substring(0, 10)}“ in:
             </h2>
             <div>
               <input
@@ -1886,7 +1975,7 @@ function Folder() {
                 className="bg-[#436BF5] text-white px-4 py-2 rounded-md hover:bg-[#426AF3] transition duration-200 ease-in-out"
               >
                 {/* {setLoading ? "Loading..." : "Save"} */}
-                Save
+                Speichern
               </button>
               <button
                 onClick={() => {
@@ -1896,7 +1985,7 @@ function Folder() {
                 }}
                 className="bg-gray-300 px-4 py-2 rounded-sm hover:bg-gray-400 transition duration-200 ease-in-out"
               >
-                Cancel
+                Abbrechen
               </button>
             </div>
           </div>

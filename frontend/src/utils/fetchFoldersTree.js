@@ -3,13 +3,16 @@ import prodconfig from "../production-config";
 
 export async function fetchAndRenderFolderTree() {
   try {
-    const response = await customFetch(`${prodconfig.backendUrl}/folders/tree`, {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await customFetch(
+      `${prodconfig.backendUrl}/folders/tree`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
     console.log(response);
     if (!response.ok) {
-      throw new Error("Failed to fetch folder tree");
+      throw new Error("Fehler beim Abrufen der Ordnerstruktur");
     }
 
     const folderTree = await response.json();
@@ -26,7 +29,7 @@ export async function fetchAndRenderFolder() {
     });
     console.log(response);
     if (!response.ok) {
-      throw new Error("Failed to fetch folder tree");
+      throw new Error("Fehler beim Abrufen der Ordnerstruktur");
     }
 
     const folderTree = await response.json();

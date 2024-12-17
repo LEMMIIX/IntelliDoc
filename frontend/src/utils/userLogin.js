@@ -11,7 +11,7 @@ export function userLogin(username, password, navigate) {
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Login failed");
+        throw new Error("Anmeldung fehlgeschlagengin failed");
       }
       return response.json();
     })
@@ -23,6 +23,6 @@ export function userLogin(username, password, navigate) {
     })
     .catch((error) => {
       console.error("Error:", error);
-      alert("Login failed. Please try again.");
+      alert("Anmeldung fehlgeschlagen. Bitte versuche es erneut.");
     });
 }

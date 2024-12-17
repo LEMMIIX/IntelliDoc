@@ -6,7 +6,7 @@ export function getCurrentUser() {
     .then((response) => {
       console.log(response);
       if (!response.ok) {
-        throw new Error("Failed to get current user");
+        throw new Error("Fehler beim Abrufen des aktuellen Benutzers");
       }
       return response.json();
     })
@@ -15,7 +15,7 @@ export function getCurrentUser() {
       return data.userId;
     })
     .catch((error) => {
-      console.error("Error getting current user:", error);
+      console.error("Fehler beim Abrufen des aktuellen Benutzers:", error);
       return null;
     });
 }

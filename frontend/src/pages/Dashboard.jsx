@@ -52,7 +52,7 @@ function Dashboard() {
           setLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching folder tree:", error);
+        console.error("Fehler beim Abrufen der Ordnerstruktur:", error);
         setLoading(false);
       }
     };
@@ -64,7 +64,7 @@ function Dashboard() {
       title: "Neuen Ordner erstellen",
       input: "text",
       inputLabel: "Ordnername",
-      inputPlaceholder: "Geben Sie den Namen des neuen Ordners ein",
+      inputPlaceholder: "Gib den Namen des neuen Ordners ein",
       showCancelButton: true,
       confirmButtonText: "Erstellen",
       cancelButtonText: "Abbrechen",
@@ -83,14 +83,17 @@ function Dashboard() {
   const createFolder = async (folderName, id) => {
     setIsCreating(true);
     try {
-      const response = await customFetch(`${prodconfig.backendUrl}/folders/create`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ folderName, parentFolderId: id }),
-      });
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/create`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ folderName, parentFolderId: id }),
+        }
+      );
 
       const data = await response.json();
       if (data.folderId) {
@@ -117,14 +120,16 @@ function Dashboard() {
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
-        `${prodconfig.backendUrl}/docupload/download/${encodeURIComponent(fileName)}`,
+        `${prodconfig.backendUrl}/docupload/download/${encodeURIComponent(
+          fileName
+        )}`,
         {
           method: "GET",
           credentials: "include",
         }
       );
       if (!response.ok) {
-        throw new Error("Failed to download file");
+        throw new Error("Fehler beim Herunterladen der Datei");
       }
 
       const blob = await response.blob(); // Retrieve file as blob
@@ -139,11 +144,13 @@ function Dashboard() {
       window.URL.revokeObjectURL(url); // Clean up the URL object
       a.remove(); // Remove the temporary anchor element from the DOM
     } catch (error) {
-      console.error("Download error:", error);
+      console.error("Download-Fehler:", error);
     }
   };
   const handleFileDelete = async (fileId) => {
-    if (window.confirm("Are you sure you want to delete this file?")) {
+    if (
+      window.confirm("Bist du sicher, dass du diese Datei löschen möchtest?")
+    ) {
       // setIsDeleting(true);
 
       try {
@@ -151,7 +158,7 @@ function Dashboard() {
           `${prodconfig.backendUrl}/docupload/delete/${fileId}`,
           { method: "DELETE", credentials: "include" }
         );
-        if (!response.ok) throw new Error("Failed to delete file");
+        if (!response.ok) throw new Error("Fehler beim Löschen der Datei");
         const data = await response.json();
 
         // setCurrentlyPreviewedFile(null);
@@ -163,7 +170,9 @@ function Dashboard() {
         //   setLoading(false);
         // }
       } catch (error) {
-        alert("Failed to delete file. Please try again later.");
+        alert(
+          "Fehler beim Löschen der Datei. Bitte versuche es später erneut."
+        );
       } finally {
         // setIsDeleting(false);
       }
@@ -171,19 +180,8 @@ function Dashboard() {
   };
   // console.log(JSON.parse(localStorage.getItem("isFileExplorerView")));
   const handleFolderDelete = async (folderId) => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "Do you really want to delete this folder?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6", // Color for the Confirm button
-      cancelButtonColor: "#d33", // Color for the Cancel button
-      confirmButtonText: "Yes, delete it!", // Text for Confirm button
-      cancelButtonText: "Cancel", // Text for Cancel button
-    });
-
-    if (result.isConfirmed) {
-      // If the user clicks "Yes, delete it!"
+    if (confirm("Bist du sicher, dass du diesen Ordner löschen möchtest?")) {
+      setIsDeleting(true);
       try {
         const response = await customFetch(
           `${prodconfig.backendUrl}/folders/${folderId}`,
@@ -193,9 +191,8 @@ function Dashboard() {
           }
         );
         if (!response.ok) {
-          throw new Error("Failed to delete folder");
+          throw new Error("Fehler beim Löschen des Ordners");
         }
-
         const data = await response.json();
 
         // Fetch and update the folder tree
@@ -207,17 +204,17 @@ function Dashboard() {
 
         // Success message
         await Swal.fire(
-          "Deleted!",
-          "The folder has been deleted successfully.",
+          "Gelöscht!",
+          "Der Ordner wurde erfolgreich gelöscht.",
           "success"
         );
       } catch (error) {
-        console.error("Error deleting folder:", error);
+        console.error("Fehler beim Löschen des Ordners:", error);
 
         // Error message
         await Swal.fire(
-          "Error",
-          "Failed to delete the folder. Please try again.",
+          "Fehler",
+          "Fehler beim Löschen des Ordners. Bitte versuche es erneut.",
           "error"
         );
       }
@@ -268,7 +265,9 @@ function Dashboard() {
         // Bildvorschau
         setFilePreviewContent(
           <img
-            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+              fileName
+            )}`}
             alt="Image Preview"
             className="max-w-full mx-auto object-contain w-[500px] h-[300px]"
           />
@@ -277,7 +276,9 @@ function Dashboard() {
         // PDF-Vorschau
         setFilePreviewContent(
           <iframe
-            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`}
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+              fileName
+            )}`}
             frameBorder="0"
             width="100%"
             height="600px"
@@ -286,7 +287,9 @@ function Dashboard() {
       } else if (fileExtension === "txt") {
         // Textdatei-Vorschau
         const response = await customFetch(
-          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+            fileName
+          )}`,
           {
             credentials: "include",
           }
@@ -306,7 +309,9 @@ function Dashboard() {
       } else if (fileExtension === "docx") {
         // DOCX-Vorschau
         const response = await customFetch(
-          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(fileName)}`,
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+            fileName
+          )}`,
           {
             credentials: "include",
           }
@@ -327,7 +332,7 @@ function Dashboard() {
         setFilePreviewContent(<p>File: {fileName}</p>);
       }
     } catch (error) {
-      console.error("Error loading file:", error);
+      console.error("Fehler beim Laden der Datei:", error);
     }
   };
 
@@ -354,8 +359,10 @@ function Dashboard() {
         setResults(data);
         console.log(data);
       } catch (error) {
-        setError("Error occurred while searching. Please try again.");
-        console.error("Search error:", error);
+        setError(
+          "Beim Suchen ist ein Fehler aufgetreten. Bitte versuche es erneut."
+        );
+        console.error("Suchfehler:", error);
       }
     };
 
@@ -366,13 +373,13 @@ function Dashboard() {
 
   console.log("results", results);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div>Wird geladen...</div>;
 
   return (
     <div>
       {searchQueryParam ? (
         <div>
-          <h3 className="text-xl px-4 pt-2 pb-4 text-black">Search Results</h3>
+          <h3 className="text-xl px-4 pt-2 pb-4 text-black">Suchergebnisse</h3>
           {results.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-black">
@@ -380,8 +387,8 @@ function Dashboard() {
                   <tr className="border-b border-slate-200">
                     <th className="text-left py-2 px-4 text-black">Name</th>
 
-                    <th className="text-left py-2 px-4">Relevance</th>
-                    <th className="text-left py-2 px-4">Actions</th>
+                    <th className="text-left py-2 px-4">Relevanz</th>
+                    <th className="text-left py-2 px-4">Aktionen</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -436,7 +443,7 @@ function Dashboard() {
           <div className="mt-5"></div>
           {!isFileExplorerView && (
             <div className="flex items-center justify-between py-3">
-              <h3 className="text-lg text-black">All Folders</h3>
+              <h3 className="text-lg text-black">Alle Ordner</h3>
             </div>
           )}
 
@@ -494,7 +501,7 @@ function Dashboard() {
                 className="bg-white border-lg p-4 flex flex-col gap-1 justify-center items-center rounded-lg hover:opacity-80 border border-transparent hover:border-primary focus:border-primary focus:outline-primary cursor-pointer duration-200 transition-opacity shadow-sm"
               >
                 <FaPlus className="w-full text-primary text-5xl" />
-                <span>New Folder</span>
+                <span>Neuer Ordner</span>
               </li>
             </ul>
           )}

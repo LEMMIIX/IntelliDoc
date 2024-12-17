@@ -4,7 +4,11 @@ import { FaArrowLeft, FaRegFolder } from "react-icons/fa";
 import Logo from "./Logo";
 import { FiChevronDown, FiPlus } from "react-icons/fi";
 import { useEffect, useState } from "react";
-import { IoConstruct, IoConstructOutline, IoLogOutOutline } from "react-icons/io5";
+import {
+  IoConstruct,
+  IoConstructOutline,
+  IoLogOutOutline,
+} from "react-icons/io5";
 import { fetchAndRenderFolderTree } from "../../utils/fetchFoldersTree";
 import { userLogout } from "../../utils/userLogout";
 import { fetchAndRenderFolder } from "../../utils/fetchFoldersTree";
@@ -32,35 +36,41 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   useEffect(() => {
     const checkAdminStatus = async () => {
       try {
-        const response = await customFetch(`${prodconfig.backendUrl}/api/current-user`, {
-          credentials: 'include'
-        });
+        const response = await customFetch(
+          `${prodconfig.backendUrl}/api/current-user`,
+          {
+            credentials: "include",
+          }
+        );
         if (response.ok) {
           const data = await response.json();
-          console.log('Admin status check:', data); // Debug log
+          console.log("Überprüfung des Admin-Status:", data); // Debug log
           setIsAdmin(data.isAdmin);
         }
       } catch (error) {
-        console.error('Error checking admin status:', error);
+        console.error("Fehler beim Überprüfen des Admin-Status:", error);
         setIsAdmin(false);
       }
     };
-  
+
     checkAdminStatus();
   }, []);
 
   const userLogout = async () => {
     try {
-      const response = await customFetch(`${prodconfig.backendUrl}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include'
-      });
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/auth/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
       if (response.ok) {
         localStorage.clear(); // Clear all localStorage items
-        navigate('/auth/login');
+        navigate("/auth/login");
       }
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error("Abmeldung fehlgeschlagen:", error);
     }
   };
 
@@ -72,17 +82,17 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     let fileInfo;
 
     const { value: fileStep } = await Swal.fire({
-      title: "Choose a File",
+      title: "Wähle eine Datei",
       html: '<input type="file" id="fileInput" class="swal2-input" accept="*/*">',
       showCancelButton: true,
-      confirmButtonText: "Upload",
-      cancelButtonText: "Cancel",
+      confirmButtonText: "Hochladen",
+      cancelButtonText: "Abbrechen",
       focusConfirm: false,
       preConfirm: async () => {
         const selectedFile = document.getElementById("fileInput").files[0];
 
         if (!selectedFile) {
-          Swal.showValidationMessage("Please select a file");
+          Swal.showValidationMessage("Bitte wähle eine Datei aus");
           return;
         }
 
@@ -90,21 +100,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         formData.append("file", selectedFile);
 
         try {
-          const response = await customFetch(`${prodconfig.backendUrl}/docupload/smart`, {
-            method: "POST",
-            body: formData,
-            credentials: "include",
-          });
+          const response = await customFetch(
+            `${prodconfig.backendUrl}/docupload/smart`,
+            {
+              method: "POST",
+              body: formData,
+              credentials: "include",
+            }
+          );
 
           if (!response.ok) {
-            throw new Error("Failed to upload file");
+            throw new Error("Fehler beim Hochladen der Datei");
           }
 
           const data = await response.json();
           fileInfo = data; // Extract the folders or data you need
           return true; // Proceed to the next step
         } catch (error) {
-          Swal.showValidationMessage("File upload failed. Please try again.");
+          Swal.showValidationMessage(
+            "Datei-Upload fehlgeschlagen. Bitte versuche es erneut."
+          );
           console.error(error);
           return false; // Stay on this step
         }
@@ -115,7 +130,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 
     // Step 2: Send Additional Request
     const { value: submitStep } = await Swal.fire({
-      title: "Suggested Folders",
+      title: "Vorgeschlagene Ordner",
       html: `
       <style>
         .swal2-table {
@@ -145,8 +160,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
       <table class="swal2-table">
         <thead>
           <tr>
-            <th>Folder Name</th>
-            <th>Select</th>
+            <th>Ordnername</th>
+            <th>Auswählen</th>
           </tr>
         </thead>
         <tbody>
@@ -164,14 +179,15 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                   </tr>
                 `
               )
-              .join("") || "<tr><td colspan='2'>No folders available</td></tr>"
+              .join("") ||
+            "<tr><td colspan='2'>Keine Ordner verfügbar</td></tr>"
           }
         </tbody>
       </table>
     `,
       showCancelButton: true,
-      confirmButtonText: "Submit",
-      cancelButtonText: "Cancel",
+      confirmButtonText: "Absenden",
+      cancelButtonText: "Abbrechen",
       preConfirm: async () => {
         const selectedFolder = document.querySelector(
           'input[name="selectedFolder"]:checked'
@@ -179,7 +195,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         const folderId = selectedFolder?.value;
 
         if (!selectedFolder) {
-          Swal.showValidationMessage("Please select a Folder");
+          Swal.showValidationMessage("Bitte wähle einen Ordner aus");
           return;
         }
 
@@ -198,7 +214,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           );
 
           if (!response.ok) {
-            throw new Error("Failed to upload file");
+            throw new Error("Fehler beim Hochladen der Datei");
           }
 
           // const data = await response.json();
@@ -210,10 +226,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
     });
 
     if (submitStep) {
-      Swal.fire("Success", "Your data has been submitted!", "success").then(
+      Swal.fire("Erfolg", "Ihre Daten wurden eingereicht!", "success").then(
         () => {
-          // Optionally refresh or close
-          console.log("Popup closed and action completed");
+          // Optional: Erneut laden oder schließen
+          console.log("Popup geschlossen und Aktion abgeschlossen");
         }
       );
     }
@@ -254,26 +270,26 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             <FiChevronDown className="ml-auto" />
           </h3>
           {profileOptions && (
-        <ul className="bg-white my-4 rounded-lg p-2 space-y-3">
-          <li
-            className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger items-center transition-colors duration-200"
-            onClick={() => userLogout(navigate)}
-          >
-            <IoLogOutOutline />
-            <span>Abmelden</span>
-          </li>
-          
-          {/* Only show admin button if user is admin */}
-          {isAdmin && (
-            <li
-              className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
-              onClick={() => navigate("/admin")}
-            >
-              <IoConstructOutline />
-              <span>Admin Dashboard</span>
-            </li>
-          )}
-        </ul>
+            <ul className="bg-white my-4 rounded-lg p-2 space-y-3">
+              <li
+                className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger items-center transition-colors duration-200"
+                onClick={() => userLogout(navigate)}
+              >
+                <IoLogOutOutline />
+                <span>Abmelden</span>
+              </li>
+
+              {/* Only show admin button if user is admin */}
+              {isAdmin && (
+                <li
+                  className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
+                  onClick={() => navigate("/admin")}
+                >
+                  <IoConstructOutline />
+                  <span>Admin Dashboard</span>
+                </li>
+              )}
+            </ul>
           )}
 
           {/* Add menu start */}
@@ -281,7 +297,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             className="btn-gradient px-2 py-2 flex items-center rounded-lg w-full my-4"
             onClick={() => setShowMenuUploads((p) => !p)}
           >
-            <span className="flex-1 border-r-2">Add</span>
+            <span className="flex-1 border-r-2">Hinzufügen</span>
             <FiPlus className="m-1 text-lg" />
           </button>
           {showMenuUpload && (
@@ -308,7 +324,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     handleUploadFile();
                   }}
                 >
-                  Upload Document
+                  Dokument hochladen
                 </span>
               </li>
             </ul>

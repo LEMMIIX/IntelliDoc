@@ -16,25 +16,28 @@ const CreateFolderForm = ({ parentFolderId }) => {
     e.preventDefault();
     setIsCreating(true);
     try {
-      const response = await customFetch(`${prodconfig.backendUrl}/folders/create`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ folderName, parentFolderId }),
-      });
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/create`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ folderName, parentFolderId }),
+        }
+      );
       const data = await response.json();
       if (data.folderId) {
-        setMessage("Folder created successfully");
+        setMessage("Ordner erfolgreich erstellt");
         // fetchParentFolders()
         window.location.reload();
       } else {
-        setMessage(data?.message || "Error creating folder");
+        setMessage(data?.message || "Fehler beim Erstellen des Ordners");
       }
     } catch (error) {
-      console.error("Error creating folder:", error);
-      setMessage("An error occurred while creating the folder.");
+      console.error("Fehler beim Erstellen des Ordners:", error);
+      setMessage("Es ist ein Fehler beim Erstellen des Ordners aufgetreten.");
     } finally {
       setIsCreating(false);
     }
@@ -60,7 +63,7 @@ const CreateFolderForm = ({ parentFolderId }) => {
 
             setFolderName(e.target.value);
           }}
-          placeholder="Folder Name"
+          placeholder="Ordnername"
           className="rounded-md flex-grow border border-stroke bg-white p-3 pr-4.5 text-black focus:border-primary focus-visible:outline-none "
           required
         />
@@ -71,10 +74,10 @@ const CreateFolderForm = ({ parentFolderId }) => {
           className=" bg-success text-white p-2 rounded-lg flex items-center gap-2 mx-auto focus:border-success/20 focus-visible:outline-none"
         >
           {isCreating ? (
-            "Creating"
+            "Erstellen"
           ) : (
             <>
-              <span>Create</span>
+              <span>Erstellen</span>
               <FaFolder />
             </>
           )}

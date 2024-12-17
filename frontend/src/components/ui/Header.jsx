@@ -55,7 +55,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }) {
               </div>
               <input
                 type="text"
-                placeholder="Search for a document..."
+                placeholder="Suche nach einem Dokument..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 readOnly={isSearchSent} // Prevent typing when search is sent
@@ -66,13 +66,13 @@ export default function Header({ sidebarOpen, setSidebarOpen }) {
                   type="button"
                   onClick={clearSearch}
                   className="p-2 text-gray-500 hover:text-gray-700"
-                  aria-label="Clear search"
+                  aria-label="Suche löschen"
                 >
                   ✕
                 </button>
               )}
               <button type="submit" className="hidden">
-                Search
+                Suche
               </button>
             </form>
           </div>
@@ -89,7 +89,7 @@ export default function Header({ sidebarOpen, setSidebarOpen }) {
             >
               ✕
             </button>
-            <h2 className="text-xl font-semibold mb-4">Search Results</h2>
+            <h2 className="text-xl font-semibold mb-4">Suchergebnisse</h2>
             {error ? (
               <p className="text-red-500">{error}</p>
             ) : (

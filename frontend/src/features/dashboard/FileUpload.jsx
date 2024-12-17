@@ -15,7 +15,7 @@ const FileUpload = ({ folderId }) => {
     e.preventDefault();
     setIsUploading(true);
     if (!selectedFile || !folderId) {
-      alert("Please select a file and folder.");
+      alert("Bitte wähle eine Datei und einen Ordner aus.");
       return;
     }
 
@@ -30,11 +30,13 @@ const FileUpload = ({ folderId }) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        alert("File uploaded successfully");
+        alert("Datei erfolgreich hochgeladen");
         window.location.reload();
       })
       .catch((error) => {
-        alert("Error occured when uploading the file. Try again!");
+        alert(
+          "Beim Hochladen der Datei ist ein Fehler aufgetreten. Versuche es bitte erneut!"
+        );
         window.location.reload();
       })
       .finally(() => {
@@ -46,14 +48,14 @@ const FileUpload = ({ folderId }) => {
     <div>
       <div className="rounded-sm border border-stroke bg-white shadow-default">
         <div className="border-b border-stroke py-4 px-6.5 ">
-          <h3 className="font-medium text-black">Upload Document</h3>
+          <h3 className="font-medium text-black">Dokument hochladen</h3>
         </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-5.5 p-6.5">
           <div>
-            <label className="mb-3 block text-black">Attach file</label>
+            <label className="mb-3 block text-black">Datei anhängen</label>
             <input
               type="file"
-              name="file"
+              name="datei"
               required
               disabled={isUploading}
               onChange={(e) => {
@@ -69,10 +71,10 @@ const FileUpload = ({ folderId }) => {
             type="submit"
           >
             {isUploading ? (
-              "Uploading..."
+              "Wird hochgeladen..."
             ) : (
               <>
-                <span> Upload</span>
+                <span> Hochladen</span>
                 <FiFile />
               </>
             )}

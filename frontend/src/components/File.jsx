@@ -34,7 +34,7 @@ function getRelevance(results) {
     let starNumbers = 0;
     let starColor = "orange";
     let fontSize = "";
-    let description = "the best";
+    let description = "Am besten";
     if (index === 0 && bestScore >= 50) {
       // Best result over 50%: 3 stars in blue
       starNumbers = 5;
@@ -50,7 +50,7 @@ function getRelevance(results) {
     } else {
       // Low relevance: 1 star in yellow for anything under 30%
       starNumbers = 1;
-      description = "good";
+      description = "gut";
     }
 
     resultsArray.push({
@@ -112,7 +112,7 @@ const File = ({
       console.log("---Refetch for delete action---");
     } catch (error) {
       //setError("Error occurred while searching. Please try again.");
-      console.error("Search error:", error);
+      console.error("Suchfehler:", error);
     }
   };
 
@@ -170,17 +170,20 @@ const File = ({
             onClick={async () => {
               // Extrahiere die Dateierweiterung und den Dateinamen ohne Erweiterung
               const fileExtension = file.name.split(".").pop(); // Extrahiert die Dateierweiterung
-              const fileNameWithoutExtension = file.name.replace(`.${fileExtension}`, ""); // Entfernt die Erweiterung aus dem Namen
+              const fileNameWithoutExtension = file.name.replace(
+                `.${fileExtension}`,
+                ""
+              ); // Entfernt die Erweiterung aus dem Namen
 
               const { value: newName } = await Swal.fire({
-                title: "Rename File",
+                title: "Datei umbenennen",
                 input: "text",
-                inputLabel: "New File Name",
+                inputLabel: "Neuer Dateiname",
                 inputValue: fileNameWithoutExtension, // Zeigt nur den Namen ohne Erweiterung an
                 showCancelButton: true,
-                confirmButtonText: "Save",
+                confirmButtonText: "Speichern",
                 inputValidator: (value) => {
-                  if (!value) return "You need to enter a file name!";
+                  if (!value) return "Du musst einen Dateinamen eingeben!";
                 },
               });
 
@@ -188,24 +191,36 @@ const File = ({
                 // Füge die ursprüngliche Dateierweiterung wieder hinzu
                 const fullFilename = `${newName}.${fileExtension}`;
                 try {
-                  const response = await customFetch(`${prodconfig.backendUrl}/folders/rename`, {
-                    method: "POST",
-                    credentials: "include",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      documentId: file.id,
-                      newFilename: fullFilename, // Sende den neuen Namen mit der ursprünglichen Erweiterung
-                    }),
-                  });
-                  if (!response.ok) throw new Error("Failed to rename file");
+                  const response = await customFetch(
+                    `${prodconfig.backendUrl}/folders/rename`,
+                    {
+                      method: "POST",
+                      credentials: "include",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({
+                        documentId: file.id,
+                        newFilename: fullFilename, // Sende den neuen Namen mit der ursprünglichen Erweiterung
+                      }),
+                    }
+                  );
+                  if (!response.ok)
+                    throw new Error("Fehler beim Umbenennen der Datei");
 
-                  await Swal.fire("Success!", "File renamed successfully", "success");
+                  await Swal.fire(
+                    "Erfolg!",
+                    "Datei erfolgreich umbenannt",
+                    "success"
+                  );
                   window.location.reload();
                 } catch (error) {
-                  await Swal.fire("Error!", "Failed to rename file", "error");
-                  console.error("Error renaming file:", error);
+                  await Swal.fire(
+                    "Fehler!",
+                    "Fehler beim Umbenennen der Datei",
+                    "error"
+                  );
+                  console.error("Fehler beim Umbenennen der Datei:", error);
                 }
               }
             }}

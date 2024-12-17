@@ -23,30 +23,33 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
     setIsLoading(true);
     try {
       // Sende die Anfrage mit dem richtigen Content-Type
-      const response = await customFetch(`${prodconfig.backendUrl}/folders/renameFolder`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json", // Setze den richtigen Content-Type
-        },
-        body: JSON.stringify({
-          folderId: folderId,
-          newFolderName: newFolderName,
-        }),
-      });
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/renameFolder`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json", // Setze den richtigen Content-Type
+          },
+          body: JSON.stringify({
+            folderId: folderId,
+            newFolderName: newFolderName,
+          }),
+        }
+      );
       if (!response.ok) {
-        throw new Error("Failed to rename folder");
+        throw new Error("Fehler beim Umbenennen des Ordners");
       }
       // Antwort vom Backend einlesen, falls erfolgreich
       const data = await response.json();
       setIsPopupVisible(false);
       setIsLoading(false);
-      alert("Folder Name Changed Success!");
+      alert("Ordnername erfolgreich geändert!");
       window.location.reload();
     } catch (e) {
       console.log("error: ", e);
       setErrorMessage(
-        e.message || "Something went wrong while renaming the folder."
+        e.message || "Beim Umbenennen des Ordners ist etwas schiefgelaufen."
       );
       setIsLoading(false);
     }
@@ -58,10 +61,10 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
 
     switch (newFileName) {
       case folderName:
-        setInputError("Please provide a new file name!");
+        setInputError("Bitte gib einen neuen Dateinamen an!");
         break;
       case "":
-        setInputError("No file name provided!");
+        setInputError("Kein Dateiname angegeben!");
         break;
       default:
         setInputError("");
@@ -177,7 +180,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
               className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger items-center transition-colors duration-200"
               onClick={() => handleFolderDelete(folderId)}
             >
-              Delete
+              Löschen
             </span>
             <span
               className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
@@ -186,7 +189,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
                 setShowFolderOptions(false);
               }}
             >
-              Rename
+              Umbenennen
             </span>
           </div>
         )}
@@ -198,10 +201,10 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
             ref={popupRef} // Reference to detect clicks outside
           >
             <h2 className="text-2xl font-semibold	 py-4 text-center text-[hsl(0,0%,33%)]">
-              Rename Folder
+              Ordner umbenennen
             </h2>
             <h1 className="text-sm font-normal py-4 text-center text-[hsl(0,0%,33%)]">
-              New folder Name
+              Neuer Ordnername
             </h1>
             <div>
               <input
@@ -233,7 +236,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
                 }`}
                 disabled={isLoading || inputError}
               >
-                {isLoading ? "Loading..." : "Save"}
+                {isLoading ? "Wird geladen..." : "Speichern"}
               </button>
               <button
                 onClick={() => {
@@ -242,7 +245,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
                 }}
                 className="bg-[#6e7881] text-white px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200 ease-in-out"
               >
-                Cancel
+                Abbrechen
               </button>
             </div>
           </div>
