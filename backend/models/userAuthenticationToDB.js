@@ -1,6 +1,6 @@
 /**
- * Diese Datei enthält Funktionen zur Authentifizierung von Benutzern.
- * Sie ermöglicht die Überprüfung von E-Mail und Passwort-Hash gegen die Datenbank.
+ * Diese Datei enthÃ¤lt Funktionen zur Authentifizierung von Benutzern.
+ * Sie ermÃ¶glicht die ÃœberprÃ¼fung von E-Mail und Passwort-Hash gegen die Datenbank.
  *
  * @autor Ayoub
  * 

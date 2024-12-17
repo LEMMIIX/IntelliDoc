@@ -1,3 +1,11 @@
+#
+# Diese Docker Compose-Datei definiert eine Multi-Container-Umgebung mit einem PostgreSQL-Datenbankdienst und einem Backend-Service, inklusive Initialisierungs-Skripten, Datenbankverbindungen und benutzerdefinierten Volumes zur Speicherung von Modellen und Caches.
+#
+# Diese Version war für das lokale TESTING - ist aber veraltet und sollte nicht verwendet werden
+#
+# @author Lennart
+#
+
 version: '3.8'
 services:
   postgres:

@@ -594,6 +594,8 @@ exports.viewFile = async (req, res) => {
  *
  * @errorResponse {404} File not found
  * @errorResponse {500} Server error during retrieval
+ * 
+ * @author Lennart
  */
 exports.getVersionHistory = async (req, res) => {
   try {

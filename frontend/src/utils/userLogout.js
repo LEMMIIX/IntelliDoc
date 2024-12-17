@@ -1,5 +1,5 @@
 /**
- * Die `userLogout`-Funktion führt die Abmeldung eines Benutzers durch und navigiert zur Login-Seite.
+ * Die `userLogout`-Funktion fÃ¼hrt die Abmeldung eines Benutzers durch und navigiert zur Login-Seite.
  * @Author Farah.
  */
 

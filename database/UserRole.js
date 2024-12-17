@@ -1,6 +1,6 @@
 /**
- * Diese Datei enthält die Definition des UserRole-Modells.
- * Sie ermöglicht die Verwaltung von Benutzerrollen in der Datenbank.
+ * Diese Datei enthÃ¤lt die Definition des UserRole-Modells.
+ * Sie ermÃ¶glicht die Verwaltung von Benutzerrollen in der Datenbank.
  *
  * @autor Luca
  *

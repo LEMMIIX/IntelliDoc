@@ -1,5 +1,5 @@
 /**
- * Diese Datei enth‰lt die ScrollArea-Komponente.
+ * Diese Datei enth√§lt die ScrollArea-Komponente.
  * @Author Farah. 
  */
 

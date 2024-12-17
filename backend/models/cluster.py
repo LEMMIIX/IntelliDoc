@@ -1,10 +1,10 @@
 """
-Diese Datei enthält Funktionen zur Durchführung von Clustering-Operationen auf Dokument- und Ordner-Embeddings.
-Sie ermöglicht das Laden von Embeddings, die Berechnung von Distanzen und die Ausführung des HDBSCAN-Clustering-Algorithmus.
-Zusätzlich werden semantische Ähnlichkeiten zwischen Ordnern berücksichtigt.
+Diese Datei enthÃ¤lt Funktionen zur DurchfÃ¼hrung von Clustering-Operationen auf Dokument- und Ordner-Embeddings.
+Sie ermÃ¶glicht das Laden von Embeddings, die Berechnung von Distanzen und die AusfÃ¼hrung des HDBSCAN-Clustering-Algorithmus.
+ZusÃ¤tzlich werden semantische Ã„hnlichkeiten zwischen Ordnern berÃ¼cksichtigt.
 
-@author Lennart, Miray. 
-Die Funktionen wurden mit Unterstützung von KI erstellt
+@author Lennart 
+Die Funktionen wurden mit UnterstÃ¼tzung von KI erstellt
 """
 
 import hdbscan

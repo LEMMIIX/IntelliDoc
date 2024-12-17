@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält die Definition der Klasse VectorOperations.
- * Sie ermöglicht die Berechnung von Ähnlichkeiten zwischen Vektoren und die Verwaltung eines Caches für diese Berechnungen.
+ * Diese Datei enthÃ¤lt die Definition der Klasse VectorOperations.
+ * Sie ermÃ¶glicht die Berechnung von Ã„hnlichkeiten zwischen Vektoren und die Verwaltung eines Caches fÃ¼r diese Berechnungen.
  *
  * @autor Lennart,Miray
- * Die Funktionen wurden mit Unterstützung von KI vorgeneriert und von mir angepasst. 
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI vorgeneriert und von mir angepasst. 
  */
 
 const { performance } = require('perf_hooks');

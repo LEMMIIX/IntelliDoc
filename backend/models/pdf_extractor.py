@@ -1,9 +1,9 @@
 """
-Diese Datei enthält Funktionen zum Extrahieren von Text aus PDF-Dokumenten.
-Sie ermöglicht die Dekodierung von Base64-kodierten PDF-Dateien und die Textextraktion mithilfe von pdfminer.
+Diese Datei enthÃ¤lt Funktionen zum Extrahieren von Text aus PDF-Dokumenten.
+Sie ermÃ¶glicht die Dekodierung von Base64-kodierten PDF-Dateien und die Textextraktion mithilfe von pdfminer.
 
 @autor Miray. 
-Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
 """
 
 import sys

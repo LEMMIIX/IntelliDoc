@@ -1,3 +1,10 @@
+#
+# Dieses Dockerfile erstellt ein Multi-Stage-Build für eine Node.js-Anwendung mit einem Frontend-Build, Backend-Abhängigkeiten und einer Python-Umgebung, einschließlich Datenbankinitialisierung und Modell-Download-Logik für einen optimierten Container-Start.
+#
+# @author Lennart
+# Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+
+
 # Build frontend
 FROM node:20 AS frontend-build
 WORKDIR /app/frontend

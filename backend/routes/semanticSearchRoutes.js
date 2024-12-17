@@ -1,8 +1,8 @@
 /**
- * Diese Datei enthält die Route für die semantische Suche.
- * Sie ermöglicht die Durchführung von Suchanfragen und die Rückgabe von Suchergebnissen an frontend. 
+ * Diese Datei enthÃ¤lt die Route fÃ¼r die semantische Suche.
+ * Sie ermÃ¶glicht die DurchfÃ¼hrung von Suchanfragen und die RÃ¼ckgabe von Suchergebnissen an frontend. 
  *
- * @autor Miray
+ * @autor Lennart,Miray
  */
 
 const express = require('express');

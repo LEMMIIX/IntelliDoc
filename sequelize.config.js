@@ -1,3 +1,9 @@
+/**
+ * Diese Datei konfiguriert die Verbindung zur PostgreSQL-Datenbank mit Sequelize, einschließlich Verbindungsparametern, Pooling-Einstellungen und dem spezifischen Schema.
+ *
+ * @author Miray
+ */
+
 const { Sequelize } = require("sequelize");
 const { dbConfig } = require("./ConnectPostgres");
 

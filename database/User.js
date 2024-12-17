@@ -1,6 +1,6 @@
 /**
- * Diese Datei enthält die Definition des User-Modells.
- * Sie ermöglicht die Verwaltung von Benutzerdaten in der Datenbank.
+ * Diese Datei enthÃ¤lt die Definition des User-Modells.
+ * Sie ermÃ¶glicht die Verwaltung von Benutzerdaten in der Datenbank.
  *
  * @autor Ilyass. 
  * 

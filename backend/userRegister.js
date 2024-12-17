@@ -1,10 +1,10 @@
 /**
- * Diese Datei enthält die Route zur Benutzerregistrierung.
- * Sie ermöglicht die Erstellung neuer Benutzer und das Senden von Bestätigungs-E-Mails.
- * und die Überprüfung der Passwortstärke.
+ * Diese Datei enthï¿½lt die Route zur Benutzerregistrierung.
+ * Sie ermï¿½glicht die Erstellung neuer Benutzer und das Senden von Bestï¿½tigungs-E-Mails.
+ * und die ï¿½berprï¿½fung der Passwortstï¿½rke.
  *
- * @autor Ayoub.  
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @autor Ayoub  
+ * Die Funktionen wurden mit Unterstï¿½tzung von KI tools angepasst und optimiert
  */
 
 const express = require('express');

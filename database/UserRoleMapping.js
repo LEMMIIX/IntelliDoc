@@ -1,6 +1,6 @@
 /**
- * Diese Datei enthält die Definition des UserRoleMapping-Modells.
- * Sie ermöglicht die Zuordnung von Benutzern zu Rollen in der Datenbank.
+ * Diese Datei enthÃ¤lt die Definition des UserRoleMapping-Modells.
+ * Sie ermÃ¶glicht die Zuordnung von Benutzern zu Rollen in der Datenbank.
  *
  * @autor Luca. 
  *

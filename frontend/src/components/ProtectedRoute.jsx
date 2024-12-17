@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält die Route für Admin seite.
- * Sie schützt bestimmte Routen und leitet Benutzer basierend auf ihrem Authentifizierungsstatus weiter.
+ * Diese Datei enthÃ¤lt die Route fÃ¼r Admin seite.
+ * Sie schÃ¤tzt bestimmte Routen und leitet Benutzer basierend auf ihrem Authentifizierungsstatus weiter.
  *
- * @autor Miray
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @autor Farah, Miray
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 import { Navigate } from "react-router-dom";

@@ -9,7 +9,6 @@
 
 const { sendResetEmail } = require('../controllers/modelMailer.js');
 const db = require('../../ConnectPostgres');
-const user = require('./modelUser.js');
 const express = require('express');
 const router = express.Router();
 const path = require('path');

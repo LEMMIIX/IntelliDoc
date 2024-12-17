@@ -1,5 +1,5 @@
 /**
- * Die `FileUpload`-Komponente ermöglicht das Hochladen von Dateien in einen bestimmten Ordner.
+ * Die `FileUpload`-Komponente ermÃ¶glicht das Hochladen von Dateien in einen bestimmten Ordner.
  * @autor Farah
  */
 

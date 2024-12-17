@@ -1,5 +1,5 @@
 /**
- * Diese Datei enth‰lt die Definition des File-Modells
+ * Diese Datei enth√§lt die Definition des File-Modells
  * @autor Miray
  * 
  */

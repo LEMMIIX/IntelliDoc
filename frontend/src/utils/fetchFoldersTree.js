@@ -1,5 +1,5 @@
 /**
- * Diese Datei enth‰lt Funktionen zum Abrufen und Rendern des Ordnerbaums, einschlieﬂlich `fetchAndRenderFolderTree` und `fetchAndRenderFolder`.
+ * Diese Datei enth√§lt Funktionen zum Abrufen und Rendern des Ordnerbaums, einschlie√ülich `fetchAndRenderFolderTree` und `fetchAndRenderFolder`.
  *@Author Farah
  */
 

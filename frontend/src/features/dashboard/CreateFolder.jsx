@@ -1,5 +1,5 @@
 /**
- * Die `CreateFolderForm`-Komponente ermöglicht das Erstellen eines neuen Ordners innerhalb eines übergeordneten Ordners.
+ * Die `CreateFolderForm`-Komponente ermÃ¶glicht das Erstellen eines neuen Ordners innerhalb eines Ã¼bergeordneten Ordners.
  * @Author Farah
  */
 

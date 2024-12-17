@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält Funktionen zur Durchführung von Clustering-Operationen auf Dokument- und Ordner-Embeddings.
- * Sie ermöglicht das Abrufen von Ordnerdaten, das Zuordnen von Dokumenten zu Ordnern und das Ausführen eines Clustering-Skripts.
+ * Diese Datei enthÃ¤lt Funktionen zur DurchfÃ¼hrung von Clustering-Operationen auf Dokument- und Ordner-Embeddings.
+ * Sie ermÃ¶glicht das Abrufen von Ordnerdaten, das Zuordnen von Dokumenten zu Ordnern und das AusfÃ¼hren eines Clustering-Skripts.
  *
  * @author Lennart
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 const { exec } = require('child_process');
@@ -95,7 +95,7 @@ async function runClustering(embeddings, config = {}, userId) {
                         getDocumentFolderMap(userId)
                     ]);
                     
-                    folderData = folders; // speichrt die Ordnerdaten für die spätere Verwendung
+                    folderData = folders; // speichrt die Ordnerdaten fï¿½r die spï¿½tere Verwendung
                     
                     clusteringData = {
                         doc_embeddings: formattedDocEmbeddings,
@@ -128,7 +128,7 @@ async function runClustering(embeddings, config = {}, userId) {
                     `python "${scriptPath}" "${tempEmbeddingsPath}" "${tempConfigPath}"`,
                     { maxBuffer: 1024 * 1024 * 10 },
                     async (error, stdout, stderr) => {
-                        // löscht die temporären Dateien
+                        // lï¿½scht die temporï¿½ren Dateien
                         try {
                             fs.unlinkSync(tempEmbeddingsPath);
                             fs.unlinkSync(tempConfigPath);

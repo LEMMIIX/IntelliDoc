@@ -2,9 +2,10 @@
  * Diese Datei enthält die Logik für die semantische Suche//Endpoint für frontend.
  * Sie ermöglicht die Durchführung von Suchanfragen und die Anzeige der Suchergebnisse mit einer Vorschau der Dateien.
  *
- * @autor Lennart. 
+ * @autor Lennart
  * 
  */
+
 document.addEventListener('DOMContentLoaded', function () {
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');

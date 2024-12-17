@@ -1,5 +1,5 @@
 /**
- * Diese datei ist der Einstiegspunkt der Anwendung und rendert die Haupt-App-Komponente innerhalb eines `BrowserRouter` für die Routing-Funktionalität.
+ * Diese datei ist der Einstiegspunkt der Anwendung und rendert die Haupt-App-Komponente innerhalb eines `BrowserRouter` fÃ¼r die Routing-FunktionalitÃ¤t.
  * @Author Farah. 
  */
 

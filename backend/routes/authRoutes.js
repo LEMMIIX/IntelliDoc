@@ -1,6 +1,6 @@
 /**
- * Diese Datei enthält die Routen für die Authentifizierung.
- * Sie ermöglicht die Registrierung, Anmeldung und Abmeldung von Benutzern.
+ * Diese Datei enthalt die Routen fÃ¼r die Authentifizierung.
+ * Sie ermÃ¶glicht die Registrierung, Anmeldung und Abmeldung von Benutzern.
  *
  * @autor Ayoub. 
  */

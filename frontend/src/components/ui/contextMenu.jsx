@@ -1,8 +1,8 @@
 /**
- * diese klasse ermöglicht die Erstellung eines kontextsensitiven Menüs mit auswählbaren Elementen.
+ * diese klasse ermÃ¶glicht die Erstellung eines kontextsensitiven MenÃ¼s mit auswÃ¤hlbaren Elementen.
  *
  * @autor Farah. 
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 import React from "react";

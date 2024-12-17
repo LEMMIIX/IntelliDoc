@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält Funktionen zum Extrahieren von Textinhalten aus verschiedenen Dateiformaten.
- * Sie unterstützt PDF, DOCX, Textdateien und Bilder (mittels OCR).
+ * Diese Datei enthÃ¤lt Funktionen zum Extrahieren von Textinhalten aus verschiedenen Dateiformaten.
+ * Sie unterstÃ¼tzt PDF, DOCX, Textdateien und Bilder (mittels OCR).
  *
- * @author "XXX"
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @author Miray
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 const { PythonShell } = require('python-shell');

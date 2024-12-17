@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält die ParamsPopoverLayout-Komponente.
- * Sie ermöglicht die Anzeige eines Popovers, der bei einem Klick außerhalb geschlossen wird.
+ * Diese Datei enthÃ¤lt die ParamsPopoverLayout-Komponente.
+ * Sie ermÃ¶glicht die Anzeige eines Popovers, der bei einem Klick auÃŸerhalb geschlossen wird.
  *
  * @autor Farah. 
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 import { useState, useEffect, useRef } from "react";

@@ -1,8 +1,8 @@
 /**
- * Diese Datei enthält die Logik für die Benutzeranmeldung.
- * Sie ermöglicht das Einreichen des Anmeldeformulars und die Authentifizierung des Benutzers.
+ * Diese Datei enthÃ¤lt die Logik fÃ¼r die Benutzeranmeldung.
+ * Sie ermÃ¶glicht das Einreichen des Anmeldeformulars und die Authentifizierung des Benutzers.
  *
- * @autor Ilyass. 
+ * @autor Ilyass
  * 
  */
 document.addEventListener('DOMContentLoaded', function () {

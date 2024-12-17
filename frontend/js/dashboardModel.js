@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält die Logik für das Dashboard-Modell bzw. Endpoint für Frontend.
- * Sie ermöglicht das Hochladen von Dokumenten, das Abrufen von Versionen und Schlüsselwörtern sowie das Verwalten von Ordnern.
+ * Diese Datei enthÃ¤lt die Logik fÃ¼r das Dashboard-Modell bzw. Endpoint fÃ¼r Frontend.
+ * Sie ermÃ¶glicht das Hochladen von Dokumenten, das Abrufen von Versionen und SchlÃ¼sselwÃ¶rtern sowie das Verwalten von Ordnern.
  *
- * @autor Miray,Ayoub. 
- * für debugging ki benutzt. 
+ * @autor Miray,Ayoub 
+ * fÃ¼r debugging ki benutzt. 
  */
 
 document.addEventListener('DOMContentLoaded', function () {

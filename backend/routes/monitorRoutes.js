@@ -1,6 +1,6 @@
 /**
- * Diese Datei enthält die Routen für das Monitoring.
- * Sie ermöglicht das Abrufen von aktiven Datenbank-Sitzungen und Datenbankstatistiken.
+ * Diese Datei enthÃ¶lt die Routen fÃ¼r das Monitoring.
+ * Sie ermÃ¶glicht das Abrufen von aktiven Datenbank-Sitzungen und Datenbankstatistiken.
  * Diese Daten werden in Admin page angezeigt in frontend. 
  *
  * @autor Miray

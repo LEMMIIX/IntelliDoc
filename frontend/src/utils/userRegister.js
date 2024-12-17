@@ -1,5 +1,5 @@
 /**
- * Die `userRegister`-Funktion führt die Registrierung eines neuen Benutzers durch und navigiert nach erfolgreicher Registrierung zur Login-Seite.
+ * Die `userRegister`-Funktion fÃ¼hrt die Registrierung eines neuen Benutzers durch und navigiert nach erfolgreicher Registrierung zur Login-Seite.
  * @Author Ayoub. 
  */
 

@@ -1,5 +1,5 @@
 /**
- * Die `userLogin`-Funktion führt die Anmeldung eines Benutzers durch und navigiert nach erfolgreicher Anmeldung zum Dashboard.
+ * Die `userLogin`-Funktion fÃ¼hrt die Anmeldung eines Benutzers durch und navigiert nach erfolgreicher Anmeldung zum Dashboard.
  *@ Author Farah.
  */
 

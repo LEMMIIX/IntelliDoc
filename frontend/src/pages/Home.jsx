@@ -2,7 +2,7 @@
  * Diese Datei enthält die Home-Komponente.
  * Sie stellt die Startseite der Anwendung dar und bietet Navigation zu Registrierung und Anmeldung.
  *
- * @autor Lennart (Logo) //Ayoub. 
+ * @autor Lennart (Logo), Ayoub
  * 
  */
 

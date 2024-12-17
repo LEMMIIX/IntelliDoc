@@ -1,5 +1,5 @@
 /**
- * Die `getCurrentUser`-Funktion ruft den aktuell angemeldeten Benutzer vom Backend ab und gibt dessen Benutzer-ID zurück.
+ * Die `getCurrentUser`-Funktion ruft den aktuell angemeldeten Benutzer vom Backend ab und gibt dessen Benutzer-ID zurÃ¼ck.
  * @Author Farah.
  */
 

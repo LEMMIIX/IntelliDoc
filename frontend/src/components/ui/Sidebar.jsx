@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält die Sidebar-Komponente.
- * Sie ermöglicht die Navigation innerhalb der Anwendung und bietet verschiedene Benutzeroptionen.
+ * Diese Datei enthÃ¤lt die Sidebar-Komponente.
+ * Sie ermÃ¶glicht die Navigation innerhalb der Anwendung und bietet verschiedene Benutzeroptionen.
  *
- * @autor Farah
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @autor Farah, Miray, Lennart
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 /* eslint-disable react/prop-types */

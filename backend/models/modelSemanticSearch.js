@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält Funktionen zur Durchführung von semantic Search.
- * Sie ermöglicht das Generieren von Embeddings, das Durchführen von Datenbankabfragen und das Anwenden von Clustering-Boosts.
+ * Diese Datei enthÃ¤lt Funktionen zur DurchfÃ¼hrung von semantic Search.
+ * Sie ermÃ¶glicht das Generieren von Embeddings, das DurchfÃ¼hren von Datenbankabfragen und das Anwenden von Clustering-Boosts.
  *
- * @autor Lennart
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @autor Lennart, Miray
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 const { generateEmbedding } = require('./modelEmbedding');

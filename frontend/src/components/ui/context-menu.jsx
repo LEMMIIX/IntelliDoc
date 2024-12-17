@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält die ContextMenu-Komponente.
- * Sie ermöglicht die Erstellung eines kontextsensitiven Menüs mit verschiedenen Elementen.
+ * Diese Datei enthÃ¤lt die ContextMenu-Komponente.
+ * Sie ermÃ¶glicht die Erstellung eines kontextsensitiven MenÃ¼s mit verschiedenen Elementen.
  *
  * @autor Farah. 
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 import * as React from "react";

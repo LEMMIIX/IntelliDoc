@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält Funktionen zur Initialisierung und Nutzung eines MPNet-Modells zur Generierung von Embeddings.
- * Sie ermöglicht das Laden des Modells, das Generieren von Text-Embeddings und das Abrufen aller Embeddings eines Benutzers aus der Datenbank.
+ * Diese Datei enthÃ¶lt Funktionen zur Initialisierung und Nutzung eines MPNet-Modells zur Generierung von Embeddings.
+ * Sie ermÃ¶glicht das Laden des Modells, das Generieren von Text-Embeddings und das Abrufen aller Embeddings eines Benutzers aus der Datenbank.
  *
  * @author Lennart,Miray
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 const path = require('path');

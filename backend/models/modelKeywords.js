@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält Funktionen zur Initialisierung eines MPNet-Modells und zur Generierung von Schlüsselwörtern aus Text.
- * Sie ermöglicht das Laden des Modells aus dem lokalen Speicher und die Berechnung von Ähnlichkeiten zwischen Text- und Wort-Embeddings.
+ * Diese Datei enthÃ¤lt Funktionen zur Initialisierung eines MPNet-Modells und zur Generierung von SchlÃ¼sselwÃ¶rtern aus Text.
+ * Sie ermÃ¶glicht das Laden des Modells aus dem lokalen Speicher und die Berechnung von Ã„hnlichkeiten zwischen Text- und Wort-Embeddings.
  *
- * @autor Ayoub
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @autor Ayoub, Lennart
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 const path = require('path');
@@ -63,7 +63,7 @@ async function generateKeywords(text, maxKeywords = 2) {
     try {
         await initModel();
         
-        // Text in Wörter aufteilen und Duplikate/kurze Wörter entfernen
+        // Text in WÃ¶rter aufteilen und Duplikate/kurze WÃ¶rter entfernen
         const words = [...new Set(text.toLowerCase()
             .match(/\b\w+\b/g)
             ?.filter(word => word.length > 3) || [])];
@@ -72,13 +72,13 @@ async function generateKeywords(text, maxKeywords = 2) {
             return [];
         }
 
-        // mbedding für den vollständigen Text abrufen
+        // mbedding fÃ¼r den vollstÃ¶ndigen Text abrufen
         const textEmbedding = await model(text, {
             pooling: 'mean',
             normalize: true
         });
 
-        // embedding für einzelne Wörter abrufen
+        // embedding fï¿½r einzelne Wï¿½rter abrufen
         const wordEmbeddings = await Promise.all(
             words.map(async word => ({
                 word,
@@ -95,7 +95,7 @@ async function generateKeywords(text, maxKeywords = 2) {
             score: calculateCosineSimilarity(textEmbedding.data, embedding.data)
         }));
 
-        // sortiere die Keywords nach score und wähle die besten aus
+        // sortiere die Keywords nach score und wï¿½hle die besten aus
         const keywords = keywordScores
             .sort((a, b) => b.score - a.score)
             .slice(0, maxKeywords);

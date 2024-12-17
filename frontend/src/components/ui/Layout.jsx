@@ -1,5 +1,5 @@
 /**
- * Die `Layout`-Komponente definiert das Hauptlayout der Anwendung, einschließlich Header, Sidebar und Hauptinhalt.
+ * Die `Layout`-Komponente definiert das Hauptlayout der Anwendung, einschlieÃŸlich Header, Sidebar und Hauptinhalt.
  * @Author Farah. 
  */
 

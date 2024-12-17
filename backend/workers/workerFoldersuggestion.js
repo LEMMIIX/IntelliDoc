@@ -1,9 +1,8 @@
 /**
- * Diese Datei enthält den Worker zur Ordner-Vorschlagserstellung.
- * Sie ermöglicht die Berechnung von Ähnlichkeiten und Clustering von Dokument- und Ordner-Embeddings.
+ * Diese Datei enthÃ¶lt den Worker zur Ordner-Vorschlagserstellung.
+ * Sie ermÃ¶glicht die Berechnung von Ã„hnlichkeiten und Clustering von Dokument- und Ordner-Embeddings.
  *
- * @autor Lennart. 
- * Die Funktionen sind mit Ki generiert und optimiert
+ * @autor Lennart 
  */
 
 const { parentPort } = require('worker_threads');

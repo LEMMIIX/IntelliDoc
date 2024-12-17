@@ -1,6 +1,6 @@
 /**
- * Diese Datei enthält die Definition der User-Klasse.
- * Sie ermöglicht die Erstellung und Validierung von Benutzerobjekten.
+ * Diese Datei enthÃ¤lt die Definition der User-Klasse.
+ * Sie ermÃ¶glicht die Erstellung und Validierung von Benutzerobjekten.
  *
  * @Author Ayoub
  * 

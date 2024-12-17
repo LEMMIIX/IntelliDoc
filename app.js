@@ -1,3 +1,10 @@
+/**
+ * Diese Datei initialisiert und konfiguriert den Server, einschließlich Middleware, Routen, Datenbankverbindungen und Sicherheitskonfigurationen für eine vollständige Backend-Anwendung.
+ *
+ * @author Farah, Ayoub, Luca, Miray, Ilyass, Lennart
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const cors = require("cors");
 const express = require("express");
 const app = express();

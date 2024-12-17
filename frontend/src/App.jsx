@@ -1,5 +1,5 @@
 /**
- *  definiert die Haupt-Routing-Struktur der Anwendung, einschließlich geschützter Routen für das Dashboard und Admin-Bereich sowie Authentifizierungsrouten.
+ *  definiert die Haupt-Routing-Struktur der Anwendung, einschlieÃŸlich geschÃ¤tzter Routen fÃ¼r das Dashboard und Admin-Bereich sowie Authentifizierungsrouten.
  *@Author Farah. 
  * 
  */

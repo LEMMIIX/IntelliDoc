@@ -1,6 +1,6 @@
 
 /**
- * Diese Datei enth‰lt die Definition des Folder-Modells.
+ * Diese Datei enth√§lt die Definition des Folder-Modells.
  * @autor Luca
  * 
  */

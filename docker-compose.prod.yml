@@ -1,3 +1,11 @@
+#
+# Diese Docker Compose-Datei definiert die Konfiguration der Dienste für eine Backend-Anwendung, einschließlich eines PostgreSQL-Datenbankdienstes und eines Node.js-Backends mit definierten Umgebungsvariablen, Abhängigkeiten und Ressourcenbeschränkungen.
+#
+# Diese Docker Compose ist für das DEPLOYMENT auf einem Server
+#
+# @author Lennart
+#
+
 version: '3.8'
 services:
   postgres:

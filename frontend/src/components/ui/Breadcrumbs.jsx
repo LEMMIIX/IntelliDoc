@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält die Breadcrumbs-Komponente.
- * Sie ermöglicht die Navigation innerhalb der Ordnerstruktur und das Umschalten zwischen verschiedenen Ansichten.
+ * Diese Datei enthÃ¶lt die Breadcrumbs-Komponente.
+ * Sie ermÃ¶glicht die Navigation innerhalb der Ordnerstruktur und das Umschalten zwischen verschiedenen Ansichten.
  *
  * @autor Farah. 
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 import { useNavigate } from "react-router-dom";

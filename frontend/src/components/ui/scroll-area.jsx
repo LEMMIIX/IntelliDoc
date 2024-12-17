@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält die ScrollArea-Komponente.
- * Sie ermöglicht das Erstellen eines scrollbaren Bereichs mit Scrollleisten.
+ * Diese Datei enthÃ¤lt die ScrollArea-Komponente.
+ * Sie ermÃ¶glicht das Erstellen eines scrollbaren Bereichs mit Scrollleisten.
  *
  * @autor Farah. 
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * Die Funktionen wurden mit UnterstÃ¼tzung von KI tools angepasst und optimiert
  */
 
 import * as React from "react";
