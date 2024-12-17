@@ -1,3 +1,9 @@
+/**
+ *  definiert die Haupt-Routing-Struktur der Anwendung, einschließlich geschützter Routen für das Dashboard und Admin-Bereich sowie Authentifizierungsrouten.
+ *@Author Farah. 
+ * 
+ */
+
 import { Routes, Route, Navigate } from "react-router-dom"; // Added Navigate here
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";

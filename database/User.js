@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Definition des User-Modells.
+ * Sie ermöglicht die Verwaltung von Benutzerdaten in der Datenbank.
+ *
+ * @autor Ilyass. 
+ * 
+ */
+
 const { DataTypes } = require("sequelize");
 const sequelize = require("../sequelize.config.js");
 

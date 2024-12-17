@@ -1,7 +1,16 @@
-﻿import React, { useState } from 'react';
+﻿/**
+ * Diese Datei enthält die Requestpassword-Komponente.
+ * Sie ermöglicht das Anfordern einer E-Mail zum Zurücksetzen des Passworts.
+ *
+ * @autor Ayoub
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
+import React, { useState } from 'react';
 import { useNavigate,Link } from 'react-router-dom';
 import prodconfig from "../production-config";
 import '../styles/Requestpassword.css';
+import intellidoc_logo from '../assets/intellidoc_logo.webp';
 
 function Requestpassword() {
     const [email, setEmail] = useState('');
@@ -39,10 +48,13 @@ function Requestpassword() {
             {/* Header */}
             <header className="header">
                 <div className="header-content">
-                    <Link to="/" className="logo">IntelliDoc</Link>
+                    <div className="logo">
+                        <a href="/">
+                            <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        </a>
+                    </div>
                 </div>
             </header>
-
             {/* Main Content */}
             <div className="requestpassword_page">
                 <div className="requestpassword_container">

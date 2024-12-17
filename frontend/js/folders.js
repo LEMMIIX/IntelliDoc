@@ -1,4 +1,10 @@
-// @Autor Luca Neumann, Miray-Eren Kilic
+/**
+ * Diese Datei enthält die Logik für die Verwaltung der Ordnerstruktur.
+ * Sie ermöglicht das Abrufen, Erstellen, Umbenennen und Löschen von Ordnern sowie das Vorschauen und Verwalten von Dateien.
+ *
+ * @autor Luca Neumann, Miray-Eren Kilic, Ilyass Dablaq
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
 document.addEventListener('DOMContentLoaded', async function() {
     const folderTreeDiv = document.getElementById('folderTree');
     const filePreviewDiv = document.getElementById('filePreview');

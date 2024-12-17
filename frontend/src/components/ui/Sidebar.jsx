@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Sidebar-Komponente.
+ * Sie ermöglicht die Navigation innerhalb der Anwendung und bietet verschiedene Benutzeroptionen.
+ *
+ * @autor Farah
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 /* eslint-disable react/prop-types */
 import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft, FaRegFolder } from "react-icons/fa";

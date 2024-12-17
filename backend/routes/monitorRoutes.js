@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Routen für das Monitoring.
+ * Sie ermöglicht das Abrufen von aktiven Datenbank-Sitzungen und Datenbankstatistiken.
+ * Diese Daten werden in Admin page angezeigt in frontend. 
+ *
+ * @autor Miray
+ */
+
 const express = require('express');
 const router = express.Router();
 const db = require('../../ConnectPostgres');

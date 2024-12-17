@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Breadcrumbs-Komponente.
+ * Sie ermöglicht die Navigation innerhalb der Ordnerstruktur und das Umschalten zwischen verschiedenen Ansichten.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useNavigate } from "react-router-dom";
 import { FaFile, FaFolder, FaMinus, FaPlus } from "react-icons/fa6";
 import { FaThList } from "react-icons/fa";

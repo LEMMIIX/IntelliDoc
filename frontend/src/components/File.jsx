@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die File-Komponente.
+ * Sie ermöglicht die Anzeige und Verwaltung von Dateien, einschließlich Vorschau, Download, Umbenennung und Löschung.
+ *
+ * @autor Farah
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { MdImage } from "react-icons/md";
 import { IoIosDocument } from "react-icons/io";
 import { HiOutlineViewfinderCircle } from "react-icons/hi2";

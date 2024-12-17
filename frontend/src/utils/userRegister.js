@@ -1,3 +1,8 @@
+/**
+ * Die `userRegister`-Funktion führt die Registrierung eines neuen Benutzers durch und navigiert nach erfolgreicher Registrierung zur Login-Seite.
+ * @Author Ayoub. 
+ */
+
 import prodconfig from "../production-config";
 
 export function userRegister(username, email, password, navigate) {

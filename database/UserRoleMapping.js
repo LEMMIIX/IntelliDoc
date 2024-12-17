@@ -1,3 +1,10 @@
+/**
+ * Diese Datei enthält die Definition des UserRoleMapping-Modells.
+ * Sie ermöglicht die Zuordnung von Benutzern zu Rollen in der Datenbank.
+ *
+ * @autor Luca. 
+ *
+ */
 const { DataTypes } = require("sequelize");
 const sequelize = require("../sequelize.config");
 

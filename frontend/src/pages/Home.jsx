@@ -1,4 +1,12 @@
-﻿import { Link } from "react-router-dom";
+﻿/**
+ * Diese Datei enthält die Home-Komponente.
+ * Sie stellt die Startseite der Anwendung dar und bietet Navigation zu Registrierung und Anmeldung.
+ *
+ * @autor Lennart (Logo) //Ayoub. 
+ * 
+ */
+
+import { Link } from "react-router-dom";
 import "../styles/home.css";
 import intellimann from "../assets/intellimann.webp";
 import intellidoc_logo from "../assets/intellidoc_logo.webp";
@@ -60,17 +68,17 @@ function Home() {
                 <div className="feature">
                     <div className="icon">🔧</div>
                     <h3>Entwickelt für Effizienz</h3>
-                    <p>Schneller Dateiupload</p>
+                    <p></p>
                 </div>
                 <div className="feature">
                     <div className="icon">🔍</div>
                     <h3>Intelligente Suche</h3>
-                    <p>Noch schneller Dateien wiederfinden</p>
+                    <p></p>
                 </div>
                 <div className="feature">
                     <div className="icon">🔒</div>
                     <h3>Sichere Datenverarbeitung</h3>
-                    <p>Alles sicher und geschützt</p>
+                    <p></p>
                 </div>
             </section>
             <footer className="footer">

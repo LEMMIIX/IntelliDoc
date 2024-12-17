@@ -1,3 +1,8 @@
+/**
+ * Die `FileUpload`-Komponente ermöglicht das Hochladen von Dateien in einen bestimmten Ordner.
+ * @autor Farah
+ */
+
 /* eslint-disable no-unused-vars */
 import { useState, useEffect, Fragment } from "react";
 import { FiFile } from "react-icons/fi";

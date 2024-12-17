@@ -1,3 +1,12 @@
+/**
+ * Diese Datei enthält die Route zur Benutzerregistrierung.
+ * Sie ermöglicht die Erstellung neuer Benutzer und das Senden von Bestätigungs-E-Mails.
+ * und die Überprüfung der Passwortstärke.
+ *
+ * @autor Ayoub.  
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const express = require('express');
 const router = express.Router();
 const { User } = require('./models/modelUser.js');

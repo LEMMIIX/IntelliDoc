@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Button-Komponente.
+ * Schaltflächen mit verschiedenen Varianten und Größen.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import * as React from "react";
 
 const Button = React.forwardRef(

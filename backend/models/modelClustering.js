@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Funktionen zur Durchführung von Clustering-Operationen auf Dokument- und Ordner-Embeddings.
+ * Sie ermöglicht das Abrufen von Ordnerdaten, das Zuordnen von Dokumenten zu Ordnern und das Ausführen eines Clustering-Skripts.
+ *
+ * @author Lennart
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const { exec } = require('child_process');
 const path = require('path');
 const fs = require('fs');
@@ -23,7 +31,7 @@ async function getFolderData(userId) {
     const hierarchy = {};
     
     result.rows.forEach(row => {
-        // Convert string embedding to array if needed
+        // Zeichenketten-Embedding bei Bedarf in ein Array konvertieren
         let embedding = row.embedding;
         if (typeof embedding === 'string') {
             embedding = embedding.replace(/[\[\]]/g, '').split(',').map(Number);
@@ -77,7 +85,7 @@ async function runClustering(embeddings, config = {}, userId) {
                     throw new Error('Invalid embedding format');
                 });
 
-                // Get enhanced folder data if userId is provided
+                // Erweiterte Ordnerdaten abrufen, wenn userId angegeben ist
                 let clusteringData = { doc_embeddings: formattedDocEmbeddings };
                 let folderData = null;
                 
@@ -87,7 +95,7 @@ async function runClustering(embeddings, config = {}, userId) {
                         getDocumentFolderMap(userId)
                     ]);
                     
-                    folderData = folders; // Store for later use
+                    folderData = folders; // speichrt die Ordnerdaten für die spätere Verwendung
                     
                     clusteringData = {
                         doc_embeddings: formattedDocEmbeddings,
@@ -98,11 +106,11 @@ async function runClustering(embeddings, config = {}, userId) {
                     };
                 }
 
-                // Create temporary files
+                // erstellt temporary files
                 const tempEmbeddingsPath = path.join(os.tmpdir(), `embeddings_${Date.now()}.json`);
                 const tempConfigPath = path.join(os.tmpdir(), `config_${Date.now()}.json`);
 
-                // Enhanced configuration
+                // enhanced config
                 const enhancedConfig = {
                     ...config,
                     anchorInfluence: config.anchorInfluence || 0.45,
@@ -120,7 +128,7 @@ async function runClustering(embeddings, config = {}, userId) {
                     `python "${scriptPath}" "${tempEmbeddingsPath}" "${tempConfigPath}"`,
                     { maxBuffer: 1024 * 1024 * 10 },
                     async (error, stdout, stderr) => {
-                        // Clean up temp files
+                        // löscht die temporären Dateien
                         try {
                             fs.unlinkSync(tempEmbeddingsPath);
                             fs.unlinkSync(tempConfigPath);

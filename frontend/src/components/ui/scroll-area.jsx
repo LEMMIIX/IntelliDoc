@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die ScrollArea-Komponente.
+ * Sie ermöglicht das Erstellen eines scrollbaren Bereichs mit Scrollleisten.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import * as React from "react";
 import * as ScrollAreaPrimitive from "@radix-ui/react-scroll-area";
 

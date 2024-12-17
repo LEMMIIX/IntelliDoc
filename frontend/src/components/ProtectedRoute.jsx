@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Route für Admin seite.
+ * Sie schützt bestimmte Routen und leitet Benutzer basierend auf ihrem Authentifizierungsstatus weiter.
+ *
+ * @autor Miray
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import prodconfig from "../production-config";

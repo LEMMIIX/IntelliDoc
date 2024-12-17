@@ -1,7 +1,16 @@
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Diese Datei enthält die Logik für das Dashboard-Modell bzw. Endpoint für Frontend.
+ * Sie ermöglicht das Hochladen von Dokumenten, das Abrufen von Versionen und Schlüsselwörtern sowie das Verwalten von Ordnern.
+ *
+ * @autor Miray,Ayoub. 
+ * für debugging ki benutzt. 
+ */
+
+document.addEventListener('DOMContentLoaded', function () {
     const uploadForm = document.getElementById('uploadForm');
     const responseDiv = document.getElementById('response');
     const folderSelect = document.getElementById('folderSelect');
+   
 
     const versionHistoryContainer = document.getElementById('versionHistoryContainer');
     const versionHistoryList = document.getElementById('versionHistoryList');

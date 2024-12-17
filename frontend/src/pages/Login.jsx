@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Login-Komponente.
+ * Sie ermöglicht Benutzern das Einloggen in die Anwendung und bietet eine Option zum Zurücksetzen des Passworts.
+ *
+ * @autor Ilyass. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useState } from "react"; // Importing useState hook to manage component state
 import { userLogin } from "../utils/userLogin"; // Importing the userLogin function from utils
 import { Link, useNavigate } from "react-router-dom"; // Importing Link for navigation and useNavigate for programmatic navigation
@@ -24,7 +32,9 @@ function Login() {
             <header className="header">
                 <div className="header-content">
                     <div className="logo">
-                        <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        <a href="/">
+                            <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        </a>
                     </div>
                 </div>
             </header>

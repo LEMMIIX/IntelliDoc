@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Definition der User-Klasse.
+ * Sie ermöglicht die Erstellung und Validierung von Benutzerobjekten.
+ *
+ * @Author Ayoub
+ * 
+ */
+
 class User {
     constructor(username, email, password) {
         this.username = username;
@@ -10,9 +18,7 @@ class User {
             throw new Error('Username, email, and password are required');
         }
         
-        /*
-        * PASSWORT CHECK HIER
-        */
+        
     }
 }
 

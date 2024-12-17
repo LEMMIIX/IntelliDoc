@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Middleware-Funktionen zur Überprüfung von Administratorrechten.
+ * Sie ermöglicht die Überprüfung, ob ein Benutzer die Admin-Rolle besitzt, bevor er auf bestimmte Routen zugreifen darf.
+ *
+ * @author Miray
+ * 
+ */
+
 const User = require('../../database/User');
 const UserRole = require('../../database/UserRole');
 

@@ -1,3 +1,8 @@
+/**
+ *  Stile für die Registrierungsseite, einschließlich Header, Hauptcontainer, Registrierungs- und Login-Bereiche sowie allgemeine Stile.
+ *@Author Ayoub. 
+ */
+
 .header {
     display: flex;
     justify-content: space-between;

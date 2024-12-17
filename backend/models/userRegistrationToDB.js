@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Funktionen zur Registrierung von Benutzern und zur Verifizierung von Verifizierungscodes.
+ * Sie ermöglicht das Hinzufügen neuer Benutzer zur Datenbank und das Senden von Bestätigungs-E-Mails.
+ *
+ * @autor Ayoub. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const bcrypt = require('bcrypt');
 const db = require('../../ConnectPostgres');
 const User = require('./modelUser');
@@ -24,7 +32,7 @@ const registerUser = async (user_name, email, password_hash) => {
 
         
 
-        // F�hrt die Query aus
+        // Führt die Query aus
         const result = await db.query(query, values);
         
 
@@ -32,7 +40,7 @@ const registerUser = async (user_name, email, password_hash) => {
             const userId = result.rows[0].user_id;
             console.log('User inserted into database with ID:', userId);
 
-            // Sende die Best�tigungs-E-Mail
+            // Sende die Bestütigungs-E-Mail
             await sendVerificationEmail(email, verification_Key,user_name);
             return userId;
         } else {

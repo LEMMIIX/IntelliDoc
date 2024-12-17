@@ -1,4 +1,9 @@
-// @Autor Luca Neumann
+/**
+ * Diese Datei enthält die Routen für die Verwaltung von Ordnern.
+ * Sie ermöglicht das Erstellen, Löschen, Umbenennen und Abrufen von Ordnern sowie das Umbenennen von Dokumenten.
+ *
+ * @autor Luca ,Ilyass
+ */
 const express = require('express');
 const router = express.Router();
 const foldersController = require('../controllers/foldersController');
@@ -11,9 +16,9 @@ router.delete('/:folderId', foldersController.deleteFolder); // Route zum Lösch
 router.post('/renameFolder', foldersController.renameFolder); // Route zum Umbenennen eines Ordners
 
 
-// @Autor Ilyass Dablaq
 
-// Route zum Umbenennen eines Dokuments
+
+// Route zum Umbenennen eines Dokuments (ilyass)
 router.post('/rename', async (req, res) => {
     const { documentId, newFilename } = req.body;
 console.log ("cc",req.body)

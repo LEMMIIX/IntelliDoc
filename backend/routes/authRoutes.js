@@ -1,4 +1,9 @@
-// authRoutes.js
+/**
+ * Diese Datei enthält die Routen für die Authentifizierung.
+ * Sie ermöglicht die Registrierung, Anmeldung und Abmeldung von Benutzern.
+ *
+ * @autor Ayoub. 
+ */
 const express = require('express');
 const router = express.Router();
 const { registerUser } = require('../models/userRegistrationToDB');

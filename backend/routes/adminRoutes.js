@@ -1,3 +1,9 @@
+/**
+ * Diese Datei enthält die Routen für die Admin-Funktionen.
+ * Sie ermöglicht das Abrufen, Löschen und Bearbeiten von Benutzern.
+ *
+ * @autor Miray
+ */
 const express = require('express');
 const router = express.Router();
 const adminMiddleware = require('../models/modelAdmin');

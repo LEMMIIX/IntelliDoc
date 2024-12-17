@@ -1,3 +1,12 @@
+/**
+ * Diese Datei enthält Routen und Funktionen zum Zurücksetzen von Passwörtern.
+ * Sie ermöglicht das Anfordern eines Verifikationscodes und das Setzen eines neuen Passworts.
+ *
+ * @autor Ayoub. 
+ * verificationKey von Stackoverflow
+ * 
+ */
+
 const { sendResetEmail } = require('../controllers/modelMailer.js');
 const db = require('../../ConnectPostgres');
 const user = require('./modelUser.js');
@@ -10,7 +19,7 @@ router.get('/', (req, res) => {
 	res.sendFile(path.join(__dirname, '../frontend/html/reset.html'));
 });
 router.post('/request-verification', async (req, res) => {
-	const { email } = req.body; // Receiving email from JSON body
+	const { email } = req.body; // emai vom JSON body erhalten
 
 	try {
 		const result = await db.query('SELECT * FROM main.users WHERE email = $1', [email]);
