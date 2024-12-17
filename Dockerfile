@@ -1,10 +1,10 @@
 # Build frontend
 FROM node:20 AS frontend-build
-WORKDIR /app
+WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
-RUN npm run build
+RUN rm -rf dist && npm run build
 
 # Build backend dependencies
 FROM node:20 AS backend-deps
@@ -38,10 +38,10 @@ RUN python3 -m venv $VIRTUAL_ENV && \
     /app/node_modules/@xenova/transformers/models/Xenova
 
 # Copy files
-# Copy database dump and setup files
 COPY database/*.sql /app/database/
 COPY --from=backend-deps /app/node_modules ./node_modules
-COPY --from=frontend-build /app/dist ./frontend/dist
+# Pfad für das Frontend dist
+COPY --from=frontend-build /app/frontend/dist ./frontend/dist
 COPY . .
 
 # Install Python requirements
