@@ -38,7 +38,7 @@ function Verification() {
             } else if (response.status === 400) {
                 // Wenn es einen Fehler bei der Verifizierung gab
                 const data = await response.json();
-                alert(data.message || "Ung�ltiger Verifizierungscode.");
+                alert(data.message || "Ungültiger Verifizierungscode.");
             } else {
                 // Fehlerhafte HTTP-Antwort
                 alert("Fehler bei der Verifizierung. Bitte versuchen Sie es erneut.");

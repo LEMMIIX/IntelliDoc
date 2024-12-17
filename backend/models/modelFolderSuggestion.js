@@ -115,10 +115,10 @@ class FolderSuggestionEngine {
                 });
             }
     
-            // Nach �hnlichkeit sortieren und die besten Vorschl�ge ausw�hlen
+            // Nach Ähnlichkeit sortieren und die besten Vorschläge auswählen
             return suggestions
                 .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, this.maxSuggestions);  // immer maxSuggestions number of folders zur�ckgeben
+                .slice(0, this.maxSuggestions);  // immer maxSuggestions number of folders zurückgeben
         } catch (error) {
             console.error('Error processing suggestions:', error);
             return [];

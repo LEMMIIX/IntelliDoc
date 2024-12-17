@@ -78,7 +78,7 @@ async function generateKeywords(text, maxKeywords = 2) {
             normalize: true
         });
 
-        // embedding f�r einzelne W�rter abrufen
+        // embedding für einzelne Wörter abrufen
         const wordEmbeddings = await Promise.all(
             words.map(async word => ({
                 word,
@@ -95,7 +95,7 @@ async function generateKeywords(text, maxKeywords = 2) {
             score: calculateCosineSimilarity(textEmbedding.data, embedding.data)
         }));
 
-        // sortiere die Keywords nach score und w�hle die besten aus
+        // sortiere die Keywords nach score und wähle die besten aus
         const keywords = keywordScores
             .sort((a, b) => b.score - a.score)
             .slice(0, maxKeywords);

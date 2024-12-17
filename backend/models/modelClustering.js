@@ -95,7 +95,7 @@ async function runClustering(embeddings, config = {}, userId) {
                         getDocumentFolderMap(userId)
                     ]);
                     
-                    folderData = folders; // speichrt die Ordnerdaten f�r die sp�tere Verwendung
+                    folderData = folders; // speichrt die Ordnerdaten für die spätere Verwendung
                     
                     clusteringData = {
                         doc_embeddings: formattedDocEmbeddings,
@@ -128,7 +128,7 @@ async function runClustering(embeddings, config = {}, userId) {
                     `python "${scriptPath}" "${tempEmbeddingsPath}" "${tempConfigPath}"`,
                     { maxBuffer: 1024 * 1024 * 10 },
                     async (error, stdout, stderr) => {
-                        // l�scht die tempor�ren Dateien
+                        // löscht die temporären Dateien
                         try {
                             fs.unlinkSync(tempEmbeddingsPath);
                             fs.unlinkSync(tempConfigPath);
