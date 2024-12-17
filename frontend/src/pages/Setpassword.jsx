@@ -1,7 +1,16 @@
-﻿import React, { useState } from 'react';
+﻿/**
+ * Diese Datei enthält die Setpassword-Komponente.
+ * Sie ermöglicht das Zurücksetzen des Passworts eines Benutzers nach Eingabe eines Verifizierungscodes.
+ *
+ * @autor Ayoub
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
+import React, { useState } from 'react';
 import { useNavigate,Link } from 'react-router-dom';
 import prodconfig from "../production-config";
 import '../styles/setpassword.css';
+import intellidoc_logo from '../assets/intellidoc_logo.webp';
 
 function Setpassword() {
     const [email, setEmail] = useState('');
@@ -41,10 +50,13 @@ function Setpassword() {
             {/* Header */}
             <header className="header">
                 <div className="header-content">
-                    <Link to="/" className="logo">IntelliDoc</Link>
+                    <div className="logo">
+                        <a href="/">
+                            <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        </a>
+                    </div>
                 </div>
             </header>
-
             {/* Main Content */}
             <div className="setpassword_page">
                 <div className="setpassword_container">

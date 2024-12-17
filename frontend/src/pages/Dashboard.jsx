@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Dashboard-Komponente.
+ * Sie stellt die Hauptseite des Dashboards dar, auf der Benutzer Ordner und Dateien verwalten können.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useEffect, useState, useMemo } from "react";
 import { fetchAndRenderFolderTree } from "../utils/fetchFoldersTree";
 import { useNavigate, useLocation } from "react-router-dom";

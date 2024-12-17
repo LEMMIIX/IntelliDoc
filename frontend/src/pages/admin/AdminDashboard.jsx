@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die AdminDashboard-Komponente.
+ * Sie ermöglicht Administratoren die Verwaltung von Benutzern und das Überwachen von Datenbank-Sitzungen und -Statistiken.
+ *
+ * @autor Miray. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import prodconfig from "../../production-config";

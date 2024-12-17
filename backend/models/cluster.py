@@ -1,3 +1,12 @@
+"""
+Diese Datei enthält Funktionen zur Durchführung von Clustering-Operationen auf Dokument- und Ordner-Embeddings.
+Sie ermöglicht das Laden von Embeddings, die Berechnung von Distanzen und die Ausführung des HDBSCAN-Clustering-Algorithmus.
+Zusätzlich werden semantische Ähnlichkeiten zwischen Ordnern berücksichtigt.
+
+@author Lennart, Miray. 
+Die Funktionen wurden mit Unterstützung von KI erstellt
+"""
+
 import hdbscan
 import numpy as np
 import json

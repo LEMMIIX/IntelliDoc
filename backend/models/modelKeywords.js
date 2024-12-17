@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Funktionen zur Initialisierung eines MPNet-Modells und zur Generierung von Schlüsselwörtern aus Text.
+ * Sie ermöglicht das Laden des Modells aus dem lokalen Speicher und die Berechnung von Ähnlichkeiten zwischen Text- und Wort-Embeddings.
+ *
+ * @autor Ayoub
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const path = require('path');
 const { performance } = require('perf_hooks');
 
@@ -55,7 +63,7 @@ async function generateKeywords(text, maxKeywords = 2) {
     try {
         await initModel();
         
-        // Split text into words and remove duplicates/short words
+        // Text in Wörter aufteilen und Duplikate/kurze Wörter entfernen
         const words = [...new Set(text.toLowerCase()
             .match(/\b\w+\b/g)
             ?.filter(word => word.length > 3) || [])];
@@ -64,13 +72,13 @@ async function generateKeywords(text, maxKeywords = 2) {
             return [];
         }
 
-        // Get embedding for the full text
+        // mbedding für den vollständigen Text abrufen
         const textEmbedding = await model(text, {
             pooling: 'mean',
             normalize: true
         });
 
-        // Get embeddings for individual words
+        // embedding für einzelne Wörter abrufen
         const wordEmbeddings = await Promise.all(
             words.map(async word => ({
                 word,
@@ -81,13 +89,13 @@ async function generateKeywords(text, maxKeywords = 2) {
             }))
         );
 
-        // Calculate similarity scores
+        // Berechnt similarity scores
         const keywordScores = wordEmbeddings.map(({ word, embedding }) => ({
             word,
             score: calculateCosineSimilarity(textEmbedding.data, embedding.data)
         }));
 
-        // Sort by score and get top keywords
+        // sortiere die Keywords nach score und wähle die besten aus
         const keywords = keywordScores
             .sort((a, b) => b.score - a.score)
             .slice(0, maxKeywords);

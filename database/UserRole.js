@@ -1,3 +1,12 @@
+/**
+ * Diese Datei enthält die Definition des UserRole-Modells.
+ * Sie ermöglicht die Verwaltung von Benutzerrollen in der Datenbank.
+ *
+ * @autor Luca
+ *
+ */
+
+
 const { DataTypes } = require("sequelize");
 const sequelize = require("../sequelize.config");
 

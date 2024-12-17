@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Funktionen zum Verwalten von Dokumenten.
+ * Sie ermöglicht das Umbenennen von Dokumenten in der Datenbank.
+ *
+ * @author Ilyass
+ * 
+ */
+
 const File = require('../../database/File.js'); // Sequelize Modell `File`
 
 // Funktion zum Umbenennen eines Dokuments mit Sequelize

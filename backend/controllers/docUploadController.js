@@ -1,7 +1,16 @@
+/**
+ * Diese Datei enthält Controller-Funktionen für das Hochladen und Verarbeiten von Dokumenten.
+ * Sie ermöglicht das Hochladen von Dateien, die Extraktion von Textinhalten, die Generierung von Embeddings und die Durchführung von Clustering.
+ * Zudem werden Ordnervorschläge basierend auf den Clustering-Ergebnissen bereitgestellt.
+ *
+ * @author Luca,Miray,Ayoub.
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const db = require("../../ConnectPostgres");
 const path = require("path");
 const mammoth = require("mammoth");
-// E/F: Added new imports for text extraction and embedding generation
+
 const { extractTextContent } = require("../models/modelFileReader");
 const modelEmbedding = require("../models/modelEmbedding");
 const modelClustering = require("../models/modelClustering");
@@ -23,7 +32,7 @@ exports.uploadFile = async (req, res) => {
     }
 
     const { originalname, buffer, mimetype } = req.file;
-    const { folderId, clusteringParams } = req.body; // Add clusteringParams to body
+    const { folderId, clusteringParams } = req.body; // clusteringParams hinzufügen
     const userId = req.session.userId;
 
     // Konvertiere folderId in eine Ganzzahl, wenn möglich
@@ -84,11 +93,11 @@ exports.uploadFile = async (req, res) => {
       minSamples: 2,
       clusterSelectionMethod: "eom",
       clusterSelectionEpsilon: 0.18,
-      anchorInfluence: 0.36, // Changed from folder_weight
-      semanticThreshold: 0.52, // Changed from semantic_similarity_threshold
+      anchorInfluence: 0.36, 
+      semanticThreshold: 0.52, 
     };
 
-    // Merge default parameters with any provided parameters
+    
     const clusteringConfig = {
       ...defaultParams,
       ...JSON.parse(clusteringParams || "{}"), // Allow overriding defaults through API
@@ -172,7 +181,7 @@ exports.smartUploadFile = async (req, res) => {
     }
 
     const { originalname, buffer, mimetype } = req.file;
-    const { clusteringParams } = req.body; // Allow custom clustering params
+    const { clusteringParams } = req.body; 
     const userId = req.session.userId;
 
     console.log("Extracting text content...");
@@ -203,7 +212,7 @@ exports.smartUploadFile = async (req, res) => {
       originalFileId = checkResult.rows[0].file_id;
     }
 
-    // Insert file with null folder_id initially
+      // Datei zunächst mit null für folder_id einfügen
     const insertQuery = `
             INSERT INTO main.files (
                 user_id, file_name, file_type, file_data, 
@@ -217,7 +226,7 @@ exports.smartUploadFile = async (req, res) => {
       originalname,
       mimetype,
       buffer,
-      null, // folder_id always null for smart upload
+        null, // folder_id ist bei Smart-Upload immer null
       formattedEmbedding,
       version,
       originalFileId,
@@ -226,10 +235,10 @@ exports.smartUploadFile = async (req, res) => {
     const result = await db.query(insertQuery, values);
     const fileId = result.rows[0].file_id;
 
-    // Generate keywords in background
+    // Generate keywords im Hintergrund
     generateKeywordsInBackground(textContent, fileId);
 
-    // Get all existing embeddings
+    //holt die embeddings 
     const embeddingsQuery = `
             SELECT file_id, embedding 
             FROM main.files 
@@ -360,7 +369,7 @@ const generateKeywordsInBackground = async (textContent, file_id) => {
 };
 
 exports.checkKeywordStatus = async (req, res) => {
-  const fileId = req.params.fileId; // file.id vom url.
+  const fileId = req.params.fileId; 
   try {
     // database query. um keywords für den jeweiligen fileid abzurufen
     const query = "SELECT keywords FROM main.files WHERE file_id = $1";
@@ -636,27 +645,18 @@ exports.getVersionHistory = async (req, res) => {
 };
 
 /**
- * Database Schema Reference (main.files table)
- *
- * Relevant columns for versioning:
- * - file_id (PK): Unique identifier for each file version
- * - file_name: Name of the file (used to group versions)
- * - version: Auto-incrementing version number for files with the same name
- * - created_at: Timestamp of upload
- * - user_id (FK): Reference to user who owns the file
- *
- * Version Handling Logic:
- * 1. When a file is uploaded, the system checks if a file with the same name exists
- * 2. If it exists, the new file gets the next version number
- * 3. All versions of a file share the same file_name but have unique file_ids
- *
- * Frontend Usage Notes:
- * - Use this endpoint to build version history displays
- * - The versions array is pre-sorted (newest first)
- * - Each version's file_id can be used with other endpoints:
- *   - /download/:fileId (to download specific versions)
- *   - /view/:fileId (to view specific versions)
- *   - /delete/:fileId (to delete specific versions)
+Datenbankschema-Referenz (Tabelle main.files)
+Relevante Spalten für die Versionierung:
+
+    file_id (PK): Eindeutiger Bezeichner für jede Dateiversion
+
+    file_name: Name der Datei (wird verwendet, um Versionen zu gruppieren)
+
+    version: Automatisch inkrementierende Versionsnummer für Dateien mit demselben Namen
+
+    created_at: Zeitstempel des Uploads
+
+    user_id (FK): Referenz auf den Benutzer, dem die Datei gehört
  */
 
 exports.getFolderSuggestions = async (req, res) => {
@@ -732,7 +732,7 @@ exports.assignFolder = async (req, res) => {
       });
     }
 
-    // Update file with selected folder_id
+      // Datei mit ausgewählter folder_id aktualisieren
     const updateQuery = `
             UPDATE main.files 
             SET folder_id = $1
@@ -741,7 +741,7 @@ exports.assignFolder = async (req, res) => {
         `;
     await db.query(updateQuery, [folderId, fileId, userId]);
 
-    // Run clustering after folder assignment
+      // Run clustering nach der Ordnerzuweisung
     const allEmbeddings = await modelEmbedding.getAllEmbeddings(userId);
     const clusteringResult = await modelClustering.runClustering(
       allEmbeddings.map((item) => {

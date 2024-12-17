@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Routen für den Dokumenten-Upload.
+ * Sie ermöglicht das Hochladen, Herunterladen, Anzeigen, Löschen und Verwalten von Dokumentversionen sowie das Abrufen von Ordner-Vorschlägen und keywords.
+ *
+ * @autor Ilyass,Ayoub. 
+ * 
+ */
+
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
@@ -8,7 +16,7 @@ const docUploadController = require('../controllers/docUploadController');
 router.get('/', docUploadController.renderUploadForm);
 router.post('/', upload.single('file'), docUploadController.uploadFile);  // Handles versioning based on filename
 
-// smart file upload with folder suggestion
+// smart file upload mit folder suggestion
 router.post('/smart', upload.single('file'), docUploadController.smartUploadFile);
 
 // File operations

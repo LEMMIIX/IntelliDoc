@@ -1,3 +1,8 @@
+/**
+ * Die `userLogin`-Funktion führt die Anmeldung eines Benutzers durch und navigiert nach erfolgreicher Anmeldung zum Dashboard.
+ *@ Author Farah.
+ */
+
 import prodconfig from "../production-config";
 
 export function userLogin(username, password, navigate) {

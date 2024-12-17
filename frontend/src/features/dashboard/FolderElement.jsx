@@ -1,3 +1,8 @@
+/**
+ * Die `FolderElement`-Komponente stellt ein einzelnes Ordner-Element dar, das Benutzern ermöglicht, Ordner zu navigieren, umzubenennen und zu löschen.
+ *@ author Farah. 
+ */
+
 import { useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useState, useEffect, useRef } from "react";

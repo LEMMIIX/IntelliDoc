@@ -1,3 +1,8 @@
+/**
+ * Die `index.css`-Datei enthält allgemeine Stile für die Anwendung, einschließlich Tailwind-Basisstile, benutzerdefinierte Komponenten, Root-Variablen, allgemeine Layouts und spezifische Seitenstile.
+ *@author Farah 
+    */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

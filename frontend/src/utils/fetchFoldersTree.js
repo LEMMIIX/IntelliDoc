@@ -1,3 +1,8 @@
+/**
+ * Diese Datei enth‰lt Funktionen zum Abrufen und Rendern des Ordnerbaums, einschlieﬂlich `fetchAndRenderFolderTree` und `fetchAndRenderFolder`.
+ *@Author Farah
+ */
+
 import { customFetch } from "./helpers";
 import prodconfig from "../production-config";
 

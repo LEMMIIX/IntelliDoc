@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Funktionen zur Durchführung von semantic Search.
+ * Sie ermöglicht das Generieren von Embeddings, das Durchführen von Datenbankabfragen und das Anwenden von Clustering-Boosts.
+ *
+ * @autor Lennart
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const { generateEmbedding } = require('./modelEmbedding');
 const { runClustering } = require('./modelClustering');
 const db = require('../../ConnectPostgres');

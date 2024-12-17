@@ -1,4 +1,10 @@
-// @Autor Luca Neumann
+/**
+ * Diese Datei enthält Controller-Funktionen für die Verwaltung von Ordnern.
+ * Sie ermöglicht das Abrufen, Erstellen, Umbenennen und Löschen von Ordnern sowie das Abrufen der Ordnerstruktur eines Benutzers.
+ *
+ * @author Luca Neumann
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
 const Folder = require("../../database/Folder.js");
 const File = require("../../database/File.js");
 const sequelize = require("../../sequelize.config.js");

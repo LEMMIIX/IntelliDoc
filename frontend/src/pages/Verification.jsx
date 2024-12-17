@@ -1,8 +1,17 @@
+/**
+ * Diese Datei enthält die Verification-Komponente.
+ * Sie ermöglicht die Verifizierung der E-Mail-Adresse eines Benutzers nach der Registrierung.
+ *
+ * @autor Ayoub
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import prodconfig from "../production-config";
 import "../styles/verification.css";
+import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
 function Verification() {
     const location = useLocation(); // Verwendet die location-API von react-router-dom
@@ -42,6 +51,15 @@ function Verification() {
 
     return (
         <main className="verification_page">
+            <header className="header">
+                <div className="header-content">
+                    <div className="logo">
+                        <a href="/">
+                            <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        </a>
+                    </div>
+                </div>
+            </header>
             <div className="verification_container">
                 <h1>Verifizierung erforderlich</h1>
                 <p>Bitte überprüfen Sie Ihre E-Mail-Adresse und geben Sie den Verifizierungscode ein.</p>

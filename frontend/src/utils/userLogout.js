@@ -1,3 +1,8 @@
+/**
+ * Die `userLogout`-Funktion führt die Abmeldung eines Benutzers durch und navigiert zur Login-Seite.
+ * @Author Farah.
+ */
+
 import prodconfig from "../production-config";
 
 export async function userLogout(navigate) {

@@ -1,3 +1,10 @@
+
+/**
+ * Diese Datei enthält die Definition des Folder-Modells.
+ * @autor Luca
+ * 
+ */
+
 const { DataTypes } = require("sequelize");
 const sequelize = require("../sequelize.config.js");
 

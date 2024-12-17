@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Header-Komponente.
+ * Sie ermöglicht die Anzeige der Kopfzeile mit einer Suchleiste und einem Menübutton.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useState } from "react";
 import { CgMenu } from "react-icons/cg";
 import { IoMdSearch } from "react-icons/io";

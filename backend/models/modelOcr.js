@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Funktionen zur Durchführung von OCR auf Bildern.
+ * Sie ermöglicht die Vorverarbeitung von Bildern und die Texterkennung mithilfe von Tesseract.js.
+ *
+ * @autor Ilyass 
+ * Mithilfe von Tesseract.js und Github-Copilot
+ */
+
 const path = require('path');
 const fs = require('fs').promises;
 const Tesseract = require('tesseract.js');

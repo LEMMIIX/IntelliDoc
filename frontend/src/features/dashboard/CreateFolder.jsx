@@ -1,3 +1,8 @@
+/**
+ * Die `CreateFolderForm`-Komponente ermöglicht das Erstellen eines neuen Ordners innerhalb eines übergeordneten Ordners.
+ * @Author Farah
+ */
+
 /* eslint-disable react/prop-types */
 import { useState } from "react";
 import { FaFolder } from "react-icons/fa";

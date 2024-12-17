@@ -1,4 +1,37 @@
-/* Verification Page */
+/**
+ * Die `verification.css`-Datei enthält Stile für die Verifizierungsseite, einschließlich Container, Eingabefelder, Buttons und Links.
+    @Author Ayoub genauso wie Home.css
+ */
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #ddd;
+    position: fixed; /* Header fixiert oben */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Sicherstellen, dass der Header oben bleibt */
+}
+
+    .header .header-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .header .logo {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-left: 20px;
+        height: 50px; /* Optionale Höhe des Logos */
+    }
+
+/* Padding für den Inhalt der Seite, damit der Header den Text nicht überlappt */
 .verification_page {
     display: flex;
     justify-content: center;
@@ -6,7 +39,9 @@
     height: 94vh;
     background: #eef2f7 !important; /* Hintergrundfarbe sicherstellen */
     font-family: 'Arial', sans-serif;
+    padding-top: 80px; /* Sicherstellen, dass der Header den Inhalt nicht verdeckt */
 }
+
 
 .verification_container {
     background: #ffffff;

@@ -1,3 +1,10 @@
+/**
+ * Diese Datei enthält die Definition des File-Modells
+ * @autor Miray
+ * 
+ */
+
+
 const { DataTypes } = require("sequelize");
 const sequelize = require("../sequelize.config.js");
 

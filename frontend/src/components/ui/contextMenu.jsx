@@ -1,3 +1,10 @@
+/**
+ * diese klasse ermöglicht die Erstellung eines kontextsensitiven Menüs mit auswählbaren Elementen.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import React from "react";
 
 export function ContextMenu({ children, items, onSelect }) {

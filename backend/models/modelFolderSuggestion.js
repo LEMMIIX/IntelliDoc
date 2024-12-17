@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Implementierung einer Engine zur Ordner-Vorschlagserstellung.
+ * Sie ermöglicht die Berechnung von Ähnlichkeiten zwischen Dokument- und Ordner-Embeddings und gibt passende Ordner-Vorschläge zurück.
+ *
+ * @autor Lennart. Luca
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const { performance } = require('perf_hooks');
 const db = require('../../ConnectPostgres');
 const vectorOps = require('./modelVectorOperations');
@@ -107,10 +115,10 @@ class FolderSuggestionEngine {
                 });
             }
     
-            // Sort by similarity and take top suggestions
+            // Nach Ähnlichkeit sortieren und die besten Vorschläge auswählen
             return suggestions
                 .sort((a, b) => b.similarity - a.similarity)
-                .slice(0, this.maxSuggestions);  // Always return maxSuggestions number of folders
+                .slice(0, this.maxSuggestions);  // immer maxSuggestions number of folders zurückgeben
         } catch (error) {
             console.error('Error processing suggestions:', error);
             return [];

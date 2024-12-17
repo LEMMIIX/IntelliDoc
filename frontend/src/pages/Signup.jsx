@@ -1,7 +1,16 @@
+/**
+ * Diese Datei enthält die Signup-Komponente und route.
+ * Sie ermöglicht die Registrierung neuer Benutzer und leitet sie nach erfolgreicher Registrierung weiter.
+ *
+ * @autor Ayoub
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useState } from "react";
 import { userRegister } from "../utils/userRegister";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/Signup.css"
+import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
 
 function Signup() {
@@ -43,7 +52,11 @@ function Signup() {
         
             <header className="header">
                 <div className="header-content">
-                    <Link to="/" className="logo">IntelliDoc</Link> {/* Text-Logo oder eigenes Logo */}
+                    <div className="logo">
+                        <a href="/">
+                            <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        </a>
+                    </div>
                 </div>
             </header>
             {/* Hauptinhalt */}

@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die ParamsPopoverLayout-Komponente.
+ * Sie ermöglicht die Anzeige eines Popovers, der bei einem Klick außerhalb geschlossen wird.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useState, useEffect, useRef } from "react";
 
 export default function ParamsPopoverLayout({

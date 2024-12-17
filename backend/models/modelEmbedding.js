@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Funktionen zur Initialisierung und Nutzung eines MPNet-Modells zur Generierung von Embeddings.
+ * Sie ermöglicht das Laden des Modells, das Generieren von Text-Embeddings und das Abrufen aller Embeddings eines Benutzers aus der Datenbank.
+ *
+ * @author Lennart,Miray
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 const path = require('path');
 const { performance } = require('perf_hooks');
 const db = require('../../ConnectPostgres');
@@ -33,7 +41,7 @@ async function initModel() {
           revision: 'main',
           modelPath: modelPath,
           progress_callback: (progress) => {
-            if (progress) {  // Only log if progress is not undefined
+            if (progress) {  
               console.log(`Loading progress: ${Math.round(progress * 100)}%`);
             }
           }

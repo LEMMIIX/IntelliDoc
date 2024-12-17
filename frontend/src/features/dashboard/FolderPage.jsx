@@ -1,3 +1,12 @@
+/**
+ * Die `Folder`-Komponente stellt eine Benutzeroberfläche zur Verwaltung von Ordnern und Dateien dar.
+ * Sie ermöglicht das Anzeigen, Erstellen, Umbenennen, Löschen und Hochladen von Dateien und Ordnern.
+ * Zudem bietet sie eine Vorschau für verschiedene Dateitypen. das ist hauptseite unsere Programm und es werden (fast) 
+ * alle Kompontenten hier dargestellt. 
+ * @Author Farah. 
+ * // Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
