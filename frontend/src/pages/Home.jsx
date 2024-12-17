@@ -1,5 +1,8 @@
 ﻿import { Link } from "react-router-dom";
 import "../styles/home.css";
+import intellimann from "../assets/intellimann.webp";
+import intellidoc_logo from "../assets/intellidoc_logo.webp";
+
 function Home() {
     return (
         <div className="homepage">
@@ -7,16 +10,18 @@ function Home() {
             <header className="homepage-header">
                 <nav className="navbar">
                     <div className="logo-wrapper">
-                        <div className="logo">IntelliDoc</div>
+                        <div className="logo">
+                            <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        </div>
                     </div>
                     <div className="nav-links-buttons">
                         <ul className="nav-links">
                             <li><Link to="/" className="nav-item"></Link></li>
                             <li><Link to="#" className="nav-item"></Link></li>
                         </ul>
-                    <div className="nav-buttons">
-                        <Link to="/auth/signup" className="btn nav-btn">Registrieren</Link>
-                        <Link to="/auth/login" className="btn nav-btn2">Anmelden</Link>
+                        <div className="nav-buttons">
+                            <Link to="/auth/signup" className="btn nav-btn">Registrieren</Link>
+                            <Link to="/auth/login" className="btn nav-btn2">Anmelden</Link>
                         </div>
                     </div>
                 </nav>
@@ -25,11 +30,12 @@ function Home() {
             {/* Hero Section */}
             <main className="hero-section">
                 <div className="hero-content">
-                    <h1>Manage your documents better</h1>
+                    <h1>Revolutioniere deine Dateiorganisation</h1>
                     <p>
-                        Welcome to IntelliDoc, nur in 3 Klicks können Sie alles finden, was Sie brauchen.
-
-                        Verabschieden Sie sich von Chaos und begrüßen Sie Effizienz!
+                        Willkommen bei IntelliDoc, in nur 3 Klicks startest du in die Zukunft!
+                    </p>
+                    <p>
+                        Verabschiede Chaos und begrüße Effizienz!
                     </p>
                     <div className="cta-buttons">
                         <Link to="/auth/signup" className="btn primary">Jetzt Starten</Link>
@@ -37,7 +43,15 @@ function Home() {
                     </div>
                 </div>
                 <div className="hero-image">
-                    <img src="/src/assets/image1.png" alt="Hero Illustration" />
+                    <img 
+                        src={intellimann} 
+                        alt="IntelliDoc Hero Illustration"
+                        loading="lazy"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            console.error('Fehler beim Laden des Bildes');
+                        }}
+                    />
                 </div>
             </main>
 
@@ -46,17 +60,17 @@ function Home() {
                 <div className="feature">
                     <div className="icon">🔧</div>
                     <h3>Entwickelt für Effizienz</h3>
-                    <p>Components, tools, and templates tailored for developers.</p>
+                    <p>Schneller Dateiupload</p>
                 </div>
                 <div className="feature">
                     <div className="icon">🔍</div>
-                    <h3>Intelligente Suche     </h3>
-                    <p>Smart und präzise</p>
+                    <h3>Intelligente Suche</h3>
+                    <p>Noch schneller Dateien wiederfinden</p>
                 </div>
                 <div className="feature">
                     <div className="icon">🔒</div>
-                    <h3>Sichere Datenverarbeitung           </h3>
-                    <p>Your data is safe with IntelliDoc.</p>
+                    <h3>Sichere Datenverarbeitung</h3>
+                    <p>Alles sicher und geschützt</p>
                 </div>
             </section>
             <footer className="footer">
@@ -66,9 +80,7 @@ function Home() {
                     <span className="footer-link">Impressum</span>
                 </div>
             </footer>
-
         </div>
-
     );
 }
 

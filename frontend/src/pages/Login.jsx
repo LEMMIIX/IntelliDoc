@@ -2,6 +2,7 @@ import { useState } from "react"; // Importing useState hook to manage component
 import { userLogin } from "../utils/userLogin"; // Importing the userLogin function from utils
 import { Link, useNavigate } from "react-router-dom"; // Importing Link for navigation and useNavigate for programmatic navigation
 import "../styles/Signup.css"; // Importing CSS styles for the component
+import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
 function Login() {
   const navigate = useNavigate(); // Initializing navigate function to redirect users
@@ -22,7 +23,9 @@ function Login() {
 
             <header className="header">
                 <div className="header-content">
-                    <Link to="/" className="logo">IntelliDoc</Link> {/* Text-Logo oder eigenes Logo */}
+                    <div className="logo">
+                        <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                    </div>
                 </div>
             </header>
 
@@ -59,7 +62,7 @@ function Login() {
                 {/* Rechte Spalte: Registrierung */}
                 <div className="login-column">
                     <h2>Neu hier?</h2>
-                    <h3>Erstellen Sie ein Konto und legen Sie los!</h3>
+                    <h3>Erstelle ein neues Konto und lege sofort los!</h3>
                     <Link to="/auth/signup">Registrieren</Link>
                 </div>
             </div>
