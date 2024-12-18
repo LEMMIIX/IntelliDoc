@@ -35,7 +35,7 @@ const FileUpload = ({ folderId }) => {
     })
       .then((response) => response.json())
       .then((data) => {
-        alert("Datei erfolgreich hochgeladen");
+        //alert("Datei erfolgreich hochgeladen");
         window.location.reload();
       })
       .catch((error) => {

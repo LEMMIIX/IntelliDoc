@@ -1,5 +1,5 @@
 /**
- * Die `FolderElement`-Komponente stellt ein einzelnes Ordner-Element dar, das Benutzern ermöglicht, Ordner zu navigieren, umzubenennen und zu löschen.
+ * Die `FolderElement`-Komponente stellt ein einzelnes Ordner-Element dar, das Benutzern ermï¿½glicht, Ordner zu navigieren, umzubenennen und zu lï¿½schen.
  *@ author Farah. 
  */
 
@@ -49,7 +49,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
       const data = await response.json();
       setIsPopupVisible(false);
       setIsLoading(false);
-      alert("Ordnername erfolgreich geÃ¤ndert!");
+      //alert("Ordnername erfolgreich geÃ¤ndert!");
       window.location.reload();
     } catch (e) {
       console.log("error: ", e);

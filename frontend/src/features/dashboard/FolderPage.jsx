@@ -212,7 +212,7 @@ function Folder() {
       setIsPopupVisible(false);
       setLoading(false);
       setNewFolderName("");
-      alert("Dokumentname erfolgreich geändert!");
+      //alert("Dokumentname erfolgreich geändert!");
     } catch (e) {
       console.log("error: ", e);
       setLoading(false);

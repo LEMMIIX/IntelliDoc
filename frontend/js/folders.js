@@ -348,7 +348,7 @@ if (createFolderForm) {
         .then(data => {
             //console.log('Response Data:', data);  // Debugging: Überprüfe die Daten, die vom Server zurückgegeben werden
             if (data.folderId) {
-                alert('Folder created successfully');
+                //alert('Folder created successfully');
                 location.reload(); // Seite neu laden, um die neue Ordnerstruktur anzuzeigen
             } else {
                 alert(data.message || 'Error creating folder');
@@ -381,7 +381,7 @@ async function renameFolder(folderId, oldFolderName) {
                 throw new Error(errorMessage.message);
             }
             // Erfolgreich umbenannt
-            alert('Ordner erfolgreich umbenannt');
+            //alert('Ordner erfolgreich umbenannt');
             fetchAndRenderFolderTree();  // Ordnerstruktur nach dem Umbenennen aktualisieren
         } catch (error) {
             console.error('Fehler beim Umbenennen des Ordners:', error);
