@@ -100,7 +100,7 @@ function Signup() {
                 <div className="login-column">
                     <h2>Willkommen zurück!</h2>
                     <h3>Schön, wieder da zu sein!</h3>
-                    <Link to="/login">Einloggen</Link>
+                    <Link to="/auth/login">Einloggen</Link>
                 </div>
             </div>
             
