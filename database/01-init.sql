@@ -66,7 +66,7 @@ CREATE TABLE main.files (
     file_type character varying(255) NOT NULL,
     file_data bytea NOT NULL,
     folder_id integer,
-    uploaded_at timestamp without time zone DEFAULT now(),
+    created_at timestamp without time zone DEFAULT now(),
     embedding main.vector(768),
     cluster_label integer,
     keywords text,

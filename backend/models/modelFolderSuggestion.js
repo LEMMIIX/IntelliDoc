@@ -134,7 +134,7 @@ class FolderSuggestionEngine {
                     f.embedding,
                     f.parent_folder_id,
                     fl.file_name,
-                    ROW_NUMBER() OVER (PARTITION BY f.folder_id ORDER BY fl.uploaded_at DESC) as rn
+                    ROW_NUMBER() OVER (PARTITION BY f.folder_id ORDER BY fl.created_at DESC) as rn
                 FROM main.folders f
                 LEFT JOIN main.files fl ON f.folder_id = fl.folder_id
                 WHERE f.user_id = $1 

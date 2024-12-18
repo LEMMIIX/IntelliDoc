@@ -40,7 +40,7 @@ const File = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    uploaded_at: {
+    created_at: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
