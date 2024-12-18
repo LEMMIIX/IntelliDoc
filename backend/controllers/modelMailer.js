@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
     secure: false, // true for 465, false for other ports
     auth: {
         user: 'dev.intellidoc@gmail.com', 
-        pass: 'rdqs tfnt idfq unbr ' 
+        pass: 'shwp ocgt lbbh jfva' 
     }
 });
 

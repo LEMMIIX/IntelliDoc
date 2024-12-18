@@ -18,7 +18,25 @@ const AdminDashboard = () => {
   const [dbSessions, setDbSessions] = useState([]);
   const [dbStats, setDbStats] = useState([]);
   const [isMonitoringLoading, setIsMonitoringLoading] = useState(false);
+  const [adminUserIds, setAdminUserIds] = useState(new Set());
+
+  useEffect(() => {
+    fetchAdminUserIds();
+  }, []);
   
+  const fetchAdminUserIds = async () => {
+    try {
+      const response = await fetch(
+        `${prodconfig.backendUrl}/api/admin/admin-roles`,
+        { credentials: "include" }
+      );
+      const data = await response.json();
+      setAdminUserIds(new Set(data.adminUserIds)); // Admin-Benutzer-IDs speichern
+    } catch (error) {
+      console.error("Fehler beim Abrufen der Admin-Benutzer:", error);
+    }
+  };
+
   useEffect(() => {
     fetch(`${prodconfig.backendUrl}/api/admin/users`, { credentials: "include" })
       .then((response) => response.json())
@@ -77,6 +95,48 @@ const AdminDashboard = () => {
     }
   };
 
+  const assignAdmin = async (id) => {
+    const user = users.find(u => u.user_id === id);
+  
+    if (user?.roles?.some(role => role.role_name === 'admin')) {
+      Swal.fire("Info", "Dieser Benutzer ist bereits Admin.", "info");
+      return;
+    }
+  
+    const confirmed = await Swal.fire({
+      title: "Sind Sie sicher?",
+      text: "Dieser Benutzer wird Admin-Rechte erhalten.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ja, befördern!",
+      cancelButtonText: "Abbrechen",
+    });
+  
+    if (!confirmed.isConfirmed) return;
+  
+    try {
+      // Endpunkt sollte jetzt das UserRoleMapping erstellen
+      const response = await fetch(`${prodconfig.backendUrl}/api/admin/users/${id}/assign-admin`, {
+        method: "POST",
+        credentials: "include",
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Fehler beim Zuweisen der Admin-Rechte.");
+      }
+  
+      await Swal.fire("Erfolg", "Admin-Rechte erfolgreich zugewiesen.", "success");
+  
+      // Seite neu laden
+      window.location.reload();
+    } catch (error) {
+      Swal.fire("Fehler", error.message, "error");
+      console.error("Fehler beim Zuweisen der Admin-Rechte:", error);
+    }
+  };
+  
+
   const updateUser = async () => {
     try {
       const response = await fetch(`${prodconfig.backendUrl}/api/admin/users/${editingUser.user_id}`, {
@@ -130,6 +190,7 @@ const AdminDashboard = () => {
               <th className="border border-slate-300 px-4 py-2">E-Mail</th>
               <th className="border border-slate-300 px-4 py-2">Verifiziert</th>
               <th className="border border-slate-300 px-4 py-2">Registriert am</th>
+              <th className="border border-slate-300 px-4 py-2">Admin</th>
               <th className="border border-slate-300 px-4 py-2">Aktionen</th>
             </tr>
           </thead>
@@ -147,7 +208,26 @@ const AdminDashboard = () => {
                     ? new Date(user.registered_at).toLocaleDateString("de-DE")
                     : "Kein Datum"}
                 </td>
+                <td className="border border-slate-300 px-4 py-2">
+                  {adminUserIds.has(user.user_id) ? "Ja" : "Nein"}
+                </td>
                 <td className="border border-slate-300 px-4 py-2 flex gap-2">
+                  <button
+                    className={`px-3 py-1 rounded ${adminUserIds.has(user.user_id)
+                        ? "bg-gray-200 text-gray-600 cursor-not-allowed border border-gray-300"
+                        : "bg-[#669f62] hover:bg-[#68b461] text-white"
+                      }`}
+                    onClick={() => !adminUserIds.has(user.user_id) && assignAdmin(user.user_id)}
+                    disabled={adminUserIds.has(user.user_id)}
+                    title={
+                      adminUserIds.has(user.user_id)
+                        ? "Benutzer ist bereits Admin"
+                        : "Zum Admin befördern"
+                    }
+                  >
+                    {adminUserIds.has(user.user_id) ? "Bereits Admin" : "Admin-Rechte zuweisen"}
+                  </button>
+
                   <button
                     className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
                     onClick={() => deleteUser(user.user_id)}

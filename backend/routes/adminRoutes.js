@@ -8,6 +8,7 @@ const express = require('express');
 const router = express.Router();
 const adminMiddleware = require('../models/modelAdmin');
 const User = require('../../database/User');
+const UserRoleMapping = require('../../database/UserRoleMapping'); // Beispiel Import für die Mapping-Tabelle
 const bcrypt = require('bcrypt');
 
 // Admin-Endpunkt: Liste aller Benutzer abrufen
@@ -79,6 +80,51 @@ router.put('/users/:id', adminMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Fehler beim Bearbeiten des Benutzers:', error);
     res.status(500).json({ message: 'Serverfehler beim Bearbeiten des Benutzers.' });
+  }
+});
+
+// Admin-Endpunkt: Benutzer die Admin-Rolle zuweisen
+router.post('/users/:id/assign-admin', adminMiddleware, async (req, res) => {
+  const userId = req.params.id;
+
+  try {
+    // Rolle-ID für "Admin" (dies muss mit der entsprechenden ID in der Rolle-Tabelle übereinstimmen)
+    const adminRoleId = 1; // Beispielwert, anpassen falls notwendig
+
+    // Überprüfen, ob die Zuordnung bereits existiert
+    const existingMapping = await UserRoleMapping.findOne({
+      where: { user_id: userId, role_id: adminRoleId },
+    });
+
+    if (existingMapping) {
+      return res.status(400).json({ message: 'Benutzer hat bereits Admin-Rechte.' });
+    }
+
+    // Neue Zuordnung erstellen
+    await UserRoleMapping.create({
+      user_id: userId,
+      role_id: adminRoleId,
+    });
+
+    res.json({ message: 'Admin-Rolle erfolgreich zugewiesen.' });
+  } catch (error) {
+    console.error('Fehler beim Zuweisen der Admin-Rolle:', error);
+    res.status(500).json({ message: 'Serverfehler beim Zuweisen der Admin-Rolle.' });
+  }
+});
+
+// Admin-Endpunkt: Abrufen aller Admin-Benutzer-IDs
+router.get('/admin-roles', adminMiddleware, async (req, res) => {
+  try {
+    const adminRoleId = 1; // Rolle für Admins
+    const adminMappings = await UserRoleMapping.findAll({
+      where: { role_id: adminRoleId },
+    });
+    const adminUserIds = adminMappings.map((mapping) => mapping.user_id);
+    res.json({ adminUserIds });
+  } catch (error) {
+    console.error("Fehler beim Abrufen der Admin-Benutzer:", error);
+    res.status(500).json({ message: "Fehler beim Abrufen der Admin-Benutzer." });
   }
 });
 
