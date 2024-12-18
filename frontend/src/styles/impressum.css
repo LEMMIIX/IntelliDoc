@@ -1,0 +1,83 @@
+/**
+ * Die `home.css`-Datei enthält allgemeine Stile für das Impressum, einschließlich Header und Footer.
+    wurde nach einem Vorlage von Internet nachgemacht. Unterstzung von  KI. 
+    @Ayoub, Miray
+ */
+
+/* Impressum Content */
+.impressum-content {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 30px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: 'Roboto', Arial, sans-serif;
+    line-height: 1.6;
+}
+
+.impressum-section {
+    margin-bottom: 40px;
+}
+
+.impressum-section h2 {
+    color: #007bff;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    border-bottom: 3px solid #007bff;
+    padding-bottom: 5px;
+}
+
+.team-category {
+    margin: 30px 0;
+}
+
+.team-category-title {
+    font-size: 1.5rem;
+    color: #0056b3;
+    margin-bottom: 15px;
+    font-weight: bold;
+}
+
+.team-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.team-member {
+    padding: 15px;
+    background-color: #f8f9fc;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.team-member:hover {
+    background-color: #e6eefc;
+    transform: scale(1.03);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .impressum-content {
+        padding: 20px;
+    }
+
+    .impressum-section h2 {
+        font-size: 1.8rem;
+    }
+
+    .team-category-title {
+        font-size: 1.3rem;
+    }
+
+    .team-list {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+}

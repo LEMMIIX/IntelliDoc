@@ -18,12 +18,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import FolderPage from "./features/dashboard/FolderPage";
+import Impressum from "./pages/Impressum";
 
 const App = () => {
   return (
     <div>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/Impressum" element={<Impressum />} />
 
         {/* Admin Route */}
         <Route

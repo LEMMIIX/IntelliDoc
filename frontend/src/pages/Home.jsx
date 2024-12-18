@@ -85,7 +85,7 @@ function Home() {
                 <div className="footer-content">
                     <a href="mailto:dev.intellidoc@gmail.com" className="footer-link">Kontakt: dev.intellidoc@gmail.com</a>
                     <span className="divider">|</span>
-                    <span className="footer-link">Impressum</span>
+                    <a href="/Impressum" className="footer-link">Impressum</a>
                 </div>
             </footer>
         </div>
