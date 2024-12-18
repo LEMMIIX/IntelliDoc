@@ -8,7 +8,7 @@ const express = require('express');
 const router = express.Router();
 const adminMiddleware = require('../models/modelAdmin');
 const User = require('../../database/User');
-const UserRoleMapping = require('../../database/UserRoleMapping'); // Beispiel Import für die Mapping-Tabelle
+const UserRoleMapping = require('../../database/UserRoleMapping'); 
 const bcrypt = require('bcrypt');
 
 // Admin-Endpunkt: Liste aller Benutzer abrufen
@@ -45,35 +45,30 @@ router.delete('/users/:id', adminMiddleware, async (req, res) => {
 
 // Admin-Endpunkt: Benutzer bearbeiten
 router.put('/users/:id', adminMiddleware, async (req, res) => {
-  const userId = req.params.id; // Diese Zeile extrahiert die ID aus den URL-Parametern
+  const userId = req.params.id; 
   console.log("Received userId:", userId);
 
   const { user_name, email, password } = req.body;
 
   try {
-    // Überprüfe, ob userId ein Integer ist
     if (isNaN(parseInt(userId))) {
       return res.status(400).json({ message: 'Ungültige Benutzer-ID.' });
     }
 
-    // Benutzer anhand der ID suchen
     const user = await User.findByPk(userId);
 
     if (!user) {
       return res.status(404).json({ message: 'Benutzer nicht gefunden.' });
     }
 
-    // Felder aktualisieren
     if (user_name) user.user_name = user_name;
     if (email) user.email = email;
 
-    // Passwort aktualisieren, falls angegeben
     if (password) {
       const salt = await bcrypt.genSalt(10);
       user.password_hash = await bcrypt.hash(password, salt);
     }
 
-    // Änderungen speichern
     await user.save();
 
     res.json({ message: 'Benutzer erfolgreich aktualisiert.' });
@@ -83,15 +78,12 @@ router.put('/users/:id', adminMiddleware, async (req, res) => {
   }
 });
 
-// Admin-Endpunkt: Benutzer die Admin-Rolle zuweisen
 router.post('/users/:id/assign-admin', adminMiddleware, async (req, res) => {
   const userId = req.params.id;
 
   try {
-    // Rolle-ID für "Admin" (dies muss mit der entsprechenden ID in der Rolle-Tabelle übereinstimmen)
-    const adminRoleId = 1; // Beispielwert, anpassen falls notwendig
+    const adminRoleId = 1; 
 
-    // Überprüfen, ob die Zuordnung bereits existiert
     const existingMapping = await UserRoleMapping.findOne({
       where: { user_id: userId, role_id: adminRoleId },
     });
@@ -100,7 +92,7 @@ router.post('/users/:id/assign-admin', adminMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Benutzer hat bereits Admin-Rechte.' });
     }
 
-    // Neue Zuordnung erstellen
+    
     await UserRoleMapping.create({
       user_id: userId,
       role_id: adminRoleId,
@@ -116,7 +108,7 @@ router.post('/users/:id/assign-admin', adminMiddleware, async (req, res) => {
 // Admin-Endpunkt: Abrufen aller Admin-Benutzer-IDs
 router.get('/admin-roles', adminMiddleware, async (req, res) => {
   try {
-    const adminRoleId = 1; // Rolle für Admins
+    const adminRoleId = 1;
     const adminMappings = await UserRoleMapping.findAll({
       where: { role_id: adminRoleId },
     });

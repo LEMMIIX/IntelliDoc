@@ -175,57 +175,47 @@ document.addEventListener('DOMContentLoaded', async function() {
     async function previewFile(fileName) {
         const filePreview = document.getElementById('filePreview');
     
-        // Überprüfen, ob die Vorschau gerade die Datei anzeigt, auf die geklickt wurde
         if (currentlyPreviewedFile === fileName) {
-            // Vorschau ausblenden, wenn dieselbe Datei erneut geklickt wird
             filePreview.innerHTML = '';
-            filePreview.style.display = 'none'; // Vorschau unsichtbar machen
-            currentlyPreviewedFile = null; // Datei-Tracking zurücksetzen
+            filePreview.style.display = 'none'; 
+            currentlyPreviewedFile = null;
             return;
         }
     
-        // Neue Datei wird angeklickt, also Vorschau aktualisieren
         currentlyPreviewedFile = fileName;
     
         try {
             const fileExtension = fileName.split('.').pop().toLowerCase();
             
             if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                // Bildvorschau
                 filePreview.innerHTML = `<img src="/api/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
     
             } else if (['pdf'].includes(fileExtension)) {
-                // PDF-Vorschau
                 filePreview.innerHTML = `<iframe src="/api/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
     
             } else if (fileExtension === 'txt') {
-                // Textdatei-Vorschau
                 const response = await fetch(`/api/docupload/view/${encodeURIComponent(fileName)}`);
                 const textContent = await response.text();
                 
-                // Textinhalt in ein div einfügen und Zeilenumbrüche beibehalten
                 filePreview.innerHTML = `
                     <div style="background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
                         ${textContent}
                     </div>
                 `;
             } else if (fileExtension === 'docx') {
-                // DOCX-Vorschau
                 const response = await fetch(`/api/docupload/view/${encodeURIComponent(fileName)}`);
-                const docxContent = await response.text(); // Der Server liefert HTML zurück
+                const docxContent = await response.text(); 
                 
-                // DOCX-Inhalt im HTML-Format anzeigen
                 filePreview.innerHTML = `
                     <div style="background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
                         ${docxContent}
                     </div>
                 `;
             } else {
-                // Vorschau für andere Dateitypen
                 filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
             }
     
-            filePreview.style.display = 'block'; // Vorschau sichtbar machen
+            filePreview.style.display = 'block'; 
         } catch (error) {
             console.error('Fehler beim Laden der Datei:', error);
         }

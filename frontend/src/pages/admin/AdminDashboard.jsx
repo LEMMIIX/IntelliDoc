@@ -31,7 +31,7 @@ const AdminDashboard = () => {
         { credentials: "include" }
       );
       const data = await response.json();
-      setAdminUserIds(new Set(data.adminUserIds)); // Admin-Benutzer-IDs speichern
+      setAdminUserIds(new Set(data.adminUserIds)); 
     } catch (error) {
       console.error("Fehler beim Abrufen der Admin-Benutzer:", error);
     }
@@ -115,7 +115,6 @@ const AdminDashboard = () => {
     if (!confirmed.isConfirmed) return;
   
     try {
-      // Endpunkt sollte jetzt das UserRoleMapping erstellen
       const response = await fetch(`${prodconfig.backendUrl}/api/admin/users/${id}/assign-admin`, {
         method: "POST",
         credentials: "include",
@@ -239,7 +238,7 @@ const AdminDashboard = () => {
                     onClick={() => {
                       setEditingUser(user);
                       setNewEmail(user.email);
-                      setNewPassword(""); // Ensure password is cleared when editing begins
+                      setNewPassword(""); 
                     }}
                   >
                     Bearbeiten

@@ -17,7 +17,7 @@ const File = sequelize.define(
       autoIncrement: true,
     },
     embedding: {
-      type: 'VECTOR(768)', // Annahme: Embeddings sind 768-dimensional
+      type: 'VECTOR(768)', 
       allowNull: true,
     },
     user_id: {
