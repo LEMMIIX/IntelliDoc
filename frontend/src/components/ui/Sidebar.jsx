@@ -42,6 +42,18 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   }`;
 
   useEffect(() => {
+    const fetchFolders = async () => {
+      const folderTree = await fetchAndRenderFolderTree();
+      if (folderTree) {
+        setFolders(folderTree);
+      }
+    };
+  
+    fetchFolders();
+  }, []);
+  
+
+  useEffect(() => {
     const checkAdminStatus = async () => {
       try {
         const response = await customFetch(
