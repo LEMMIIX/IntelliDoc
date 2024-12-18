@@ -1,0 +1,17 @@
+#
+# Diese Docker Compose-Datei stellt einen Container-Registry-Dienst bereit, der es ermöglicht, Docker-Images lokal zu speichern und zu verwalten.
+#
+# @author Lennart
+
+version: '3.8'
+services:
+  registry:
+    image: registry:2
+    ports:
+      - "5000:5000"
+    volumes:
+      - registry_data:/var/lib/registry
+    restart: always
+
+volumes:
+  registry_data:

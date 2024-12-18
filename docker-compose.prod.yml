@@ -1,0 +1,59 @@
+#
+# Diese Docker Compose-Datei definiert die Konfiguration der Dienste für eine Backend-Anwendung, einschließlich eines PostgreSQL-Datenbankdienstes und eines Node.js-Backends mit definierten Umgebungsvariablen, Abhängigkeiten und Ressourcenbeschränkungen.
+#
+# Diese Docker Compose ist für das DEPLOYMENT auf einem Server
+#
+# @author Lennart
+#
+
+version: '3.8'
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - default
+
+  backend:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_SCHEMA: main
+      NODE_ENV: production
+      BACKEND_URL: ${BACKEND_URL:-http://localhost:3000}
+    volumes:
+      - ./node_modules/@xenova/transformers/models:/app/node_modules/@xenova/transformers/models
+      - pip_cache:/pip_cache
+      - venv_data:/app/venv
+    ports:
+      - "3000:3000"
+    networks:
+      - default
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+    restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pip_cache:
+  venv_data:

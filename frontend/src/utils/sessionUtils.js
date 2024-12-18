@@ -1,13 +1,17 @@
-import { customFetch } from "./helpers";
+/**
+ * Die `getCurrentUser`-Funktion ruft den aktuell angemeldeten Benutzer vom Backend ab und gibt dessen Benutzer-ID zurück.
+ * @Author Farah.
+ */
 
-const backendUrl = "http://localhost:3000";
+import { customFetch } from "./helpers";
+import prodconfig from "../production-config";
 
 export function getCurrentUser() {
-  return customFetch(backendUrl + "/api/current-user")
+  return customFetch(`${prodconfig.backendUrl}/api/current-user`)
     .then((response) => {
       console.log(response);
       if (!response.ok) {
-        throw new Error("Failed to get current user");
+        throw new Error("Fehler beim Abrufen des aktuellen Benutzers");
       }
       return response.json();
     })
@@ -16,7 +20,7 @@ export function getCurrentUser() {
       return data.userId;
     })
     .catch((error) => {
-      console.error("Error getting current user:", error);
+      console.error("Fehler beim Abrufen des aktuellen Benutzers:", error);
       return null;
     });
 }

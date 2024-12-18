@@ -1,41 +1,60 @@
+/**
+ * Diese Datei enthält die Route für Admin seite.
+ * Sie schätzt bestimmte Routen und leitet Benutzer basierend auf ihrem Authentifizierungsstatus weiter.
+ *
+ * @autor Farah, Miray
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import prodconfig from "../production-config";
 
-const backendUrl = "http://localhost:3000";
-
-function ProtectedRoute({ children, shouldBeAuthenticated }) {
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // State to show loading while checking auth
-  const [isAuthenticated, setIsAuthenticated] = useState(null); // State to store if user is authenticated
+function ProtectedRoute({
+  children,
+  shouldBeAuthenticated,
+  isAdminRoute = false,
+}) {
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await fetch(`${backendUrl}/api/current-user`, {
-          credentials: "include", // Include cookies in the request
+        console.log("Checking authentication status...");
+        const response = await fetch(`${prodconfig.backendUrl}/api/current-user`, {
+          credentials: "include",
         });
 
         if (!response.ok) {
+          console.log("Authentication check failed.");
           localStorage.removeItem("currentUserId");
           localStorage.removeItem("currentUserName");
-
           setIsAuthenticated(false);
         } else {
           const data = await response.json();
-
+          console.log("API Response:", data);
           setIsAuthenticated(true);
+          setIsAdmin(data.isAdmin || false);
         }
       } catch (error) {
-        console.error("Error checking authentication", error);
+        console.error("Error during authentication check:", error);
         localStorage.removeItem("currentUserId");
         localStorage.removeItem("currentUserName");
-
         setIsAuthenticated(false);
       } finally {
         setIsCheckingAuth(false);
       }
     };
+
     checkAuthStatus();
   }, [shouldBeAuthenticated]);
+
+  // Warte, bis die State-Updates abgeschlossen sind
+  useEffect(() => {
+    console.log("State updated:", { isAuthenticated, isAdmin, isAdminRoute });
+  }, [isAuthenticated, isAdmin, isAdminRoute]);
 
   if (isCheckingAuth) {
     return (
@@ -45,14 +64,24 @@ function ProtectedRoute({ children, shouldBeAuthenticated }) {
     );
   }
 
-  if (!isAuthenticated && shouldBeAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (isAuthenticated && !shouldBeAuthenticated) {
+  // Admin-Check nach Abschluss der State-Updates
+  if (isAdminRoute && isAuthenticated && !isAdmin) {
+    console.log("User is not admin, redirecting to dashboard.");
     return <Navigate to="/dashboard" replace />;
   }
 
+  // Authentication checks
+  if (!isAuthenticated && shouldBeAuthenticated) {
+    console.log("User is not authenticated, redirecting to login.");
+    return <Navigate to="/auth/login" replace />;
+  }
+
+  if (isAuthenticated && !shouldBeAuthenticated) {
+    console.log("User is already authenticated, redirecting to dashboard.");
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  console.log("Rendering protected children.");
   return children;
 }
 

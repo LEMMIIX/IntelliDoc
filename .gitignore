@@ -92,6 +92,7 @@ pnpm-lock.yaml
 *.bak
 *.tmp
 *.orig
+*.txt
 
 # Projektspezifische Ignores
 /embed_models/
@@ -99,7 +100,18 @@ backend/embed_models/
 ConnectPostgres.js
 .meld/*
 .meld/
+model_visualize.py
 
 # Lokale Dateien
 *.local
 .tern-port
+
+# Testdateien mit JEST
+*.test.js
+
+
+
+
+
+# # # # WHITELIST # # # #
+!pip-requirements.txt

@@ -1,17 +1,25 @@
+/**
+ * Diese Datei enthält Funktionen zum Versenden von E-Mails mit Nodemailer.
+ * Sie ermöglicht das Versenden von Bestätigungs- und Zurücksetzungs-E-Mails an Benutzer.
+ *
+ * @author Ayoub
+ *Nodemailer webseite. 
+ */
+
 const nodemailer = require('nodemailer');
 
 // Create a transporter using SMTP
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 587, // Replace with your SMTP port
+    port: 587, // SMTP port
     secure: false, // true for 465, false for other ports
     auth: {
-        user: 'dev.intellidoc@gmail.com', // Replace with your email
-        pass: 'rdqs tfnt idfq unbr ' // Replace with your password
+        user: 'dev.intellidoc@gmail.com', 
+        pass: 'shwp ocgt lbbh jfva' 
     }
 });
 
-// Function to send verification email
+// Function um verification email zu senden
 async function sendVerificationEmail(email, verification_Key, user_name) {
     const mailOptions = {
         from: 'dev.intellidoc@gmail.com',
@@ -45,7 +53,7 @@ async function sendVerificationEmail(email, verification_Key, user_name) {
     }
 }
 
-// Function to send reset email
+// Function um reset email zu senden
 async function sendResetEmail(email, verification_Key, user_name) {
     const mailOptions = {
         from: 'dev.intellidoc@gmail.com',

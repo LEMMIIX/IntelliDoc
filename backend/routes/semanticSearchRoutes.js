@@ -1,3 +1,10 @@
+/**
+ * Diese Datei enthält die Route für die semantische Suche.
+ * Sie ermöglicht die Durchführung von Suchanfragen und die Rückgabe von Suchergebnissen an frontend. 
+ *
+ * @autor Lennart,Miray
+ */
+
 const express = require('express');
 const router = express.Router();
 const semanticSearch = require('../models/modelSemanticSearch');

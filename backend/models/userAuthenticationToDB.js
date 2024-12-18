@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält Funktionen zur Authentifizierung von Benutzern.
+ * Sie ermöglicht die Überprüfung von E-Mail und Passwort-Hash gegen die Datenbank.
+ *
+ * @autor Ayoub
+ * 
+ */
+
 const bcrypt = require('bcrypt');
 const db = require('../../ConnectPostgres');
 

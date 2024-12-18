@@ -1,4 +1,11 @@
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Diese Datei enthält die Logik für die Benutzeranmeldung.
+ * Sie ermöglicht das Einreichen des Anmeldeformulars und die Authentifizierung des Benutzers.
+ *
+ * @autor Ilyass
+ * 
+ */
+document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('loginForm');
 
     form.addEventListener('submit', function(event) {

@@ -1,21 +1,43 @@
-// import "./styles/App.css";
-import { Routes, Route } from "react-router-dom";
+/**
+ *  definiert die Haupt-Routing-Struktur der Anwendung, einschließlich geschätzter Routen für das Dashboard und Admin-Bereich sowie Authentifizierungsrouten.
+ *@Author Farah. 
+ * 
+ */
+
+import { Routes, Route, Navigate } from "react-router-dom"; // Added Navigate here
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Home from "./pages/Home";
+import Verification from "./pages/Verification";
+import Requestpassword from "./pages/Requestpassword";
+import Setpassword from "./pages/Setpassword";
 
 import Layout from "./components/ui/Layout";
 import FileUpload from "./features/dashboard/FileUpload";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
+import AdminDashboard from "./pages/admin/AdminDashboard";
 import FolderPage from "./features/dashboard/FolderPage";
+import Impressum from "./pages/Impressum";
 
 const App = () => {
   return (
     <div>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/Impressum" element={<Impressum />} />
 
+        {/* Admin Route */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute shouldBeAuthenticated={true} isAdminRoute={true}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Protected Dashboard Routes */}
         <Route
           element={
             <ProtectedRoute shouldBeAuthenticated={true}>
@@ -26,9 +48,13 @@ const App = () => {
           <Route index path="/dashboard" element={<Dashboard />} />
           <Route index path="/folders/:folderId" element={<FolderPage />} />
           <Route path="/upload" element={<FileUpload />} />
+          <Route path="/reset-password" element={<Setpassword />} />
+          
         </Route>
+
+        {/* Auth Routes */}
         <Route
-          path="/login"
+          path="/auth/login"
           element={
             <ProtectedRoute shouldBeAuthenticated={false}>
               <Login />
@@ -36,14 +62,39 @@ const App = () => {
           }
         />
         <Route
-          path="/signup"
+          path="/auth/signup"
           element={
             <ProtectedRoute shouldBeAuthenticated={false}>
               <Signup />
             </ProtectedRoute>
           }
-        />
-      </Routes>
+              />
+              <Route
+                  path="/Verification"
+                  element={
+                      <ProtectedRoute shouldBeAuthenticated={false}>
+                          <Verification />
+                      </ProtectedRoute>
+                  }
+              />
+              <Route
+                    path="/Requestpassword"
+                    element={
+                        <ProtectedRoute shouldBeAuthenticated={false}>
+                            <Requestpassword />
+                        </ProtectedRoute>
+                    }
+              />
+              <Route
+                    path="/Setpassword"
+                        element={
+                            <ProtectedRoute shouldBeAuthenticated={false}>
+                                <Setpassword />
+                            </ProtectedRoute>
+                        }  
+                        />
+          </Routes>
+         
     </div>
   );
 };

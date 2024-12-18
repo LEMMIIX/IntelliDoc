@@ -1,15 +1,23 @@
-import { customFetch } from "./helpers";
+/**
+ * Diese Datei enthält Funktionen zum Abrufen und Rendern des Ordnerbaums, einschließlich `fetchAndRenderFolderTree` und `fetchAndRenderFolder`.
+ *@Author Farah
+ */
 
-const backendUrl = "http://localhost:3000";
+import { customFetch } from "./helpers";
+import prodconfig from "../production-config";
+
 export async function fetchAndRenderFolderTree() {
   try {
-    const response = await customFetch(backendUrl + "/folders/tree", {
-      method: "GET",
-      credentials: "include",
-    });
+    const response = await customFetch(
+      `${prodconfig.backendUrl}/folders/tree`,
+      {
+        method: "GET",
+        credentials: "include",
+      }
+    );
     console.log(response);
     if (!response.ok) {
-      throw new Error("Failed to fetch folder tree");
+      throw new Error("Fehler beim Abrufen der Ordnerstruktur");
     }
 
     const folderTree = await response.json();
@@ -20,13 +28,13 @@ export async function fetchAndRenderFolderTree() {
 }
 export async function fetchAndRenderFolder() {
   try {
-    const response = await customFetch(backendUrl + "/folders", {
+    const response = await customFetch(`${prodconfig.backendUrl}/folders`, {
       method: "GET",
       credentials: "include",
     });
     console.log(response);
     if (!response.ok) {
-      throw new Error("Failed to fetch folder tree");
+      throw new Error("Fehler beim Abrufen der Ordnerstruktur");
     }
 
     const folderTree = await response.json();

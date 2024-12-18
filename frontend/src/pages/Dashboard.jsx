@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die Dashboard-Komponente.
+ * Sie stellt die Hauptseite des Dashboards dar, auf der Benutzer Ordner und Dateien verwalten können.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useEffect, useState, useMemo } from "react";
 import { fetchAndRenderFolderTree } from "../utils/fetchFoldersTree";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -11,8 +19,9 @@ import axios from "axios";
 import Swal from "sweetalert2";
 import Breadcrumbs from "../components/ui/Breadcrumbs";
 import File from "../components/File";
+import { IoClose } from "react-icons/io5";
+import prodconfig from "../production-config";
 
-const backendUrl = "http://localhost:3000";
 // this is the dashboard homepage
 function Dashboard() {
   const [folders, setFolders] = useState([]);
@@ -22,6 +31,13 @@ function Dashboard() {
   const [editingFolderId, setEditingFolderId] = useState(null); // To track which folder is being edited
   const [newFolderName, setNewFolderName] = useState(""); // To store the new folder name
   const [results, setResults] = useState([]);
+  const [isCreating, setIsCreating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  // boolean to track if a file  is current downloading
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [selectedDocToRename, setSelectedDocToRename] = useState({});
+  const [currentlyPreviewedFile, setCurrentlyPreviewedFile] = useState(null);
+  const [filePreviewContent, setFilePreviewContent] = useState("");
 
   //view list
   const [contextMenu, setContextMenu] = useState({
@@ -44,39 +60,171 @@ function Dashboard() {
           setLoading(false);
         }
       } catch (error) {
-        console.error("Error fetching folder tree:", error);
+        console.error("Fehler beim Abrufen der Ordnerstruktur:", error);
         setLoading(false);
       }
     };
 
     fetchFolders();
   }, []);
+  const handleCreateFolderSwal = async (id) => {
+    const { value: folderName } = await Swal.fire({
+      title: "Neuen Ordner erstellen",
+      input: "text",
+      inputLabel: "Ordnername",
+      inputPlaceholder: "Gib den Namen des neuen Ordners ein",
+      showCancelButton: true,
+      confirmButtonText: "Erstellen",
+      cancelButtonText: "Abbrechen",
+      inputValidator: (value) => {
+        if (!value) {
+          return "Der Ordnername ist erforderlich!";
+        }
+      },
+    });
 
-  // console.log(JSON.parse(localStorage.getItem("isFileExplorerView")));
-  const handleFolderDelete = async (folderId) => {
-    if (confirm("Are you sure you want to delete this folder?")) {
+    if (folderName) {
+      createFolder(folderName, id);
+    }
+  };
+
+  const createFolder = async (folderName, id) => {
+    setIsCreating(true);
+    try {
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/create`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ folderName, parentFolderId: id }),
+        }
+      );
+
+      const data = await response.json();
+      if (data.folderId) {
+        Swal.fire("Erfolg", "Ordner erfolgreich erstellt", "Erfolg");
+        window.location.reload();
+      } else {
+        Swal.fire(
+          "Fehler",
+          data?.message || "Fehler beim Erstellen des Ordners",
+          "fehler"
+        );
+      }
+    } catch (error) {
+      console.error("Fehler beim Erstellen des Ordners:", error);
+      Swal.fire(
+        "Fehler",
+        "Beim Erstellen des Ordners ist ein Fehler aufgetreten.",
+        "fehler"
+      );
+    } finally {
+      setIsCreating(false);
+    }
+  };
+  const handleFileDownload = async (fileName) => {
+    try {
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/docupload/download/${encodeURIComponent(
+          fileName
+        )}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Fehler beim Herunterladen der Datei");
+      }
+
+      const blob = await response.blob(); // Retrieve file as blob
+      const url = window.URL.createObjectURL(blob); // Create a URL for the blob
+
+      // Create a temporary anchor element for downloading
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName; // Specify the file name for download
+      document.body.appendChild(a);
+      a.click(); // Programmatically click the anchor to trigger download
+      window.URL.revokeObjectURL(url); // Clean up the URL object
+      a.remove(); // Remove the temporary anchor element from the DOM
+    } catch (error) {
+      console.error("Download-Fehler:", error);
+    }
+  };
+  const handleFileDelete = async (fileId) => {
+    if (
+      window.confirm("Bist du sicher, dass du diese Datei löschen möchtest?")
+    ) {
+      // setIsDeleting(true);
+
       try {
         const response = await customFetch(
-          backendUrl + `/folders/${folderId}`,
+          `${prodconfig.backendUrl}/docupload/delete/${fileId}`,
+          { method: "DELETE", credentials: "include" }
+        );
+        if (!response.ok) throw new Error("Fehler beim Löschen der Datei");
+        const data = await response.json();
+
+        // setCurrentlyPreviewedFile(null);
+        // setFilePreviewContent(null);
+
+        const folderTree = await fetchAndRenderFolderTree();
+        // if (folderTree) {
+        //   setFolders(folderTree.folderTree);
+        //   setLoading(false);
+        // }
+      } catch (error) {
+        alert(
+          "Fehler beim Löschen der Datei. Bitte versuche es später erneut."
+        );
+      } finally {
+        // setIsDeleting(false);
+      }
+    }
+  };
+  // console.log(JSON.parse(localStorage.getItem("isFileExplorerView")));
+  const handleFolderDelete = async (folderId) => {
+    if (confirm("Bist du sicher, dass du diesen Ordner löschen möchtest?")) {
+      setIsDeleting(true);
+      try {
+        const response = await customFetch(
+          `${prodconfig.backendUrl}/folders/${folderId}`,
           {
             method: "DELETE",
             credentials: "include",
           }
         );
         if (!response.ok) {
-          throw new Error("Failed to delete folder");
+          throw new Error("Fehler beim Löschen des Ordners");
         }
         const data = await response.json();
-        // setSuccess(data.message);
+
+        // Fetch and update the folder tree
         const folderTree = await fetchAndRenderFolderTree();
         if (folderTree) {
           setFolders(folderTree.folderTree);
           setLoading(false);
         }
-        // Updates the folder structure
+
+        // Success message
+        await Swal.fire(
+          "Gelöscht!",
+          "Der Ordner wurde erfolgreich gelöscht.",
+          "success"
+        );
       } catch (error) {
-        console.error("Error deleting folder:", error);
-        // setError("Failed to delete folder. Please try again later.");
+        console.error("Fehler beim Löschen des Ordners:", error);
+
+        // Error message
+        await Swal.fire(
+          "Fehler",
+          "Fehler beim Löschen des Ordners. Bitte versuche es erneut.",
+          "error"
+        );
       }
     }
   };
@@ -106,53 +254,94 @@ function Dashboard() {
     setContextMenu({ visible: false, folderId: null, x: 0, y: 0 });
   };
 
-  // console.log(contextMenu.folderId);
-  const handleRenameSubmit = async (folderId, newFolderName) => {
-    try {
-      const response = await customFetch(
-        "http://localhost:3000/folders/rename",
-        {
-          method: "POST",
-          credentials: "include", // Äquivalent zu withCredentials: true
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            documentId: folderId,
-            newFilename: newFolderName,
-          }),
-        }
-      );
-
-      alert(response.data.message);
-      setEditingFolderId(null); // Close the input after renaming
-      setNewFolderName(""); // Clear the input field
-      window.location.reload(); // Reload to reflect the changes
-    } catch (error) {
-      console.error("Error renaming folder:", error);
-      alert("Failed to rename folder.");
+  const handleFilePreview = async (fileName) => {
+    // Überprüfen, ob die Vorschau gerade die Datei anzeigt, auf die geklickt wurde
+    if (currentlyPreviewedFile === fileName) {
+      // Vorschau ausblenden, wenn dieselbe Datei erneut geklickt wird
+      setCurrentlyPreviewedFile(null);
+      setFilePreviewContent(null);
+      return;
     }
-  };
-  const handleEditClick = (folderId, currentFolderName) => {
-    Swal.fire({
-      title: "Edit Folder Name",
-      input: "text",
-      inputLabel: "New Folder Name",
-      inputValue: currentFolderName, // Set the current folder name as the default value
-      showCancelButton: true,
-      confirmButtonText: "Speichern",
-      cancelButtonText: "Cancel",
-      inputValidator: (value) => {
-        if (!value) {
-          return "Please enter a new folder name";
-        }
-      },
-    }).then((result) => {
-      if (result.isConfirmed) {
-        const newFolderName = result.value;
-        handleRenameSubmit(folderId, newFolderName); // Pass folderId and new name for renaming
+
+    // Neue Datei wird angeklickt, also Vorschau aktualisieren
+    setCurrentlyPreviewedFile(fileName);
+
+    try {
+      const fileExtension = fileName.split(".").pop().toLowerCase();
+
+      if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
+        // Bildvorschau
+        setFilePreviewContent(
+          <img
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+              fileName
+            )}`}
+            alt="Image Preview"
+            className="max-w-full mx-auto object-contain w-[500px] h-[300px]"
+          />
+        );
+      } else if (["pdf"].includes(fileExtension)) {
+        // PDF-Vorschau
+        setFilePreviewContent(
+          <iframe
+            src={`${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+              fileName
+            )}`}
+            frameBorder="0"
+            width="100%"
+            height="600px"
+          />
+        );
+      } else if (fileExtension === "txt") {
+        // Textdatei-Vorschau
+        const response = await customFetch(
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+            fileName
+          )}`,
+          {
+            credentials: "include",
+          }
+        );
+        const textContent = await response.text();
+        console.log(textContent);
+        setFilePreviewContent(
+          <div
+            dangerouslySetInnerHTML={{ __html: textContent }}
+            style={{
+              backgroundColor: "#f4f4f4",
+              padding: "10px",
+              border: "1px solid #ddd",
+            }}
+          />
+        );
+      } else if (fileExtension === "docx") {
+        // DOCX-Vorschau
+        const response = await customFetch(
+          `${prodconfig.backendUrl}/docupload/view/${encodeURIComponent(
+            fileName
+          )}`,
+          {
+            credentials: "include",
+          }
+        );
+        const docxContent = await response.text(); // Der Server liefert HTML zurück
+        setFilePreviewContent(
+          <div
+            dangerouslySetInnerHTML={{ __html: docxContent }}
+            style={{
+              backgroundColor: "#f4f4f4",
+              padding: "10px",
+              border: "1px solid #ddd",
+            }}
+          />
+        );
+      } else {
+        // Other file types
+        setFilePreviewContent(<p>File: {fileName}</p>);
       }
-    });
+    } catch (error) {
+      console.error("Fehler beim Laden der Datei:", error);
+    }
   };
 
   function useQuery() {
@@ -169,7 +358,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchSearchResults = async () => {
       try {
-        const response = await customFetch("http://localhost:3000/search/", {
+        const response = await customFetch(`${prodconfig.backendUrl}/search/`, {
           method: "POST",
           body: JSON.stringify({ query: searchQueryParam, limit: 10 }),
           headers: { "Content-Type": "application/json" },
@@ -178,8 +367,10 @@ function Dashboard() {
         setResults(data);
         console.log(data);
       } catch (error) {
-        setError("Error occurred while searching. Please try again.");
-        console.error("Search error:", error);
+        setError(
+          "Beim Suchen ist ein Fehler aufgetreten. Bitte versuche es erneut."
+        );
+        console.error("Suchfehler:", error);
       }
     };
 
@@ -190,13 +381,13 @@ function Dashboard() {
 
   console.log("results", results);
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div>Wird geladen...</div>;
 
   return (
     <div>
       {searchQueryParam ? (
         <div>
-          <h3 className="text-xl px-4 pt-2 pb-4 text-black">Search Results</h3>
+          <h3 className="text-xl px-4 pt-2 pb-4 text-black">Suchergebnisse</h3>
           {results.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-black">
@@ -204,21 +395,46 @@ function Dashboard() {
                   <tr className="border-b border-slate-200">
                     <th className="text-left py-2 px-4 text-black">Name</th>
 
-                    <th className="text-left py-2 px-4">Relevance</th>
-                    <th className="text-left py-2 px-4">Actions</th>
+                    <th className="text-left py-2 px-4">Relevanz</th>
+                    <th className="text-left py-2 px-4">Aktionen</th>
                   </tr>
                 </thead>
                 <tbody>
                   {results?.map((file, index) => (
-                    <File file={file} />
+                    <File
+                      file={file}
+                      results={results}
+                      isDeleting={isDeleting}
+                      isDownloading={isDownloading}
+                      handleFilePreview={handleFilePreview}
+                      handleFileDownload={handleFileDownload}
+                      setSelectedDocToRename={setSelectedDocToRename}
+                      handleFileDelete={handleFileDelete}
+                      setResults={setResults}
+                      searchQueryParam={searchQueryParam}
+                    />
                   ))}
                 </tbody>
               </table>
             </div>
           ) : (
             <h3 className="text-[1rem] text-black/50 flex items-center justify-center h-[70vh]">
-              No Results Found :(
+              Suche läuft ...
             </h3>
+          )}
+          {currentlyPreviewedFile && (
+            <div className="my-4 bg-white p-4 rounded-xl shadow-md">
+              <button
+                className="ml-auto flex text-lg border-[1.5px] border-danger bg-danger text-white hover:bg-opacity-90 duration-200 transition-colors p-2 rounded-full mb-2"
+                onClick={() => {
+                  setCurrentlyPreviewedFile(null);
+                  setFilePreviewContent(null);
+                }}
+              >
+                <IoClose />
+              </button>
+              {filePreviewContent}
+            </div>
           )}
         </div>
       ) : (
@@ -235,14 +451,25 @@ function Dashboard() {
           <div className="mt-5"></div>
           {!isFileExplorerView && (
             <div className="flex items-center justify-between py-3">
-              <h3 className="text-lg text-black">All Folders</h3>
+              <h3 className="text-lg text-black">Alle Ordner</h3>
             </div>
           )}
 
           {!isFileExplorerView ? (
             <div className="grid grid-cols-4 gap-2">
-              <div className="border border-black/30 p-3 min-h-[600px]">
+              <div className="min-w-[300px] bg-muted/40 rounded-lg p-4 space-y-2 h-[calc(100vh-14rem)] grid2-scroll-y">
+                {/* Neuer Button zur Ordnererstellung */}
                 <div className="flex flex-col space-y-2">
+                  <div className="flex justify-end mb-2">
+                    <button
+                      onClick={() => handleCreateFolderSwal(null)} // Erstellungsfunktion aufrufen
+                      className="p-2 rounded-full bg-primary text-white hover:bg-primary-dark transition"
+                      title="Neuen Ordner erstellen"
+                      disabled={isCreating}
+                    >
+                      <FaPlus />
+                    </button>
+                  </div>
                   {folders.map((folder) => (
                     <div
                       key={folder.id}
@@ -282,7 +509,7 @@ function Dashboard() {
                 className="bg-white border-lg p-4 flex flex-col gap-1 justify-center items-center rounded-lg hover:opacity-80 border border-transparent hover:border-primary focus:border-primary focus:outline-primary cursor-pointer duration-200 transition-opacity shadow-sm"
               >
                 <FaPlus className="w-full text-primary text-5xl" />
-                <span>New Folder</span>
+                <span>Neuer Ordner</span>
               </li>
             </ul>
           )}

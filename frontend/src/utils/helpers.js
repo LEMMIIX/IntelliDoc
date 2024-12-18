@@ -1,32 +1,7 @@
-/*export function getFolderContent(folderTree, folderId, path = "") {
-  
- const folderContent = folderTree.folderTree.filter(folder => folder.id == folderId)[0]
-
-  return {
-      folderPath: `/${folderContent.name}`,
-      files: folderContent?.files,
-      children: folderContent?.children
-  }
-  /*  for (let folder of folderTree.folderTree) {
-      const currentPath = `${path}/${folder.name}`;
-  
-      if (folder.id == folderId) {
-        return {
-          folderPath: currentPath,
-          files: folder?.files,
-          children: folder?.children,
-        };
-      }*/
-   /*
-      if (folder.children && folder.children.length > 0) {
-        const result = getFolderContent(folder.children, folderId, currentPath);
-        console.log(result);
-        if (result) {
-          return result;
-        }
-      }
-      return null;
-  }*/
+/**
+ * Diese Datei enthält Hilfsfunktionen für die Anwendung, einschließlich `getFolderContent`, `customFetch` und `getPathID`.
+ * @author Farah.
+ */
       export function getFolderContent(folderTree, folderId, path = "") {
         for (let folder of folderTree) {
           const currentPath =` ${path}/${folder.name}`;
@@ -64,7 +39,7 @@
       localStorage.removeItem("currentUserName");
   
       // alert("Please Login in again, votre session is finished.");
-      window.location.href = "/login"; // Redirect to login
+      window.location.href = "/auth/login"; // Redirect to login
     }
   
     return response;

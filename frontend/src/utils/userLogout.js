@@ -1,19 +1,24 @@
-const backendUrl = "http://localhost:3000";
+/**
+ * Die `userLogout`-Funktion führt die Abmeldung eines Benutzers durch und navigiert zur Login-Seite.
+ * @Author Farah.
+ */
+
+import prodconfig from "../production-config";
 
 export async function userLogout(navigate) {
   try {
-    const response = await fetch(backendUrl + "/logout", {
+    const response = await fetch(`${prodconfig.backendUrl}/auth/logout`, {
       method: "POST",
       credentials: "include",
     });
     if (!response.ok) {
-      throw new Error("Can not logout now , try later!");
+      throw new Error("Kann jetzt nicht abmelden, versuche es später!");
     }
     const data = await response.json();
     console.log(data);
     localStorage.removeItem("currentUserId");
     localStorage.removeItem("currentUserName");
-    navigate("/login");
+    navigate("/auth/login");
   } catch (err) {
     console.log(err);
   }

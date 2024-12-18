@@ -1,209 +1,293 @@
-// @Autor Luca Neumann
-const db = require('../../ConnectPostgres');
+/**
+ * Diese Datei enthält Controller-Funktionen für die Verwaltung von Ordnern.
+ * Sie ermöglicht das Abrufen, Erstellen, Umbenennen und Löschen von Ordnern sowie das Abrufen der Ordnerstruktur eines Benutzers.
+ *
+ * @author Luca,Miray
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+const Folder = require("../../database/Folder.js");
+const File = require("../../database/File.js");
+const sequelize = require("../../sequelize.config.js");
+const { Op } = require("sequelize");
+const db = require("../../ConnectPostgres.js");
 
 // Funktion um Ordnerstruktur auszugeben
 exports.getFolderTree = async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ message: 'Unauthorized: User not logged in' });
-    }
+  if (!req.session.userId) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User not logged in" });
+  }
 
-    const userId = parseInt(req.session.userId, 10);
+  const userId = parseInt(req.session.userId, 10);
 
-    if (isNaN(userId)) {
-        return res.status(400).json({ message: 'Invalid user ID' });
-    }
+  if (isNaN(userId)) {
+    return res.status(400).json({ message: "Invalid user ID" });
+  }
 
-    try {
-        const query = `
+  try {
+    // Holen der Ordner mit rekursiver Abfrage
+    const folders = await sequelize.query(
+      `
             WITH RECURSIVE folder_tree AS (
                 SELECT folder_id, parent_folder_id, folder_name, 1 AS level
                 FROM main.folders
-                WHERE user_id = $1 AND parent_folder_id IS NULL
+                WHERE user_id = :userId AND parent_folder_id IS NULL
                 UNION ALL
                 SELECT f.folder_id, f.parent_folder_id, f.folder_name, ft.level + 1
                 FROM main.folders f
                 JOIN folder_tree ft ON f.parent_folder_id = ft.folder_id
-                WHERE f.user_id = $1
+                WHERE f.user_id = :userId
             )
             SELECT ft.*, array_agg(files.file_id || ':' || files.file_name) AS files
             FROM folder_tree ft
-            LEFT JOIN main.files ON files.folder_id = ft.folder_id
-            WHERE files.folder_id IS NOT NULL OR ft.folder_id IS NOT NULL
+            LEFT JOIN main.files files ON files.folder_id = ft.folder_id
             GROUP BY ft.folder_id, ft.parent_folder_id, ft.folder_name, ft.level
             ORDER BY ft.level, ft.folder_name;
-        `;
+            `,
+      {
+        type: sequelize.QueryTypes.SELECT,
+        replacements: { userId },
+      }
+    );
 
-        // Abfrage für Datein die in keinem Ordner liegen
-        const unassignedFilesQuery = `
-            SELECT file_id, file_name
-            FROM main.files
-            WHERE folder_id IS NULL AND user_id = $1
-        `;
-        
-        const [folderResult, unassignedFilesResult] = await Promise.all([
-            db.query(query, [userId]),
-            db.query(unassignedFilesQuery, [userId])
-        ]);
+    // Dateien ohne zugewiesenen Ordner holen
+    const unassignedFiles = await File.findAll({
+      attributes: ["file_id", "file_name"],
+      where: {
+        folder_id: null,
+        user_id: userId,
+      },
+    });
 
-        // Funktion um die Ordnerstruktur zu erstellen
-        const buildTree = (folders, parentId = null) => {
-            return folders
-                .filter(folder => folder.parent_folder_id === parentId)
-                .map(folder => ({
-                    id: folder.folder_id,
-                    name: folder.folder_name,
-                    files: folder.files[0] ? folder.files.map(file => {
-                        const [id, name] = file.split(':');
-                        return { id, name };
-                    }) : [],
-                    children: buildTree(folders, folder.folder_id)
-                }));
-        };
-
-        const folderTree = buildTree(folderResult.rows);
-
-        // Dateien ohne Ordner hinzufügen
-        const unassignedFiles = unassignedFilesResult.rows.map(file => ({
-            id: file.file_id,
-            name: file.file_name
+    // Funktion zum Erstellen der Ordnerstruktur
+    const buildTree = (folders, parentId = null) => {
+      return folders
+        .filter((folder) => folder.parent_folder_id === parentId)
+        .map((folder) => ({
+          id: folder.folder_id,
+          name: folder.folder_name,
+          files: folder.files[0]
+            ? folder.files
+                .filter((file) => file !== null) // Überprüfe, ob der Eintrag nicht null ist
+                .map((file) => {
+                  const [id, name] = file.split(":");
+                  return { id, name };
+                })
+            : [],
+          children: buildTree(folders, folder.folder_id),
         }));
+    };
 
-        res.json({ folderTree, unassignedFiles });
-    } catch (error) {
-        console.error('Error fetching folders:', error);
-        res.status(500).json({ message: 'Error fetching folders' });
-    }
+    const folderTree = buildTree(folders);
+
+    // Unassigned Files hinzufügen
+    const unassignedFilesList = unassignedFiles.map((file) => ({
+      id: file.file_id,
+      name: file.file_name,
+    }));
+
+    res.json({ folderTree, unassignedFiles: unassignedFilesList });
+  } catch (error) {
+    console.error("Error fetching folders:", error);
+    res.status(500).json({ message: "Error fetching folders" });
+  }
 };
 
-
-
 // Funktion zum Erstellen eines neuen Ordners
-const { generateEmbedding } = require('../models/modelEmbedding'); // Importiere die Funktion zum Generieren von Embeddings
+const { generateEmbedding } = require("../models/modelEmbedding"); // Importiere die Funktion zum Generieren von Embeddings
 
 exports.createFolder = async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ message: 'Unauthorized: User not logged in' });
-    }
+  if (!req.session.userId) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User not logged in" });
+  }
 
-    const userId = parseInt(req.session.userId, 10);
-    const { folderName, parentFolderId } = req.body;
+  const userId = parseInt(req.session.userId, 10);
+  const { folderName, parentFolderId } = req.body;
 
-    if (!folderName) {
-        return res.status(400).json({ message: 'Folder name is required' });
-    }
+  if (!folderName) {
+    return res.status(400).json({ message: "Folder name is required" });
+  }
 
-    try {
-        // Falls parentFolderId nicht angegeben oder ungültig ist, auf NULL setzen
-        const parentFolderIdToUse = parentFolderId ? parseInt(parentFolderId, 10) : null;
+  try {
+    // Falls parentFolderId nicht angegeben oder ungültig ist, auf NULL setzen
+    const parentFolderIdToUse = parentFolderId
+      ? parseInt(parentFolderId, 10)
+      : null;
 
-        // Generiere das Embedding für den Ordnernamen
-        const embedding = await generateEmbedding(folderName);
+    // Generiere das Embedding für den Ordnernamen
+    const embedding = await generateEmbedding(folderName);
 
-        // Embedding für Postgres Syntax formatieren
-        const formattedEmbedding = `[${embedding.join(',')}]`;
+    // Erstelle den neuen Ordner mit Sequelize
+    const newFolder = await Folder.create({
+      user_id: userId,
+      folder_name: folderName,
+      parent_folder_id: parentFolderIdToUse,
+      embedding: sequelize.literal(`'[${embedding.join(", ")}]'`),
+    });
 
-        // SQL-Query zum Erstellen des neuen Ordners
-        const query = `
-            INSERT INTO main.folders (user_id, folder_name, parent_folder_id, embedding) 
-            VALUES ($1, $2, $3, $4) RETURNING folder_id
-        `;
-        const values = [userId, folderName, parentFolderIdToUse, formattedEmbedding];
-
-        const result = await db.query(query, values);
-
-        res.status(201).json({ message: 'Folder created successfully', folderId: result.rows[0].folder_id });
-    } catch (error) {
-        console.error('Error creating folder:', error);
-        res.status(500).json({ message: 'Error creating folder' });
-    }
+    res.status(201).json({
+      message: "Folder created successfully",
+      folderId: newFolder.folder_id,
+    });
+  } catch (error) {
+    console.error("Error creating folder:", error);
+    res.status(500).json({ message: "Error creating folder" });
+  }
 };
 
 // Funktion zum Abrufen aller Ordner des Benutzers
 exports.getFolders = async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ message: 'Unauthorized: User not logged in' });
-    }
+  if (!req.session.userId) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User not logged in" });
+  }
 
-    const userId = parseInt(req.session.userId, 10);
+  const userId = parseInt(req.session.userId, 10);
 
-    if (isNaN(userId)) {
-        return res.status(400).json({ message: 'Invalid user ID' });
-    }
+  if (isNaN(userId)) {
+    return res.status(400).json({ message: "Invalid user ID" });
+  }
 
-    try {
-        const query = `
-            SELECT folder_id, folder_name
-            FROM main.folders
-            WHERE user_id = $1 
-        `;
-        const result = await db.query(query, [userId]);
+  try {
+    // Finde alle Ordner für den angemeldeten Benutzer
+    const folders = await Folder.findAll({
+      where: { user_id: userId },
+      attributes: ["folder_id", "folder_name"], // Nur benötigte Attribute abrufen
+    });
 
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error fetching folders:', error);
-        res.status(500).json({ message: 'Error fetching folders' });
-    }
+    // Ergebnisse als JSON zurückgeben
+    res.json(folders);
+  } catch (error) {
+    console.error("Error fetching folders:", error);
+    res.status(500).json({ message: "Error fetching folders" });
+  }
 };
 
 // Funktion zum Löschen eines Ordners und seiner Unterordner inklusive der enthaltenen Datein
 exports.deleteFolder = async (req, res) => {
-    if (!req.session.userId) {
-        return res.status(401).json({ message: 'Unauthorized: User not logged in' });
+  if (!req.session.userId) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User not logged in" });
+  }
+
+  const userId = parseInt(req.session.userId, 10);
+  const folderId = parseInt(req.params.folderId, 10);
+
+  if (isNaN(userId) || isNaN(folderId)) {
+    return res.status(400).json({ message: "Invalid user ID or folder ID" });
+  }
+
+  try {
+    // Überprüfen, ob der Ordner existiert und dem Benutzer gehört
+    const folder = await Folder.findOne({
+      where: {
+        folder_id: folderId,
+        user_id: userId,
+      },
+    });
+
+    if (!folder) {
+      return res
+        .status(404)
+        .json({ message: "Folder not found or not authorized" });
     }
 
-    const userId = parseInt(req.session.userId, 10);
-    const { folderId } = req.params; // Ordner-ID wird als Parameter erwartet
+    // Funktion zum rekursiven Finden von Unterordnern
+    const findAllSubfolders = async (parentId) => {
+      const subfolders = await Folder.findAll({
+        where: { parent_folder_id: parentId, user_id: userId },
+      });
 
-    if (isNaN(userId) || isNaN(folderId)) {
-        return res.status(400).json({ message: 'Invalid user ID or folder ID' });
-    }
+      let allSubfolderIds = subfolders.map((subfolder) => subfolder.folder_id);
 
-    try {
-        // Überprüfen, ob der Ordner existiert und dem Benutzer gehört
-        const checkQuery = `
-            SELECT folder_id FROM main.folders 
-            WHERE folder_id = $1 AND user_id = $2
-        `;
-        const checkResult = await db.query(checkQuery, [folderId, userId]);
+      for (const subfolder of subfolders) {
+        const childSubfolderIds = await findAllSubfolders(subfolder.folder_id);
+        allSubfolderIds = allSubfolderIds.concat(childSubfolderIds);
+      }
 
-        if (checkResult.rows.length === 0) {
-            return res.status(404).json({ message: 'Folder not found or not authorized' });
-        }
+      return allSubfolderIds;
+    };
 
-        // Rekursiv alle Unterordner des Ordners finden und die Datein darin löschen
-        const recursiveDeleteFilesQuery = `
-            WITH RECURSIVE subfolders AS (
-                SELECT folder_id FROM main.folders WHERE folder_id = $1
-                UNION
-                SELECT f.folder_id
-                FROM main.folders f
-                INNER JOIN subfolders sf ON f.parent_folder_id = sf.folder_id
-            )
-            DELETE FROM main.files WHERE folder_id IN (SELECT folder_id FROM subfolders);
-        `;
+    // Finde alle Unterordner-IDs
+    const subfolderIds = await findAllSubfolders(folderId);
+    const folderIdsToDelete = [folderId, ...subfolderIds];
 
-        // Löschen der Dateien in allen Unterordnern
-        await db.query(recursiveDeleteFilesQuery, [folderId]);
+    // Löschen der Dateien in allen Unterordnern
+    await File.destroy({
+      where: {
+        folder_id: {
+          [Op.in]: folderIdsToDelete,
+        },
+      },
+    });
 
-        // Rekursiv alle Unterordner des Ordners löschen
-        const recursiveDeleteFoldersQuery = `
-            WITH RECURSIVE subfolders AS (
-                SELECT folder_id FROM main.folders WHERE folder_id = $1
-                UNION
-                SELECT f.folder_id
-                FROM main.folders f
-                INNER JOIN subfolders sf ON f.parent_folder_id = sf.folder_id
-            )
-            DELETE FROM main.folders WHERE folder_id IN (SELECT folder_id FROM subfolders);
-        `;
+    // Löschen der Unterordner
+    await Folder.destroy({
+      where: {
+        folder_id: {
+          [Op.in]: folderIdsToDelete,
+        },
+      },
+    });
 
-        // Löschen der Unterordner
-        await db.query(recursiveDeleteFoldersQuery, [folderId]);
-
-        res.status(200).json({ message: 'Folder and its subfolders deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting folder and its subfolders:', error);
-        res.status(500).json({ message: 'Error deleting folder and its subfolders' });
-    }
+    res
+      .status(200)
+      .json({ message: "Folder and its subfolders deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting folder and its subfolders:", error);
+    res
+      .status(500)
+      .json({ message: "Error deleting folder and its subfolders" });
+  }
 };
 
+// Funktion zum Umbenennen eines Ordners
+exports.renameFolder = async (req, res) => {
+  if (!req.session.userId) {
+    return res
+      .status(401)
+      .json({ message: "Unauthorized: User not logged in" });
+  }
+
+  const userId = parseInt(req.session.userId, 10);
+  const { folderId, newFolderName } = req.body;
+
+  if (!folderId || !newFolderName) {
+    return res
+      .status(400)
+      .json({ message: "Ordner-ID und neuer Ordnername sind erforderlich." });
+  }
+
+  try {
+    // Find and update the folder using Sequelize
+    const folder = await Folder.findOne({
+      where: {
+        folder_id: folderId,
+        user_id: userId,
+      },
+    });
+
+    if (!folder) {
+      return res
+        .status(404)
+        .json({ message: "Ordner nicht gefunden oder nicht autorisiert." });
+    }
+
+    // Update folder name
+    folder.folder_name = newFolderName;
+    await folder.save();
+
+    res.json({
+      message: "Ordner erfolgreich umbenannt.",
+      folder: folder,
+    });
+  } catch (error) {
+    console.error("Fehler beim Umbenennen des Ordners:", error);
+    res.status(500).json({ message: "Fehler beim Umbenennen des Ordners." });
+  }
+};

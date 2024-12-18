@@ -1,4 +1,11 @@
-// @Autor Luca Neumann, Miray-Eren Kilic
+/**
+ * Diese Datei enthält die Logik für die Verwaltung der Ordnerstruktur.
+ * Sie ermöglicht das Abrufen, Erstellen, Umbenennen und Löschen von Ordnern sowie das Vorschauen und Verwalten von Dateien.
+ *
+ * @autor Luca, Miray, Ilyass
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 document.addEventListener('DOMContentLoaded', async function() {
     const folderTreeDiv = document.getElementById('folderTree');
     const filePreviewDiv = document.getElementById('filePreview');
@@ -77,6 +84,18 @@ document.addEventListener('DOMContentLoaded', async function() {
         folderName.addEventListener('click', () => toggleFolder(folderDiv));
         folderDiv.appendChild(folderName);
 
+        // Löschen-Schaltfläche hinzufügen
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete Folder';
+        deleteBtn.addEventListener('click', () => deleteFolder(folder.id, folder.name));
+        folderDiv.appendChild(deleteBtn);
+
+        // Umbenennen-Schaltfläche hinzufügen
+        const renameBtn = document.createElement('button');
+        renameBtn.textContent = 'Rename Folder';
+        renameBtn.addEventListener('click', () => renameFolder(folder.id, folder.name));
+        folderDiv.appendChild(renameBtn);
+
         const contentDiv = document.createElement('div');
         contentDiv.className = 'folder-contents';
         contentDiv.style.display = 'none';
@@ -149,100 +168,54 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
     
-
-    function createFolderElement(folder) {
-        const folderDiv = document.createElement('div');
-        folderDiv.className = 'folder';
     
-        const folderName = document.createElement('span');
-        folderName.textContent = folder.name;
-        folderName.className = 'folder-toggle';
-        folderName.addEventListener('click', () => toggleFolder(folderDiv));
-        folderDiv.appendChild(folderName);
-    
-        // Löschen-Schaltfläche hinzufügen
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete Folder';
-        deleteBtn.addEventListener('click', () => deleteFolder(folder.id, folder.name));
-        folderDiv.appendChild(deleteBtn);
-    
-        const contentDiv = document.createElement('div');
-        contentDiv.className = 'folder-contents';
-        contentDiv.style.display = 'none';
-    
-        folder.files.forEach(file => {
-            const fileElement = createFileElement(file);
-            contentDiv.appendChild(fileElement);
-        });
-    
-        if (folder.children && folder.children.length > 0) {
-            const childrenContainer = document.createElement('div');
-            renderFolderTree(folder.children, childrenContainer);
-            contentDiv.appendChild(childrenContainer);
-        }
-    
-        folderDiv.appendChild(contentDiv);
-        return folderDiv;
-    }
-    
-
     // @Autor Miray-Eren Kilic
     let currentlyPreviewedFile = null;
 
     async function previewFile(fileName) {
         const filePreview = document.getElementById('filePreview');
     
-        // Überprüfen, ob die Vorschau gerade die Datei anzeigt, auf die geklickt wurde
         if (currentlyPreviewedFile === fileName) {
-            // Vorschau ausblenden, wenn dieselbe Datei erneut geklickt wird
             filePreview.innerHTML = '';
-            filePreview.style.display = 'none'; // Vorschau unsichtbar machen
-            currentlyPreviewedFile = null; // Datei-Tracking zurücksetzen
+            filePreview.style.display = 'none'; 
+            currentlyPreviewedFile = null;
             return;
         }
     
-        // Neue Datei wird angeklickt, also Vorschau aktualisieren
         currentlyPreviewedFile = fileName;
     
         try {
             const fileExtension = fileName.split('.').pop().toLowerCase();
             
             if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
-                // Bildvorschau
                 filePreview.innerHTML = `<img src="/api/docupload/view/${encodeURIComponent(fileName)}" alt="Bildvorschau" style="max-width: 100%; height: auto; display: block; object-fit: contain; width: 500px; height: 300px;">`;
     
             } else if (['pdf'].includes(fileExtension)) {
-                // PDF-Vorschau
                 filePreview.innerHTML = `<iframe src="/api/docupload/view/${encodeURIComponent(fileName)}" frameborder="0" width="100%" height="600px"></iframe>`;
     
             } else if (fileExtension === 'txt') {
-                // Textdatei-Vorschau
                 const response = await fetch(`/api/docupload/view/${encodeURIComponent(fileName)}`);
                 const textContent = await response.text();
                 
-                // Textinhalt in ein div einfügen und Zeilenumbrüche beibehalten
                 filePreview.innerHTML = `
                     <div style="background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
                         ${textContent}
                     </div>
                 `;
             } else if (fileExtension === 'docx') {
-                // DOCX-Vorschau
                 const response = await fetch(`/api/docupload/view/${encodeURIComponent(fileName)}`);
-                const docxContent = await response.text(); // Der Server liefert HTML zurück
+                const docxContent = await response.text(); 
                 
-                // DOCX-Inhalt im HTML-Format anzeigen
                 filePreview.innerHTML = `
                     <div style="background-color: #f4f4f4; padding: 10px; border: 1px solid #ddd;">
                         ${docxContent}
                     </div>
                 `;
             } else {
-                // Vorschau für andere Dateitypen
                 filePreview.innerHTML = `<p>Datei: ${fileName}</p>`;
             }
     
-            filePreview.style.display = 'block'; // Vorschau sichtbar machen
+            filePreview.style.display = 'block'; 
         } catch (error) {
             console.error('Fehler beim Laden der Datei:', error);
         }
@@ -375,7 +348,7 @@ if (createFolderForm) {
         .then(data => {
             //console.log('Response Data:', data);  // Debugging: Überprüfe die Daten, die vom Server zurückgegeben werden
             if (data.folderId) {
-                alert('Folder created successfully');
+                //alert('Folder created successfully');
                 location.reload(); // Seite neu laden, um die neue Ordnerstruktur anzuzeigen
             } else {
                 alert(data.message || 'Error creating folder');
@@ -389,3 +362,30 @@ if (createFolderForm) {
     console.error('Create Folder Form not found');  // Debugging: Fehlerprotokollierung, wenn das Formular nicht gefunden wird
 }
 });
+
+// Ordner umbenennen
+async function renameFolder(folderId, oldFolderName) {
+    const newFolderName = prompt("Geben Sie einen neuen Ordnernamen ein:", oldFolderName);
+    if (newFolderName) {
+        try {
+            const response = await fetch('/api/folders/renameFolder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ folderId, newFolderName })
+            });
+
+            if (!response.ok) {
+                const errorMessage = await response.json();
+                throw new Error(errorMessage.message);
+            }
+            // Erfolgreich umbenannt
+            //alert('Ordner erfolgreich umbenannt');
+            fetchAndRenderFolderTree();  // Ordnerstruktur nach dem Umbenennen aktualisieren
+        } catch (error) {
+            console.error('Fehler beim Umbenennen des Ordners:', error);
+            alert('Fehler: ' + error.message);
+        }
+    }
+}

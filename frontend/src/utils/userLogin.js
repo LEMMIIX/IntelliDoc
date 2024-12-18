@@ -1,33 +1,33 @@
-const backendUrl = "http://localhost:3000";
+/**
+ * Die `userLogin`-Funktion führt die Anmeldung eines Benutzers durch und navigiert nach erfolgreicher Anmeldung zum Dashboard.
+ *@ Author Farah.
+ */
+
+import prodconfig from "../production-config";
+
 export function userLogin(username, password, navigate) {
-  fetch(backendUrl + "/login", {
+  fetch(`${prodconfig.backendUrl}/auth/login`, {
     method: "POST",
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
-
     body: JSON.stringify({ username, password }),
   })
     .then((response) => {
       if (!response.ok) {
-        throw new Error("Login failed");
+        throw new Error("Anmeldung fehlgeschlagengin failed");
       }
       return response.json();
     })
     .then((data) => {
-      console.log("Success:", data);
-
-      alert("Login successful!");
-      // we set an indicator for the current user
       localStorage.setItem("currentUserId", data.userId);
       localStorage.setItem("currentUserName", username);
-
-      // Nutzer an "dashboard.html" weiterleiten
+      localStorage.setItem("isAdmin", data.isAdmin); // Store admin status
       navigate("/dashboard");
     })
     .catch((error) => {
       console.error("Error:", error);
-      alert("Login failed. Please try again.");
+      alert("Anmeldung fehlgeschlagen. Bitte versuche es erneut.");
     });
 }

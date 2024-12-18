@@ -1,20 +1,24 @@
+/**
+ * Die `FolderElement`-Komponente stellt ein einzelnes Ordner-Element dar, das Benutzern erm�glicht, Ordner zu navigieren, umzubenennen und zu l�schen.
+ *@ author Farah. 
+ */
+
 import { useNavigate } from "react-router-dom";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useState, useEffect, useRef } from "react";
 import { customFetch } from "../../utils/helpers";
+import prodconfig from "../../production-config";
 
 function FolderElement({ folderId, folderName, handleFolderDelete }) {
   const navigate = useNavigate();
   const [showFolderOptions, setShowFolderOptions] = useState(false);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [newFolderName, setNewFolderName] = useState("");
+  const [newFolderName, setNewFolderName] = useState(folderName);
   const [isLoading, setIsLoading] = useState(false);
   const [inputError, setInputError] = useState("");
-
+  const [errorMessage, setErrorMessage] = useState("");
   const popupRef = useRef(null);
   const folderOptionsRef = useRef(null); // Reference for folder options
-
-  const BASE_URL = "http://localhost:3000";
 
   const handleRenameFolder = async () => {
     if (inputError != "") {
@@ -23,22 +27,35 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
 
     setIsLoading(true);
     try {
-      const response = await customFetch(`${BASE_URL}/folders/rename`, {
-        method: "POST",
-        body: JSON.stringify({
-          documentId: folderId,
-          newFileName: newFolderName,
-        }),
-      });
-
+      // Sende die Anfrage mit dem richtigen Content-Type
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/renameFolder`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json", // Setze den richtigen Content-Type
+          },
+          body: JSON.stringify({
+            folderId: folderId,
+            newFolderName: newFolderName,
+          }),
+        }
+      );
       if (!response.ok) {
-        throw new Error("Failed to rename folder");
+        throw new Error("Fehler beim Umbenennen des Ordners");
       }
+      // Antwort vom Backend einlesen, falls erfolgreich
+      const data = await response.json();
       setIsPopupVisible(false);
       setIsLoading(false);
-      alert("Folder Name Changed Success!");
+      //alert("Ordnername erfolgreich geändert!");
+      window.location.reload();
     } catch (e) {
       console.log("error: ", e);
+      setErrorMessage(
+        e.message || "Beim Umbenennen des Ordners ist etwas schiefgelaufen."
+      );
       setIsLoading(false);
     }
   };
@@ -49,10 +66,10 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
 
     switch (newFileName) {
       case folderName:
-        setInputError("Please provide a new file name!");
+        setInputError("Bitte gib einen neuen Dateinamen an!");
         break;
       case "":
-        setInputError("No file name provided!");
+        setInputError("Kein Dateiname angegeben!");
         break;
       default:
         setInputError("");
@@ -65,7 +82,7 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
     const handleClickOutside = (event) => {
       if (popupRef.current && !popupRef.current.contains(event.target)) {
         setIsPopupVisible(false);
-        setInputError(""); // Clear error when popup closes
+        +setInputError(""); // Clear error when popup closes
       }
     };
 
@@ -168,17 +185,17 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
               className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger items-center transition-colors duration-200"
               onClick={() => handleFolderDelete(folderId)}
             >
-              Delete
+              Löschen
             </span>
-            {/* <span
+            <span
               className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
               onClick={() => {
                 setIsPopupVisible(true);
                 setShowFolderOptions(false);
               }}
             >
-              Rename
-            </span> */}
+              Umbenennen
+            </span>
           </div>
         )}
       </li>
@@ -188,9 +205,12 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
             className="bg-white rounded-md px-6 shadow-lg max-w-md w-full"
             ref={popupRef} // Reference to detect clicks outside
           >
-            <h2 className="text-lg font-normal py-4 text-left">
-              Rename "{folderName}" to:
+            <h2 className="text-2xl font-semibold	 py-4 text-center text-[hsl(0,0%,33%)]">
+              Ordner umbenennen
             </h2>
+            <h1 className="text-sm font-normal py-4 text-center text-[hsl(0,0%,33%)]">
+              Neuer Ordnername
+            </h1>
             <div>
               <input
                 type="text"
@@ -206,8 +226,13 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
               {inputError && (
                 <span className="text-red-500 text-sm">{inputError}</span>
               )}
+              {errorMessage && (
+                <div className="error-message text-red-500 text-ms">
+                  {errorMessage}
+                </div>
+              )}
             </div>
-            <div className="flex justify-end mt-6 pb-5">
+            <div className="flex justify-center mt-6 pb-5">
               <button
                 onClick={handleRenameFolder}
                 className={`bg-[#436BF5] text-white px-4 py-2 rounded-md hover:bg-[#426AF3] transition duration-200 ease-in-out mr-2 ${
@@ -216,16 +241,16 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
                 }`}
                 disabled={isLoading || inputError}
               >
-                {isLoading ? "Loading..." : "Save"}
+                {isLoading ? "Wird geladen..." : "Speichern"}
               </button>
               <button
                 onClick={() => {
                   setIsPopupVisible(false);
                   setInputError("");
                 }}
-                className="bg-gray-300 px-4 py-2 rounded-sm hover:bg-gray-400 transition duration-200 ease-in-out"
+                className="bg-[#6e7881] text-white px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200 ease-in-out"
               >
-                Cancel
+                Abbrechen
               </button>
             </div>
           </div>

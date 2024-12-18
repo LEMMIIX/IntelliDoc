@@ -1,3 +1,11 @@
+/**
+ * Diese Datei enthält die ContextMenu-Komponente.
+ * Sie ermöglicht die Erstellung eines kontextsensitiven Menüs mit verschiedenen Elementen.
+ *
+ * @autor Farah. 
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import * as React from "react";
 import * as ContextMenuPrimitive from "@radix-ui/react-context-menu";
 

@@ -1,3 +1,8 @@
+/**
+ * Die `Layout`-Komponente definiert das Hauptlayout der Anwendung, einschließlich Header, Sidebar und Hauptinhalt.
+ * @Author Farah. 
+ */
+
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
 import Header from "./Header";

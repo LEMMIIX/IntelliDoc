@@ -1,7 +1,16 @@
+/**
+ * Diese Datei enthält die Signup-Komponente und route.
+ * Sie ermöglicht die Registrierung neuer Benutzer und leitet sie nach erfolgreicher Registrierung weiter.
+ *
+ * @autor Ayoub
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 import { useState } from "react";
 import { userRegister } from "../utils/userRegister";
 import { Link, useNavigate } from "react-router-dom";
-import "../styles/index.css"
+import "../styles/Signup.css"
+import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
 
 function Signup() {
@@ -15,81 +24,89 @@ function Signup() {
   
    // Formularübermittlung behandeln
    const handleSubmit = (e) => {
-      e.preventDefault();
+       e.preventDefault();
+       // Passwortanforderungen im Frontend
+       const passwordMinLength = 8;
+       const passwordRegex = /[A-Z]/; // muss mindestens einen Großbuchstaben enthalten
+       if (password.length < passwordMinLength) { // Überprüfen, ob das Passwort die Mindestlänge erfüllt
+           alert(`Das Passwort muss mindestens ${passwordMinLength} Zeichen lang sein.`);
+           return;
+       }
+       if (!password.match(passwordRegex)) { // Überprüfen, ob das Passwort mindestens einen Großbuchstaben enthält
+           alert("Das Passwort muss mindestens einen Großbuchstaben enthalten.");
+           return;
+       }
+
       if (password !== password2) { // Überprüfen, ob die Passwörter übereinstimmen
          alert("Passwörter stimmen nicht überein!"); // Warnung bei nicht übereinstimmenden Passwörtern
          return;
       }
-      userRegister(username, email, password, navigate); // Aufruf der Funktion userRegister, um den Benutzer zu registrieren
+       userRegister(username, email, password, () => {
+           // Nach erfolgreicher Registrierung den Benutzer zur Verifizierungsseite weiterleiten
+           navigate('/Verification', { state: { email } });
+       }); // Aufruf der Funktion userRegister, um den Benutzer zu registrieren
    };
 
-   return (
-      <main className="login_page">
-         <div className="login_container">
-            <img src="../../../public/intelliDoc.jpeg" className="logo" /> 
-            {/* Logo-Bild */}
-            <Link to='/' className="login_homepage_link">
-               <img src="../../../public/homepage.png" className="homepage_icon" />
-               {/* Startseite-Icon */}
-            </Link>
-            <form className="login_form" onSubmit={handleSubmit}>
-               <div className="login_input_container">
-                  <label htmlFor="username" className="login_input_label">Benutzername:</label>
-                  <input
-                     type="text" // Eingabetyp für den Benutzernamen
-                     name="username" // Name-Attribut des Eingabefelds
-                     className="login_input" // CSS-Klasse für die Gestaltung
-                     value={username} // Bindung des Eingabewerts an den Status
-                     onChange={(e)=>setUsername(e.target.value)} // Aktualisierung des Status bei Änderung der Eingabe
-                     required // Markieren dieses Feldes als erforderlich
-                  />
-               </div>
-               <div className="login_input_container">
-                  <label htmlFor="email" className="login_input_label">E-Mail-Adresse:</label>
-                  <input
-                     type="email" // Eingabetyp für die E-Mail-Adresse
-                     name="email" // Name-Attribut des Eingabefelds
-                     className="login_input" // CSS-Klasse für die Gestaltung
-                     value={email} // Bindung des Eingabewerts an den Status
-                     onChange={(e)=>setEmail(e.target.value)} // Aktualisierung des Status bei Änderung der Eingabe
-                     required // Markieren dieses Feldes als erforderlich
-                  />
-               </div>
-               <div className="login_input_container">
-                  <label htmlFor="password" className="login_input_label">Passwort:</label>
-                  <input
-                     type="password" // Eingabetyp für das Passwort
-                     name="password" // Name-Attribut des Eingabefelds
-                     className="login_input" // CSS-Klasse für die Gestaltung
-                     value={password} // Bindung des Eingabewerts an den Status
-                     onChange={(e)=>setPassword(e.target.value)} // Aktualisierung des Status bei Änderung der Eingabe
-                     required // Markieren dieses Feldes als erforderlich
-                  />
-               </div>
-               <div className="login_input_container">
-                  <label htmlFor="password2" className="login_input_label">Bestätigen Sie Ihr Passwort:</label>
-                  <input
-                     type="password" // Eingabetyp für die Passwortbestätigung
-                     name="password2" // Name-Attribut des Eingabefelds
-                     className="login_input" // CSS-Klasse für die Gestaltung
-                     value={password2} // Bindung des Eingabewerts an den Status
-                     onChange={(e)=>setPassword2(e.target.value)} // Aktualisierung des Status bei Änderung der Eingabe
-                     required // Markieren dieses Feldes als erforderlich
-                  />
-               </div>
-               <button type="submit" className="button">
-                  Registrieren
-               </button>
-               <div className="login_signup_question">
-                  <p>Haben Sie bereits ein Konto?</p>
-                  <Link to='/login'className="text-blue-500"> 
-                     Einloggen
-                  </Link>
-               </div>
-            </form>
-         </div>
-      </main>
-   );
+    return (
+        <>
+        
+            <header className="header">
+                <div className="header-content">
+                    <div className="logo">
+                        <a href="/">
+                            <img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        </a>
+                    </div>
+                </div>
+            </header>
+            {/* Hauptinhalt */}
+        <div className="signup-container">
+            <div className="signup-card">
+                {/* Linke Spalte: Registrierung */}
+                <div className="signup-column">
+                    <h1>Registrieren</h1>
+                    <h3>Bitte alle Felder ausfüllen</h3>
+                    <form onSubmit={handleSubmit}>
+                        
+                        <input
+                            type="text"
+                                placeholder="E-Mail-Adresse"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        <input
+                            type="email"
+                            placeholder="E-Mail-Adresse bestätigen"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <input
+                            type="password"
+                            placeholder="Passwort"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        <input
+                            type="password"
+                            placeholder="Passwort bestätigen"
+                            value={password2}
+                            onChange={(e) => setPassword2(e.target.value)}
+                        />
+                        <button type="submit">Registrieren</button>
+                    </form>
+                </div>
+
+                {/* Rechte Spalte: Login */}
+                <div className="login-column">
+                    <h2>Willkommen zurück!</h2>
+                    <h3>Schön, wieder da zu sein!</h3>
+                    <Link to="/auth/login">Einloggen</Link>
+                </div>
+            </div>
+            
+            </div>
+        </>
+    );
 }
 
 export default Signup;

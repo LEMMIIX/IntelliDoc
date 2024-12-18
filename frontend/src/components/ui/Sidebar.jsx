@@ -1,19 +1,38 @@
+/**
+ * Diese Datei enthält die Sidebar-Komponente.
+ * Sie ermöglicht die Navigation innerhalb der Anwendung und bietet verschiedene Benutzeroptionen.
+ *
+ * @autor Farah, Miray, Lennart
+ * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ */
+
 /* eslint-disable react/prop-types */
 import { NavLink, useLocation, useNavigate, useParams } from "react-router-dom";
 import { FaArrowLeft, FaRegFolder } from "react-icons/fa";
 import Logo from "./Logo";
 import { FiChevronDown, FiPlus } from "react-icons/fi";
 import { useEffect, useState } from "react";
-import { IoLogOutOutline } from "react-icons/io5";
+import {
+  IoConstruct,
+  IoConstructOutline,
+  IoLogOutOutline,
+} from "react-icons/io5";
 import { fetchAndRenderFolderTree } from "../../utils/fetchFoldersTree";
 import { userLogout } from "../../utils/userLogout";
 import { fetchAndRenderFolder } from "../../utils/fetchFoldersTree";
+import Swal from "sweetalert2";
+import { customFetch } from "../../utils/helpers";
+import prodconfig from "../../production-config";
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const userName = localStorage.getItem("currentUserName") || "";
   const [folders, setFolders] = useState([]);
   const [showMenuUpload, setShowMenuUploads] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [profileOptions, setProfileOptions] = useState(false);
+  const [uploadFileHTML, setUploadFileHTML] = useState(
+    '<input class="width: fit" type="file" id="fileInput" class="swal2-input" accept="*/*">'
+  );
 
   const { folderId } = useParams();
   const navigate = useNavigate();
@@ -29,9 +48,212 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         setFolders(folderTree);
       }
     };
-
+  
     fetchFolders();
   }, []);
+  
+
+  useEffect(() => {
+    const checkAdminStatus = async () => {
+      try {
+        const response = await customFetch(
+          `${prodconfig.backendUrl}/api/current-user`,
+          {
+            credentials: "include",
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Überprüfung des Admin-Status:", data); // Debug log
+          setIsAdmin(data.isAdmin);
+        }
+      } catch (error) {
+        console.error("Fehler beim Überprüfen des Admin-Status:", error);
+        setIsAdmin(false);
+      }
+    };
+
+    checkAdminStatus();
+  }, []);
+
+  const userLogout = async () => {
+    try {
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/auth/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
+      if (response.ok) {
+        localStorage.clear(); // Clear all localStorage items
+        navigate("/auth/login");
+      }
+    } catch (error) {
+      console.error("Abmeldung fehlgeschlagen:", error);
+    }
+  };
+
+  const goToAdminDashboard = () => {
+    navigate("/admin"); // Navigate to the Admin Dashboard route
+  };
+
+  const handleUploadFile = async () => {
+    let fileInfo;
+
+    const { value: fileStep } = await Swal.fire({
+      title: "Wähle eine Datei",
+      html: '<input type="file" id="fileInput" class="swal2-input" accept="*/*">',
+      showCancelButton: true,
+      confirmButtonText: "Hochladen",
+      cancelButtonText: "Abbrechen",
+      focusConfirm: false,
+      preConfirm: async () => {
+        const selectedFile = document.getElementById("fileInput").files[0];
+
+        if (!selectedFile) {
+          Swal.showValidationMessage("Bitte wähle eine Datei aus");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+
+        try {
+          const response = await customFetch(
+            `${prodconfig.backendUrl}/docupload/smart`,
+            {
+              method: "POST",
+              body: formData,
+              credentials: "include",
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Fehler beim Hochladen der Datei");
+          }
+
+          const data = await response.json();
+          fileInfo = data; // Extract the folders or data you need
+          return true; // Proceed to the next step
+        } catch (error) {
+          Swal.showValidationMessage(
+            "Datei-Upload fehlgeschlagen. Bitte versuche es erneut."
+          );
+          console.error(error);
+          return false; // Stay on this step
+        }
+      },
+    });
+
+    if (!fileStep) return; // User cancelled
+
+    // Step 2: Send Additional Request
+    const { value: submitStep } = await Swal.fire({
+      title: "Vorgeschlagene Ordner",
+      html: `
+      <style>
+        .swal2-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 20px 0;
+        }
+        .swal2-table th, .swal2-table td {
+          border: 1px solid #ddd;
+          padding: 8px;
+          text-align: left;
+        }
+        .swal2-table th {
+          background-color: #f4f4f4;
+          font-weight: bold;
+        }
+        .swal2-table tr:nth-child(even) {
+          background-color: #f9f9f9;
+        }
+        .swal2-table tr:hover {
+          background-color: #f1f1f1;
+        }
+      </style>
+      <div>
+        <div></div>
+      </div>
+      <table class="swal2-table">
+        <thead>
+          <tr>
+            <th>Ordnername</th>
+            <th>Auswählen</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            fileInfo?.folderSuggestions
+              ?.map(
+                (folder, index) => `
+                  <tr>
+                    <td>${folder.folderName}</td>
+                    <td>
+                     <input type="radio" id="selectedFolder" name="selectedFolder" value="${
+                       folder.folderId
+                     }" ${index === 0 ? "checked" : ""} />
+                    </td>
+                  </tr>
+                `
+              )
+              .join("") ||
+            "<tr><td colspan='2'>Keine Ordner verfügbar</td></tr>"
+          }
+        </tbody>
+      </table>
+    `,
+      showCancelButton: true,
+      confirmButtonText: "Absenden",
+      cancelButtonText: "Abbrechen",
+      preConfirm: async () => {
+        const selectedFolder = document.querySelector(
+          'input[name="selectedFolder"]:checked'
+        );
+        const folderId = selectedFolder?.value;
+
+        if (!selectedFolder) {
+          Swal.showValidationMessage("Bitte wähle einen Ordner aus");
+          return;
+        }
+
+        try {
+          const response = await customFetch(
+            `${prodconfig.backendUrl}/docupload/assign-folder`,
+            {
+              method: "POST",
+              body: JSON.stringify({
+                fileId: String(fileInfo.fileId),
+                folderId,
+              }),
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Fehler beim Hochladen der Datei");
+          }
+
+          // const data = await response.json();
+          return true; // Pass to the final action
+        } catch (e) {
+          return false;
+        }
+      },
+    });
+
+    if (submitStep) {
+      Swal.fire("Erfolg", "Ihre Daten wurden eingereicht!", "success").then(
+        () => {
+          // Optional: Erneut laden oder schließen
+          console.log("Popup geschlossen und Aktion abgeschlossen");
+        }
+      );
+    }
+  };
 
   return (
     <aside className={sidebarClasses}>
@@ -70,12 +292,23 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
           {profileOptions && (
             <ul className="bg-white my-4 rounded-lg p-2 space-y-3">
               <li
-                className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger  items-center transition-colors duration-200"
+                className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger items-center transition-colors duration-200"
                 onClick={() => userLogout(navigate)}
               >
                 <IoLogOutOutline />
                 <span>Abmelden</span>
               </li>
+
+              {/* Only show admin button if user is admin */}
+              {isAdmin && (
+                <li
+                  className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
+                  onClick={() => navigate("/admin")}
+                >
+                  <IoConstructOutline />
+                  <span>Admin Dashboard</span>
+                </li>
+              )}
             </ul>
           )}
 
@@ -84,7 +317,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
             className="btn-gradient px-2 py-2 flex items-center rounded-lg w-full my-4"
             onClick={() => setShowMenuUploads((p) => !p)}
           >
-            <span className="flex-1 border-r-2">Add</span>
+            <span className="flex-1 border-r-2">Hinzufügen</span>
             <FiPlus className="m-1 text-lg" />
           </button>
           {showMenuUpload && (
@@ -105,7 +338,14 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
                     strokeLinejoin="round"
                   />
                 </svg>
-                <span className="text-sm">Upload Folder</span>
+                <span
+                  className="text-sm"
+                  onClick={() => {
+                    handleUploadFile();
+                  }}
+                >
+                  Dokument hochladen
+                </span>
               </li>
             </ul>
           )}
@@ -133,30 +373,3 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
 };
 
 export default Sidebar;
-
-//  <ul className="mb-6 flex flex-col gap-2">
-//    {/* <!-- Menu Item Dashboard --> */}
-//    <li onClick={() => setSidebarOpen(false)}>
-//      <NavLink
-//        to="/dashboard"
-//        className={`relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 hover:text-primary ${
-//          (pathname === "/" || pathname.includes("dashboard")) &&
-//          "bg-graydark dark:bg-meta-4"
-//        }`}
-//      >
-//        <PiSquaresFour className="text-2xl" />
-//        Dashboard
-//      </NavLink>
-//    </li>
-//    <li onClick={() => setSidebarOpen(false)}>
-//      <NavLink
-//        to="/upload"
-//        className={`relative flex items-center gap-2.5 rounded-sm px-4 py-2 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 hover:text-primary ${
-//          pathname === "/upload" && "bg-graydark dark:bg-meta-4"
-//        }`}
-//      >
-//        <FiFile className="text-2xl" />
-//        Upload
-//      </NavLink>
-//    </li>
-//  </ul>;

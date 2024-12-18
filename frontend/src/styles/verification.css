@@ -1,0 +1,110 @@
+/**
+ * Die `verification.css`-Datei enthält Stile für die Verifizierungsseite, einschließlich Container, Eingabefelder, Buttons und Links.
+    @Author Ayoub genauso wie Home.css
+ */
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #ddd;
+    position: fixed; /* Header fixiert oben */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* Sicherstellen, dass der Header oben bleibt */
+}
+
+    .header .header-content {
+        display: flex;
+        align-items: center;
+    }
+
+    .header .logo {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #007bff;
+        margin-left: 20px;
+        height: 50px; /* Optionale Höhe des Logos */
+    }
+
+/* Padding für den Inhalt der Seite, damit der Header den Text nicht überlappt */
+.verification_page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 94vh;
+    background: #eef2f7 !important; /* Hintergrundfarbe sicherstellen */
+    font-family: 'Arial', sans-serif;
+    padding-top: 80px; /* Sicherstellen, dass der Header den Inhalt nicht verdeckt */
+}
+
+
+.verification_container {
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    padding: 30px 40px;
+    width: 400px;
+    text-align: center;
+}
+
+    .verification_container h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #1e3a8a;
+    }
+
+    .verification_container p {
+        margin-bottom: 30px;
+        font-size: 16px;
+        color: #666;
+    }
+
+.verification_input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #d1d5db;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+    .verification_input:focus {
+        border: 1px solid #3b82f6;
+        outline: none;
+        box-shadow: 0px 0px 4px rgba(59, 130, 246, 0.6);
+    }
+
+.verification_button {
+    width: 100%;
+    padding: 10px;
+    background: #1e3a8a;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .verification_button:hover {
+        background: #3b82f6;
+        color: white;
+    }
+
+.verification_link {
+    display: inline-block;
+    margin-top: 15px;
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+    .verification_link:hover {
+        color: #0056b3;
+    }
