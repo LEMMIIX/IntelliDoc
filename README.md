@@ -109,9 +109,9 @@ nano docker-compose.prod.yml
 docker pull ghcr.io/lemmiix/intellidoc:latest
 
 # IntelliDoc starten
-docker-compose -f docker-compose.prod.yml up
+docker compose -f docker-compose.prod.yml up
 
-# ggf. docker-compose -f docker-compose.prod.yml up -d
+# ggf. docker compose -f docker-compose.prod.yml up -d
 # falls der Prozess nicht im Vordergrund laufen und angezeigt werden soll
 ```
 
@@ -125,7 +125,7 @@ IntelliDoc spezifische Container entfernen
 
 ```bash
 # 1. Container und deren zugehörige Volumes stoppen und entfernen
-docker-compose -f docker-compose.prod.yml down -v
+docker compose -f docker-compose.prod.yml down -v
 
 # 2. Das spezifische Image entfernen
 docker rmi ghcr.io/lemmiix/intellidoc:latest
