@@ -31,13 +31,15 @@ RUN apt-get update && apt-get install -y \
     postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
+COPY .env .env
+
 # Environment setup
 ENV VIRTUAL_ENV=/app/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 ENV PIP_CACHE_DIR=/pip_cache
 ENV NODE_ENV=production
 ENV NODE_OPTIONS="--max-old-space-size=1536"
-ENV HF_TOKEN="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"
+ENV HF_TOKEN=${HF_TOKEN}
 
 # Set up directories and Python environment
 RUN python3 -m venv $VIRTUAL_ENV && \
