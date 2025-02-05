@@ -18,7 +18,7 @@ let transporter = null;
 
 function isEmailConfigured() {
    return !!(process.env.GMAIL_USER && 
-       process.env.GMAIL_APP_PASSWORD && 
+       process.env.GMAIL_APP_PASSKEY && 
        process.env.SMTP_HOST && 
        process.env.SMTP_PORT);
 }
@@ -36,7 +36,7 @@ function initializeTransporter() {
            secure: false,
            auth: {
                user: process.env.GMAIL_USER,
-               pass: process.env.GMAIL_APP_PASSWORD
+               pass: process.env.GMAIL_APP_PASSKEY
            }
        });
        console.log('Email transport initialized successfully');
