@@ -104,9 +104,11 @@ nano docker-compose.prod.yml
 
 3. IntelliDoc via Docker installieren und starten
 
+Versionen unter: https://github.com/users/LEMMIIX/packages/container/package/intellidoc
+
 ```bash
 # Das IntelliDoc Docker image ziehen
-docker pull ghcr.io/lemmiix/intellidoc:latest
+docker pull ghcr.io/lemmiix/intellidoc:<VERSION>
 
 # IntelliDoc starten
 docker compose -f docker-compose.prod.yml up
@@ -128,7 +130,7 @@ IntelliDoc spezifische Container entfernen
 docker compose -f docker-compose.prod.yml down -v
 
 # 2. Das spezifische Image entfernen
-docker rmi ghcr.io/lemmiix/intellidoc:latest
+docker rmi ghcr.io/lemmiix/intellidoc:<VERSION>
 
 # 3. Nicht mehr benötigte Volumes manuell entfernen (falls noch vorhanden)
 docker volume rm postgres_data pip_cache venv_data
@@ -218,10 +220,18 @@ WHERE r.role_name = 'admin';
 ## .env
 
 ```env
-VITE_BACKEND_URL=http://public_ip:3000 # public Server IP hier ersetzen
+VITE_BACKEND_URL=http://localhost:3000
+HF_TOKEN=   # huggingface_token (OPTIONAL)
+GMAIL_USER= # host@gmail.com
+GMAIL_APP_PASSKEY= # gmail passkey
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
 ```
 
 ## docker-compose.prod.yml
+
+Zeile `image: ghcr.io/lemmiix/intellidoc:<VERSION>` mit entsprechender Version ersetzen.<br>
+Versionen unter: https://github.com/users/LEMMIIX/packages/container/package/intellidoc
 
 ```yaml
 version: '3.8'
@@ -243,7 +253,7 @@ services:
       - default
 
   backend:
-    image: ghcr.io/lemmiix/intellidoc:latest
+    image: ghcr.io/lemmiix/intellidoc:<VERSION>
     depends_on:
       postgres:
         condition: service_healthy
