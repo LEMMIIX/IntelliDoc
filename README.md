@@ -96,10 +96,10 @@ cd intellidoc
 touch .env
 touch docker-compose.prod.yml
 
-# Dateiinhalt bearbeiten (z.B. mit 'nano')
+# Dateiinhalt bearbeiten (z.B. mit 'vi')
 # Inhalte zum einfügen am Ende des Dokuments
-nano .env
-nano docker-compose.prod.yml
+vi .env
+vi docker-compose.prod.yml
 ```
 
 3. IntelliDoc via Docker installieren und starten
