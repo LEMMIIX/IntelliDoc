@@ -272,6 +272,7 @@ networks:
 volumes:
   postgres_data:
   pip_cache:
+  venv_data:
 ```
 
 ---
