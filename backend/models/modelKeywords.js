@@ -1,9 +1,10 @@
 /**
- * Diese Datei enthält Funktionen zur Initialisierung eines MPNet-Modells und zur Generierung von Schlüsselwörtern aus Text.
- * Sie ermöglicht das Laden des Modells aus dem lokalen Speicher und die Berechnung von Ähnlichkeiten zwischen Text- und Wort-Embeddings.
- *
- * @autor Ayoub, Lennart
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @fileoverview Diese Datei enthält Funktionen zur Initialisierung eines MPNet-Modells 
+ * und zur Generierung von Schlüsselwörtern aus Text. Sie ermöglicht das Laden des Modells 
+ * aus dem lokalen Speicher und die Berechnung von Ähnlichkeiten zwischen Text- und Wort-Embeddings.
+ * 
+ * @author Ayoub, Lennart
+ * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
  */
 
 const path = require('path');
@@ -13,6 +14,14 @@ let model;
 let pipeline;
 let env;
 
+/**
+ * Initialisiert das MPNet-Modell zur Extraktion von Schlüsselwörtern, falls es nicht bereits geladen wurde.
+ * 
+ * @async
+ * @function initModel
+ * @returns {Promise<Object>} Das initialisierte Modell.
+ * @throws {Error} Falls das Modell nicht gefunden oder nicht geladen werden kann.
+ */
 async function initModel() {
     if (!model) {
         console.log('Initializing MPNet model for keywords...');
@@ -23,7 +32,7 @@ async function initModel() {
 
             const baseModelPath = path.join(process.cwd(), 'node_modules', '@xenova', 'transformers', 'models');
             const modelName = 'Xenova/all-mpnet-base-v2';
-            
+
             env.localModelPath = baseModelPath;
             env.cacheDir = baseModelPath;
             env.allowRemoteModels = false;
@@ -56,18 +65,31 @@ async function initModel() {
     return model;
 }
 
+/**
+ * Generiert Schlüsselwörter aus einem gegebenen Text mithilfe eines MPNet-Embeddings.
+ * 
+ * @async
+ * @function generateKeywords
+ * @param {string} text - Der Eingabetext, aus dem Schlüsselwörter extrahiert werden.
+ * @param {number} [maxKeywords=2] - Die maximale Anzahl an zurückgegebenen Schlüsselwörtern.
+ * @returns {Promise<string[]>} Eine Liste der extrahierten Schlüsselwörter.
+ * @throws {Error} Falls das Modell nicht geladen werden kann oder ein Fehler während der Berechnung auftritt.
+ * @example
+ * const keywords = await generateKeywords("Dies ist ein Beispieltext für KI-gestützte Analyse.", 3);
+ * console.log(keywords); // ["Analyse", "Beispieltext", "KI"]
+ */
 async function generateKeywords(text, maxKeywords = 2) {
     const startTime = performance.now();
     console.log('Starting keyword generation...');
 
     try {
         await initModel();
-        
+
         // Text in Wörter aufteilen und Duplikate/kurze Wörter entfernen
         const words = [...new Set(text.toLowerCase()
             .match(/\b\w+\b/g)
             ?.filter(word => word.length > 3) || [])];
-        
+
         if (words.length === 0) {
             return [];
         }
@@ -112,6 +134,17 @@ async function generateKeywords(text, maxKeywords = 2) {
     }
 }
 
+/**
+ * Berechnet die Kosinusähnlichkeit zwischen zwei Vektoren.
+ * 
+ * @function calculateCosineSimilarity
+ * @param {number[]} vec1 - Der erste Vektor.
+ * @param {number[]} vec2 - Der zweite Vektor.
+ * @returns {number} Ein Wert zwischen -1 und 1, der die Ähnlichkeit der beiden Vektoren beschreibt.
+ * @example
+ * const similarity = calculateCosineSimilarity([0.1, 0.2, 0.3], [0.1, 0.25, 0.35]);
+ * console.log(similarity);
+ */
 function calculateCosineSimilarity(vec1, vec2) {
     const dotProduct = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
     const norm1 = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));

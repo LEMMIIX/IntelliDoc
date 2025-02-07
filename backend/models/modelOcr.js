@@ -1,9 +1,9 @@
 /**
- * Diese Datei enthält Funktionen zur Durchführung von OCR auf Bildern.
+ * @fileoverview Diese Datei enthält Funktionen zur Durchführung von OCR auf Bildern.
  * Sie ermöglicht die Vorverarbeitung von Bildern und die Texterkennung mithilfe von Tesseract.js.
- *
- * @autor Ilyass 
- * Mithilfe von Tesseract.js und Github-Copilot
+ * 
+ * @author Ilyass
+ * Mithilfe von Tesseract.js und Github-Copilot.
  */
 
 const path = require('path');
@@ -17,6 +17,18 @@ try {
     console.warn('Failed to load Jimp. Falling back to basic image processing.');
 }
 
+/**
+ * Führt eine Vorverarbeitung des Bildes durch, um die Texterkennung zu verbessern.
+ * Falls Jimp nicht verfügbar ist, wird das Originalbild ohne Verarbeitung zurückgegeben.
+ * 
+ * @async
+ * @function preprocessImage
+ * @param {Buffer} imageBuffer - Der Bildpuffer, der verarbeitet werden soll.
+ * @returns {Promise<Buffer>} Der vorverarbeitete Bildpuffer oder das Originalbild, falls Jimp nicht verfügbar ist.
+ * @throws {Error} Falls ein Fehler während der Verarbeitung auftritt.
+ * @example
+ * const processedImage = await preprocessImage(imageBuffer);
+ */
 async function preprocessImage(imageBuffer) {
     try {
         if (Jimp && typeof Jimp.read === 'function') {
@@ -38,6 +50,24 @@ async function preprocessImage(imageBuffer) {
     }
 }
 
+/**
+ * Führt OCR auf einem Bild durch und extrahiert den enthaltenen Text mithilfe von Tesseract.js.
+ * 
+ * @async
+ * @function performOCR
+ * @param {Buffer} imageBuffer - Der Bildpuffer, aus dem der Text extrahiert werden soll.
+ * @param {string} filename - Der Name der Datei (für Logging-Zwecke).
+ * @returns {Promise<{ success: boolean, text?: string, error?: string }>} 
+ * Ein Objekt mit dem erkannten Text oder einer Fehlermeldung.
+ * @throws {Error} Falls ein Fehler bei der OCR-Erkennung auftritt.
+ * @example
+ * const result = await performOCR(imageBuffer, 'document.png');
+ * if (result.success) {
+ *     console.log('Extrahierter Text:', result.text);
+ * } else {
+ *     console.error('Fehler:', result.error);
+ * }
+ */
 async function performOCR(imageBuffer, filename) {
     console.log('Starting OCR process for:', filename);
     try {
@@ -54,7 +84,7 @@ async function performOCR(imageBuffer, filename) {
             preserve_interword_spaces: '1',
             tessedit_char_whitelist: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzÄÖÜäöüß0123456789.,!?()-:;"\' ',
         });
-        
+
         console.log('OCR completed. Extracted text length:', text.length);
 
         // Post-process the text
