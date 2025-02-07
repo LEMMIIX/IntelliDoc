@@ -1,8 +1,15 @@
 /**
  * Diese Datei initialisiert und konfiguriert den Server, einschließlich Middleware, Routen, Datenbankverbindungen und Sicherheitskonfigurationen für eine vollständige Backend-Anwendung.
- *
+ * 
+ * @file app.js - Express Server Hauptanwendung
  * @author Farah, Ayoub, Luca, Miray, Ilyass, Lennart
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @copyright 2024
+ * @requires cors
+ * @requires express
+ * @requires body-parser
+ * @requires /app.js
+ * @requires express-session
+ * @requires ./sequelize.config
  */
 
 const cors = require("cors");
@@ -32,7 +39,14 @@ const UserRoleMapping = require("./database/UserRoleMapping");
 
 const PORT = process.env.PORT || 3000;
 
-// Middleware Configuration
+/**
+ * CORS-Konfiguration
+ * @name CORSConfiguration
+ * @memberof module:middleware
+ * @property {string} origin - Erlaubte Origin für CORS
+ * @property {string[]} methods - Erlaubte HTTP-Methoden
+ * @property {boolean} credentials - Erlaubt Credentials in CORS-Requests
+ */
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -50,9 +64,23 @@ app.use((req, res, next) => {
   next();
 });
 
+/**
+ * Body-Parser Konfiguration für JSON-Verarbeitung
+ * @name BodyParserConfiguration
+ * @memberof module:middleware
+ */
 app.use(express.json());
 
-// Session Configuration
+/**
+ * Session-Konfiguration für Express
+ * @name SessionConfiguration
+ * @memberof module:middleware
+ * @property {string} name - Name der Session-ID
+ * @property {string} secret - Geheimer Schlüssel für Session-Verschlüsselung
+ * @property {boolean} resave - Verhindert das Neu-Speichern unmodifizierter Sessions
+ * @property {boolean} saveUninitialized - Verhindert Speichern nicht initialisierter Sessions
+ * @property {Object} cookie - Cookie-Konfigurationen
+ */
 app.use(
   session({
     name: "userId",
@@ -68,7 +96,23 @@ app.use(
   })
 );
 
-// Database Setup
+/**
+ * Modell-Beziehungsdefinitionen
+ * @namespace ModelRelationships
+ * @description Definiert die Beziehungen zwischen den Datenbank-Modellen
+ * @property {Object} User.hasMany.Folder - Ein-zu-viele Beziehung zwischen User und Folder
+ * @property {Object} Folder.belongsTo.User - Viele-zu-eins Beziehung zwischen Folder und User
+ * @property {Object} Folder.hasMany.Folder - Selbstreferenzierende Beziehung für Unterordner
+ * @property {Object} User.hasMany.File - Ein-zu-viele Beziehung zwischen User und File
+ * @property {Object} Folder.hasMany.File - Ein-zu-viele Beziehung zwischen Folder und File
+ * @property {Object} UserRoleMapping - Verknüpfungstabelle zwischen User und UserRole
+ * 
+ * Datenbank-Initialisierung und Beziehungsdefinition zwischen Models
+ * @name DatabaseSetup
+ * @async
+ * @function
+ * @throws {Error} Wenn die Datenbankverbindung oder Synchronisation fehlschlägt
+ */
 (async () => {
   try {
     await sequelize.authenticate();
@@ -100,7 +144,14 @@ app.use(
   }
 })();
 
-// Authentication Middleware
+/**
+ * Authentifizierungs-Middleware zur Überprüfung der Benutzeranmeldung
+ * @function authenticateMiddleware
+ * @param {express.Request} req - Express Request Objekt
+ * @param {express.Response} res - Express Response Objekt
+ * @param {express.NextFunction} next - Express Next Middleware Funktion
+ * @returns {void}
+ */
 const authenticateMiddleware = (req, res, next) => {
   if (req.session.userId) {
     next();
@@ -111,6 +162,14 @@ const authenticateMiddleware = (req, res, next) => {
 
 app.use('/api/admin', adminRoutes);
 
+/**
+ * Route zum Abrufen des Admin-Status
+ * @name get/api/admin/status
+ * @function
+ * @memberof module:routes
+ * @param {express.Request} req - Express Request Objekt
+ * @param {express.Response} res - Express Response Objekt
+ */
 app.get("/api/admin/status", (req, res) => {
   if (req.session.isAdmin) {
     res.json({ isAdmin: true });
@@ -119,6 +178,14 @@ app.get("/api/admin/status", (req, res) => {
   }
 });
 
+/**
+ * Route zum Abrufen der aktuellen Benutzerinformationen
+ * @name get/api/current-user
+ * @function
+ * @param {express.Request} req - Express Request Objekt
+ * @param {express.Response} res - Express Response Objekt
+ * @returns {Object} Objekt mit userId und isAdmin Status
+ */
 app.get("/api/current-user", authenticateMiddleware, (req, res) => {
   res.json({
     userId: req.session.userId,
@@ -126,7 +193,15 @@ app.get("/api/current-user", authenticateMiddleware, (req, res) => {
   });
 });
 
-// Registration Route
+/**
+ * Registrierungsroute für neue Benutzer
+ * @name post/register
+ * @function
+ * @async
+ * @param {express.Request} req - Express Request Objekt mit username, email und password im Body
+ * @param {express.Response} res - Express Response Objekt
+ * @throws {Error} Wenn die Registrierung fehlschlägt
+ */
 app.post("/register", async (req, res) => {
   console.log("Received registration request:", req.body);
   const { username, email, password } = req.body;
@@ -155,7 +230,15 @@ app.post("/register", async (req, res) => {
   }
 });
 
-/// verify code
+/**
+ * Verifizierungsroute für Benutzer-Codes
+ * @name post/api/verify-code
+ * @function
+ * @async
+ * @param {express.Request} req - Express Request Objekt mit email und verificationCode im Body
+ * @param {express.Response} res - Express Response Objekt
+ * @throws {Error} Wenn die Verifizierung fehlschlägt
+ */
 app.post('/api/verify-code', async (req, res) => {
     const { email, verificationCode } = req.body;
 
@@ -188,12 +271,25 @@ app.use('/monitor', monitorRoutes);
 
 app.use(express.static(path.join(__dirname, "frontend", "dist")));
 
+/**
+ * Catch-all Route für Client-seitiges Routing
+ * @name get/*
+ * @function
+ * @param {express.Request} req - Express Request Objekt
+ * @param {express.Response} res - Express Response Objekt
+ */
 app.get("*", (req, res) => {
   console.log(`Catch-All Route hit: ${req.url}`);
   res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
 });
 
-// Start Server
+/**
+ * Server-Start Konfiguration
+ * @name ServerStart
+ * @function
+ * @param {number} PORT - Der Port auf dem der Server läuft
+ * @listens {number} PORT
+ */
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
