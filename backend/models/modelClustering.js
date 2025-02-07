@@ -5,6 +5,7 @@
  * 
  * @author Lennart
  * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module modelClustering
  */
 
 

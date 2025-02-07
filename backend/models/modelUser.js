@@ -3,6 +3,7 @@
  * Sie ermöglicht die Erstellung und Validierung von Benutzerobjekten.
  * 
  * @author Ayoub
+ * @module modelUser
  */
 
 /**

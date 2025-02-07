@@ -5,6 +5,7 @@
  * 
  * @author Ayoub, Lennart
  * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module modelKeywords
  */
 
 const path = require('path');

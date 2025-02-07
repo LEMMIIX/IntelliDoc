@@ -5,6 +5,7 @@
  * 
  * @author Lennart, Miray
  * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module modelSemanticSearch
  */
 
 const { generateEmbedding } = require('./modelEmbedding');

@@ -4,6 +4,7 @@
  * 
  * @author Miray
  * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module modelFileReader
  */
 
 const { PythonShell } = require('python-shell');

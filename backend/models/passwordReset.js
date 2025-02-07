@@ -4,6 +4,7 @@
  * 
  * @author Ayoub
  * Der `verificationKey` basiert auf einer Lösung von StackOverflow.
+ * @module passwordReset
  */
 
 

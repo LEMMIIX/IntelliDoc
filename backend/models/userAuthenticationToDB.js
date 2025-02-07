@@ -3,6 +3,7 @@
  * Sie ermöglicht die Überprüfung von E-Mail und Passwort-Hash gegen die Datenbank.
  * 
  * @author Ayoub
+ * @module userAuthenticationToDB
  */
 
 const bcrypt = require('bcrypt');

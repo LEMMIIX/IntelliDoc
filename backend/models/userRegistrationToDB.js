@@ -5,6 +5,7 @@
  * 
  * @author Ayoub
  * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module userRegistrationToDB
  */
 
 const bcrypt = require('bcrypt');

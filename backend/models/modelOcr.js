@@ -4,6 +4,7 @@
  * 
  * @author Ilyass
  * Mithilfe von Tesseract.js und Github-Copilot.
+ * @module modelOcr
  */
 
 const path = require('path');

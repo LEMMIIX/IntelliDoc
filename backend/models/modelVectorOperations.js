@@ -4,6 +4,7 @@
  * 
  * @author Lennart, Miray
  * Die Funktionen wurden mit Unterstützung von KI vorgeneriert und angepasst.
+ * @module modelVectorOperations
  */
 
 const { performance } = require('perf_hooks');

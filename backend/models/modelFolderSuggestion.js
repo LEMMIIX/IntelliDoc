@@ -5,6 +5,7 @@
  * 
  * @author Lennart, Luca
  * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module modelFolderSuggestion
  */
 
 const { performance } = require('perf_hooks');

@@ -3,6 +3,7 @@
  * Diese Datei stellt sicher, dass nur Benutzer mit Admin-Rechten auf bestimmte Routen zugreifen können.
  * 
  * @author Miray
+ * @module modelAdmin
  */
 
 const User = require('../../database/User');
