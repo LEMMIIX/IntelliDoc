@@ -1,9 +1,14 @@
 ﻿/**
- * Diese Datei enthält die Setpassword-Komponente.
- * Sie ermöglicht das Zurücksetzen des Passworts eines Benutzers nach Eingabe eines Verifizierungscodes.
- *
- * @autor Ayoub
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @file Setpassword.jsx - Passwort-Reset-Komponente
+ * @author Ayoub
+ * @description Komponente zum Zurücksetzen des Benutzerpassworts nach 
+ * Verifizierung durch einen per E-Mail zugesendeten Code.
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires ../production-config
+ * @requires ../styles/setpassword.css
+ * @requires ../assets/intellidoc_logo.webp
  */
 
 import React, { useState } from 'react';
@@ -12,6 +17,21 @@ import prodconfig from "../production-config";
 import '../styles/setpassword.css';
 import intellidoc_logo from '../assets/intellidoc_logo.webp';
 
+/**
+ * @typedef {Object} SetPasswordState
+ * @property {string} email - E-Mail-Adresse des Benutzers
+ * @property {string} verificationcode - Verifizierungscode aus der E-Mail
+ * @property {string} newPassword - Neues Passwort des Benutzers
+ * @property {string} message - Statusnachricht für den Benutzer
+ */
+
+/**
+ * @component Setpassword
+ * @description Komponente zur Eingabe eines neuen Passworts nach erfolgreicher
+ * Verifizierung. Ermöglicht die Eingabe von E-Mail, Verifizierungscode und neuem Passwort.
+ * 
+ * @returns {JSX.Element} Die gerenderte Setpassword-Komponente
+ */
 function Setpassword() {
     const [email, setEmail] = useState('');
     const [verificationcode, setVerificationKey] = useState('');
@@ -20,6 +40,14 @@ function Setpassword() {
     const navigate = useNavigate();
 
     // Handle form submission
+    /**
+ * @function handleSubmit
+ * @description Verarbeitet die Formular-Übermittlung für das Setzen des neuen Passworts
+ * @async
+ * @param {Event} event - Das Submit-Event des Formulars
+ * @throws {Error} Wenn die Server-Anfrage fehlschlägt
+ * @returns {Promise<void>}
+ */
     const handleSubmit = async (event) => {
         event.preventDefault();
         const data = { email, verificationcode, newPassword };

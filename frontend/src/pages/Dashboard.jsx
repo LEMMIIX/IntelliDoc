@@ -1,9 +1,13 @@
 /**
- * Diese Datei enthält die Dashboard-Komponente.
- * Sie stellt die Hauptseite des Dashboards dar, auf der Benutzer Ordner und Dateien verwalten können.
- *
- * @autor Farah. 
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @file Dashboard.jsx - Dashboard-Hauptkomponente
+ * @author Farah
+ * @description Diese Komponente stellt die Hauptseite des Dashboards dar, auf der Benutzer Ordner und Dateien verwalten können.
+ * 
+ * @requires react
+ * @requires ../utils/fetchFoldersTree
+ * @requires react-router-dom
+ * @requires react-icons/fa6
+ * @requires sweetalert2
  */
 
 import { useEffect, useState, useMemo } from "react";
@@ -23,6 +27,25 @@ import { IoClose } from "react-icons/io5";
 import prodconfig from "../production-config";
 
 // this is the dashboard homepage
+/**
+ * @component Dashboard
+ * @description Hauptkomponente für die Dashboard-Ansicht
+ * @returns {JSX.Element} Dashboard-Komponente mit Ordner- und Dateiverwaltung
+ */
+/**
+ * State-Definitionen
+ * @type {Object}
+ * @property {Array} folders - Liste aller Ordner
+ * @property {boolean} isLoading - Ladezustand
+ * @property {boolean} createNewFolder - Status des Ordner-Erstellungsdialogs
+ * @property {number|null} editingFolderId - ID des bearbeiteten Ordners
+ * @property {Array} results - Suchergebnisse
+ * @property {boolean} isCreating - Status der Ordnererstellung
+ * @property {boolean} isDeleting - Status des Löschvorgangs
+ * @property {boolean} isDownloading - Status des Downloads
+ * @property {Object} contextMenu - Position und Status des Kontextmenüs
+ * @property {boolean} isFileExplorerView - Aktuelle Ansichtsart
+ */
 function Dashboard() {
   const [folders, setFolders] = useState([]);
   const [isLoading, setLoading] = useState(false);
@@ -67,6 +90,13 @@ function Dashboard() {
 
     fetchFolders();
   }, []);
+
+  /**
+ * @function handleCreateFolderSwal
+ * @async
+ * @param {number} id - Optional: ID des übergeordneten Ordners
+ * @description Öffnet einen SweetAlert2-Dialog zur Erstellung eines neuen Ordners
+ */
   const handleCreateFolderSwal = async (id) => {
     const { value: folderName } = await Swal.fire({
       title: "Neuen Ordner erstellen",
@@ -88,6 +118,13 @@ function Dashboard() {
     }
   };
 
+  /**
+ * @function createFolder
+ * @async
+ * @param {string} folderName - Name des zu erstellenden Ordners
+ * @param {number} id - Optional: ID des übergeordneten Ordners
+ * @description Erstellt einen neuen Ordner über die API
+ */
   const createFolder = async (folderName, id) => {
     setIsCreating(true);
     try {
@@ -125,6 +162,13 @@ function Dashboard() {
       setIsCreating(false);
     }
   };
+
+  /**
+ * @function handleFileDownload
+ * @async
+ * @param {string} fileName - Name der herunterzuladenden Datei
+ * @description Lädt eine Datei über die API herunter
+ */
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
@@ -155,6 +199,13 @@ function Dashboard() {
       console.error("Download-Fehler:", error);
     }
   };
+
+  /**
+ * @function handleFileDelete
+ * @async
+ * @param {number} fileId - ID der zu löschenden Datei
+ * @description Löscht eine Datei nach Bestätigung
+ */
   const handleFileDelete = async (fileId) => {
     if (
       window.confirm("Bist du sicher, dass du diese Datei löschen möchtest?")
@@ -186,7 +237,15 @@ function Dashboard() {
       }
     }
   };
+
   // console.log(JSON.parse(localStorage.getItem("isFileExplorerView")));
+
+  /**
+ * @function handleFolderDelete
+ * @async
+ * @param {number} folderId - ID des zu löschenden Ordners
+ * @description Löscht einen Ordner und seinen Inhalt nach Bestätigung
+ */
   const handleFolderDelete = async (folderId) => {
     if (confirm("Bist du sicher, dass du diesen Ordner löschen möchtest?")) {
       setIsDeleting(true);
@@ -229,6 +288,10 @@ function Dashboard() {
     }
   };
 
+  /**
+ * @function toggleView
+ * @description Wechselt zwischen Listen- und Kachelansicht
+ */
   const toggleView = () => {
     setIsFileExplorerView((prev) => {
       const newValue = !prev;
@@ -238,6 +301,12 @@ function Dashboard() {
   };
 
   // Function to handle right-click (context menu)
+  /**
+ * @function handleContextMenu
+ * @param {Event} event - Das auslösende Event
+ * @param {Object} folder - Der Ordner, für den das Kontextmenü geöffnet wird
+ * @description Verarbeitet Rechtsklick-Events für das Kontextmenü
+ */
   const handleContextMenu = (event, folder) => {
     event.preventDefault(); // Prevent default right-click menu
     const rect = event.currentTarget.getBoundingClientRect(); // Get the folder's position
@@ -254,6 +323,12 @@ function Dashboard() {
     setContextMenu({ visible: false, folderId: null, x: 0, y: 0 });
   };
 
+  /**
+ * @function handleFilePreview
+ * @async
+ * @param {string} fileName - Name der anzuzeigenden Datei
+ * @description Zeigt eine Vorschau der ausgewählten Datei an
+ */
   const handleFilePreview = async (fileName) => {
     // Überprüfen, ob die Vorschau gerade die Datei anzeigt, auf die geklickt wurde
     if (currentlyPreviewedFile === fileName) {
@@ -344,6 +419,11 @@ function Dashboard() {
     }
   };
 
+  /**
+ * @function useQuery
+ * @returns {URLSearchParams} Aktuelle URL-Suchparameter
+ * @description Custom Hook für URL-Suchparameter
+ */
   function useQuery() {
     const { search } = useLocation();
 

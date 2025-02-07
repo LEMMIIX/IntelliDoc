@@ -1,6 +1,14 @@
 /**
- * Die `FolderElement`-Komponente stellt ein einzelnes Ordner-Element dar, das Benutzern erm�glicht, Ordner zu navigieren, umzubenennen und zu l�schen.
- *@ author Farah. 
+ * @file FolderElement.jsx - Ordner-Element-Komponente
+ * @author Farah
+ * @description Komponente zur Darstellung und Verwaltung eines einzelnen Ordners
+ * mit Optionen zum Navigieren, Umbenennen und Löschen
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires react-icons/bs
+ * @requires ../../utils/helpers
+ * @requires ../../production-config
  */
 
 import { useNavigate } from "react-router-dom";
@@ -9,6 +17,27 @@ import { useState, useEffect, useRef } from "react";
 import { customFetch } from "../../utils/helpers";
 import prodconfig from "../../production-config";
 
+/**
+ * @typedef {Object} FolderElementState
+ * @property {boolean} showFolderOptions - Steuert die Anzeige des Optionsmenüs
+ * @property {boolean} isPopupVisible - Steuert die Anzeige des Umbenennen-Popups
+ * @property {string} newFolderName - Neuer Name für den Ordner
+ * @property {boolean} isLoading - Status des Umbenennungsvorgangs
+ * @property {string} inputError - Validierungsfehler für die Eingabe
+ * @property {string} errorMessage - Allgemeine Fehlermeldungen
+ */
+
+/**
+ * @component FolderElement
+ * @description Rendert ein einzelnes Ordner-Element mit Interaktionsmöglichkeiten
+ * 
+ * @param {Object} props - Komponenten-Props
+ * @param {string|number} props.folderId - Eindeutige ID des Ordners
+ * @param {string} props.folderName - Name des Ordners
+ * @param {Function} props.handleFolderDelete - Callback für das Löschen des Ordners
+ * 
+ * @returns {JSX.Element} Die gerenderte FolderElement-Komponente
+ */
 function FolderElement({ folderId, folderName, handleFolderDelete }) {
   const navigate = useNavigate();
   const [showFolderOptions, setShowFolderOptions] = useState(false);
@@ -20,6 +49,13 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
   const popupRef = useRef(null);
   const folderOptionsRef = useRef(null); // Reference for folder options
 
+  /**
+ * @function handleRenameFolder
+ * @async
+ * @description Verarbeitet die Umbenennung eines Ordners
+ * @throws {Error} Bei fehlgeschlagener Server-Anfrage
+ * @returns {Promise<void>}
+ */
   const handleRenameFolder = async () => {
     if (inputError != "") {
       return;
@@ -60,6 +96,12 @@ function FolderElement({ folderId, folderName, handleFolderDelete }) {
     }
   };
 
+  /**
+ * @function handleRenameFolderInput
+ * @description Validiert die Eingabe beim Umbenennen eines Ordners
+ * @param {Event} e - Das Change-Event des Eingabefelds
+ * @returns {void}
+ */
   const handleRenameFolderInput = (e) => {
     let newFileName = e.target.value;
     setNewFolderName(newFileName);

@@ -1,6 +1,12 @@
 /**
- * Die `CreateFolderForm`-Komponente ermöglicht das Erstellen eines neuen Ordners innerhalb eines übergeordneten Ordners.
- * @Author Farah
+ * @file CreateFolder.jsx - Ordnererstellungs-Komponente
+ * @author Farah
+ * @description Komponente zur Erstellung neuer Ordner innerhalb einer bestehenden Ordnerstruktur
+ * 
+ * @requires react
+ * @requires react-icons/fa
+ * @requires ../../utils/helpers
+ * @requires ../../production-config
  */
 
 /* eslint-disable react/prop-types */
@@ -9,6 +15,22 @@ import { FaFolder } from "react-icons/fa";
 import { customFetch } from "../../utils/helpers";
 import prodconfig from "../../production-config";
 
+/**
+ * @typedef {Object} CreateFolderState
+ * @property {boolean} isCreating - Status des Erstellungsvorgangs
+ * @property {string} folderName - Name des zu erstellenden Ordners
+ * @property {string} message - Statusnachricht für den Benutzer
+ */
+
+/**
+ * @component CreateFolderForm
+ * @description Formular-Komponente zum Erstellen eines neuen Ordners
+ * 
+ * @param {Object} props - Komponenten-Props
+ * @param {string|number} props.parentFolderId - ID des übergeordneten Ordners
+ * 
+ * @returns {JSX.Element} Die gerenderte CreateFolderForm-Komponente
+ */
 const CreateFolderForm = ({ parentFolderId }) => {
   console.log("parentFolderId", parentFolderId);
   const [isCreating, setIsCreating] = useState(false);
@@ -17,6 +39,15 @@ const CreateFolderForm = ({ parentFolderId }) => {
 
   const [message, setMessage] = useState("");
 
+  /**
+ * @function handleCreateFolder
+ * @async
+ * @description Verarbeitet die Formular-Übermittlung zum Erstellen eines neuen Ordners
+ * 
+ * @param {Event} e - Das Submit-Event des Formulars
+ * @throws {Error} Bei fehlgeschlagener Server-Anfrage
+ * @returns {Promise<void>}
+ */
   const handleCreateFolder = async (e) => {
     e.preventDefault();
     setIsCreating(true);

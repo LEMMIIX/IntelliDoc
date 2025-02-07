@@ -1,9 +1,14 @@
 /**
- * Diese Datei enthält die Login-Komponente.
- * Sie ermöglicht Benutzern das Einloggen in die Anwendung und bietet eine Option zum Zurücksetzen des Passworts.
- *
- * @autor Ilyass. 
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @file Login.jsx - Benutzerauthentifizierung Komponente
+ * @author Ilyass
+ * @description Diese Komponente ermöglicht Benutzern das Einloggen in die Anwendung 
+ * und bietet eine Option zum Zurücksetzen des Passworts.
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires ../utils/userLogin
+ * @requires ../styles/Signup.css
+ * @requires ../assets/intellidoc_logo.webp
  */
 
 import { useState } from "react"; // Importing useState hook to manage component state
@@ -12,12 +17,31 @@ import { Link, useNavigate } from "react-router-dom"; // Importing Link for navi
 import "../styles/Signup.css"; // Importing CSS styles for the component
 import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
+/**
+ * @typedef {Object} LoginState
+ * @property {string} email - Die E-Mail-Adresse des Benutzers
+ * @property {string} password - Das Passwort des Benutzers
+ */
+
+/**
+ * @component Login
+ * @description Login-Komponente die das Anmeldeformular und die Navigation zur Registrierung bereitstellt.
+ * Verwaltet den Anmeldeprozess und bietet Optionen für Passwort-Reset.
+ * 
+ * @returns {JSX.Element} Die gerenderte Login-Komponente
+ */
 function Login() {
   const navigate = useNavigate(); // Initializing navigate function to redirect users
   const [email, setEmail] = useState(""); // State to manage the username input
   const [password, setPassword] = useState(""); // State to manage the password input
 
   // Handle form submission
+  /**
+ * @function handleSubmit
+ * @description Verarbeitet die Formular-Übermittlung für den Login-Prozess
+ * @param {Event} e - Das Submit-Event des Formulars
+ * @returns {void}
+ */
   const handleSubmit = (e) => {
     e.preventDefault(); // Preventing the default form submission behavior
 

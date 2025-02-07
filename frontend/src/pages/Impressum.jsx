@@ -1,13 +1,53 @@
 /**
- * Diese Datei enthält die Impressum-Komponente ohne Inhalte, nur mit Header und Footer.
+ * @file Impressum.jsx - Impressum und Team-Übersicht
+ * @author Lennart (Logo), Ayoub, Miray
+ * @description Diese Komponente zeigt das Impressum und eine detaillierte Team-Übersicht an.
  * 
- * @autor Lennart (Logo), Ayoub, Miray
+ * @requires react-router-dom
+ * @requires ../styles/impressum.css
+ * @requires ../assets/intellidoc_logo.webp
  */
 
 import { Link } from "react-router-dom";
 import "../styles/impressum.css";
 import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
+/**
+ * @component Impressum
+ * @description Hauptkomponente für die Impressumsseite mit Team-Übersicht
+ * @returns {JSX.Element} Die gerenderte Impressum-Komponente
+ */
+/**
+ * @typedef {Object} TeamMember
+ * @property {string} name - Vollständiger Name des Teammitglieds
+ * @property {string[]} roles - Array der Rollen des Teammitglieds
+ */
+
+/**
+ * @typedef {Object} TeamCategory
+ * @property {string} title - Name der Team-Kategorie
+ * @property {TeamMember[]} members - Array der Teammitglieder in dieser Kategorie
+ */
+
+/**
+ * @typedef {Object} PageStructure
+ * @property {JSX.Element} header - Navigation und Logo
+ * @property {JSX.Element} impressumContent - Hauptinhalt mit Team-Informationen
+ * @property {JSX.Element} footer - Fußbereich mit Kontaktinformationen
+ */
+
+/**
+ * Strukturierte Team-Daten
+ * @constant
+ * @type {Object.<string, TeamCategory>}
+ * @description Definiert die verschiedenen Team-Kategorien und ihre Mitglieder
+ * - Gesamtes Team
+ * - Frontend
+ * - Backend
+ * - Teamkoordinator
+ * - Systemkoordinator
+ * - Projektleitung
+ */
 function Impressum() {
     return (
         <div className="impressum">

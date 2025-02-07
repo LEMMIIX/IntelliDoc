@@ -7,7 +7,7 @@
  * @requires cors
  * @requires express
  * @requires body-parser
- * @requires /app.js
+ * @requires path
  * @requires express-session
  * @requires ./sequelize.config
  */

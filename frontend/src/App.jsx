@@ -1,7 +1,23 @@
 /**
- *  definiert die Haupt-Routing-Struktur der Anwendung, einschließlich geschätzter Routen für das Dashboard und Admin-Bereich sowie Authentifizierungsrouten.
- *@Author Farah. 
+ * @file App.jsx - Haupt-Routing-Komponente der Anwendung
+ * @author Farah
+ * @description Definiert die Haupt-Routing-Struktur der Anwendung, einschließlich geschützter Routen für das Dashboard 
+ * und Admin-Bereich sowie Authentifizierungsrouten.
  * 
+ * @requires react-router-dom
+ * @requires ./pages/Login
+ * @requires ./pages/Signup
+ * @requires ./pages/Home
+ * @requires ./pages/Verification
+ * @requires ./pages/Requestpassword
+ * @requires ./pages/Setpassword
+ * @requires ./components/ui/Layout
+ * @requires ./features/dashboard/FileUpload
+ * @requires ./components/ProtectedRoute
+ * @requires ./pages/Dashboard
+ * @requires ./pages/admin/AdminDashboard
+ * @requires ./features/dashboard/FolderPage
+ * @requires ./pages/Impressum
  */
 
 import { Routes, Route, Navigate } from "react-router-dom"; // Added Navigate here
@@ -20,6 +36,33 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import FolderPage from "./features/dashboard/FolderPage";
 import Impressum from "./pages/Impressum";
 
+/**
+ * Hauptkomponente der Anwendung, die das Routing verwaltet
+ * @component
+ * @returns {JSX.Element} Die gerenderte App-Komponente mit Routing-Struktur
+ * 
+ * @example
+ * return (
+ *   <BrowserRouter>
+ *     <App />
+ *   </BrowserRouter>
+ * )
+ */
+/**
+ * Routing-Gruppen der Anwendung
+ * @namespace Routes
+ * @property {Object} PublicRoutes - Öffentlich zugängliche Routen
+ * @property {Object} AdminRoutes - Geschützte Admin-Routen
+ * @property {Object} DashboardRoutes - Geschützte Dashboard-Routen
+ * @property {Object} AuthRoutes - Authentifizierungs-Routen
+ */
+/**
+ * Props für die ProtectedRoute-Komponente
+ * @typedef {Object} ProtectedRouteProps
+ * @property {boolean} shouldBeAuthenticated - Gibt an, ob der Benutzer authentifiziert sein muss
+ * @property {boolean} [isAdminRoute] - Optional: Gibt an, ob es sich um eine Admin-Route handelt
+ * @property {React.ReactNode} children - Die zu rendernden Kind-Komponenten
+ */
 const App = () => {
   return (
     <div>
