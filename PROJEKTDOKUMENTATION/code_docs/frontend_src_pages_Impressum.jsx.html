@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/Impressum.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/Impressum.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file Impressum.jsx - Impressum und Team-Übersicht
+ * @author Lennart (Logo), Ayoub, Miray
+ * @description Diese Komponente zeigt das Impressum und eine detaillierte Team-Übersicht an.
+ * 
+ * @requires react-router-dom
+ * @requires ../styles/impressum.css
+ * @requires ../assets/intellidoc_logo.webp
+ */
+
+import { Link } from "react-router-dom";
+import "../styles/impressum.css";
+import intellidoc_logo from "../assets/intellidoc_logo.webp";
+
+/**
+ * @component Impressum
+ * @description Hauptkomponente für die Impressumsseite mit Team-Übersicht
+ * @returns {JSX.Element} Die gerenderte Impressum-Komponente
+ */
+/**
+ * @typedef {Object} TeamMember
+ * @property {string} name - Vollständiger Name des Teammitglieds
+ * @property {string[]} roles - Array der Rollen des Teammitglieds
+ */
+
+/**
+ * @typedef {Object} TeamCategory
+ * @property {string} title - Name der Team-Kategorie
+ * @property {TeamMember[]} members - Array der Teammitglieder in dieser Kategorie
+ */
+
+/**
+ * @typedef {Object} PageStructure
+ * @property {JSX.Element} header - Navigation und Logo
+ * @property {JSX.Element} impressumContent - Hauptinhalt mit Team-Informationen
+ * @property {JSX.Element} footer - Fußbereich mit Kontaktinformationen
+ */
+
+/**
+ * Strukturierte Team-Daten
+ * @constant
+ * @type {Object.&lt;string, TeamCategory>}
+ * @description Definiert die verschiedenen Team-Kategorien und ihre Mitglieder
+ * - Gesamtes Team
+ * - Frontend
+ * - Backend
+ * - Teamkoordinator
+ * - Systemkoordinator
+ * - Projektleitung
+ */
+function Impressum() {
+    return (
+        &lt;div className="impressum">
+            {/* Navigation */}
+            &lt;header className="impressum-header">
+                &lt;nav className="navbar">
+                    &lt;div className="logo-wrapper">
+                        &lt;div className="logo">
+                            &lt;Link to="/">
+                                &lt;img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                            &lt;/Link>
+                        &lt;/div>
+                    &lt;/div>
+                    &lt;div className="nav-links-buttons">
+                        &lt;ul className="nav-links">
+                            &lt;li>&lt;Link to="/" className="nav-item">&lt;/Link>&lt;/li>
+                            &lt;li>&lt;Link to="#" className="nav-item">&lt;/Link>&lt;/li>
+                        &lt;/ul>
+                        &lt;div className="nav-buttons">
+                            &lt;Link to="/auth/signup" className="btn nav-btn">Registrieren&lt;/Link>
+                            &lt;Link to="/auth/login" className="btn nav-btn2">Anmelden&lt;/Link>
+                        &lt;/div>
+                    &lt;/div>
+                &lt;/nav>
+            &lt;/header>
+
+            {/* Main Content */}
+            &lt;div className="impressum-content">
+                &lt;div className="impressum-section">
+                    &lt;h2>Das Team&lt;/h2>
+                    
+                    &lt;div className="team-category">
+                        &lt;div className="team-category-title">Gesamtes Team&lt;/div>
+                        &lt;div className="team-list">
+                            &lt;div className="team-member">Belbaraka, Ayoub&lt;/div>
+                            &lt;div className="team-member">Bouassria, Farah&lt;/div>
+                            &lt;div className="team-member">Dablaq, Ilyass&lt;/div>
+                            &lt;div className="team-member">Kilic, Miray-Eren&lt;/div>
+                            &lt;div className="team-member">Moeller, Lennart&lt;/div>
+                            &lt;div className="team-member">Neumann, Luca&lt;/div>
+                        &lt;/div>
+                    &lt;/div>
+
+                    &lt;div className="team-category">
+                        &lt;div className="team-category-title">Frontend&lt;/div>
+                        &lt;div className="team-list">
+                            &lt;div className="team-member">Belbaraka, Ayoub&lt;/div>
+                            &lt;div className="team-member">Bouassria, Farah&lt;/div>
+                            &lt;div className="team-member">Dablaq, Ilyass&lt;/div>
+                            &lt;div className="team-member">Kilic, Miray-Eren&lt;/div>
+                        &lt;/div>
+                    &lt;/div>
+
+                    &lt;div className="team-category">
+                        &lt;div className="team-category-title">Backend&lt;/div>
+                        &lt;div className="team-list">
+                            &lt;div className="team-member">Belbaraka, Ayoub&lt;/div>
+                            &lt;div className="team-member">Dablaq, Ilyass&lt;/div>
+                            &lt;div className="team-member">Kilic, Miray-Eren&lt;/div>
+                            &lt;div className="team-member">Moeller, Lennart&lt;/div>
+                            &lt;div className="team-member">Neumann, Luca&lt;/div>
+                        &lt;/div>
+                    &lt;/div>
+
+                    &lt;div className="team-category">
+                        &lt;div className="team-category-title">Teamkoordinator&lt;/div>
+                        &lt;div className="team-list">
+                            &lt;div className="team-member">Neumann, Luca&lt;/div>
+                        &lt;/div>
+                    &lt;/div>
+
+                    &lt;div className="team-category">
+                        &lt;div className="team-category-title">Systemkoordinator&lt;/div>
+                        &lt;div className="team-list">
+                            &lt;div className="team-member">Moeller, Lennart&lt;/div>
+                        &lt;/div>
+                    &lt;/div>
+
+                    &lt;div className="team-category">
+                        &lt;div className="team-category-title">Projektleitung&lt;/div>
+                        &lt;div className="team-list">
+                            &lt;div className="team-member">Ahlf, Henning&lt;/div>
+                            &lt;div className="team-member">Dunkel, Kolja&lt;/div>
+                        &lt;/div>
+                    &lt;/div>
+                &lt;/div>
+            &lt;/div>
+
+            {/* Footer */}
+            &lt;footer className="footer">
+                &lt;div className="footer-content">
+                    &lt;a href="mailto:dev.intellidoc@gmail.com" className="footer-link">Kontakt: dev.intellidoc@gmail.com&lt;/a>
+                    &lt;span className="divider">|&lt;/span>
+                    &lt;span className="footer-link">Impressum&lt;/span>
+                &lt;/div>
+            &lt;/footer>
+        &lt;/div>
+    );
+}
+
+export default Impressum;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

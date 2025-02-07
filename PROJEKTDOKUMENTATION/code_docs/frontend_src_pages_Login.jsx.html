@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/Login.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/Login.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file Login.jsx - Benutzerauthentifizierung Komponente
+ * @author Ilyass
+ * @description Diese Komponente ermöglicht Benutzern das Einloggen in die Anwendung 
+ * und bietet eine Option zum Zurücksetzen des Passworts.
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires ../utils/userLogin
+ * @requires ../styles/Signup.css
+ * @requires ../assets/intellidoc_logo.webp
+ */
+
+import { useState } from "react"; // Importing useState hook to manage component state
+import { userLogin } from "../utils/userLogin"; // Importing the userLogin function from utils
+import { Link, useNavigate } from "react-router-dom"; // Importing Link for navigation and useNavigate for programmatic navigation
+import "../styles/Signup.css"; // Importing CSS styles for the component
+import intellidoc_logo from "../assets/intellidoc_logo.webp";
+
+/**
+ * @typedef {Object} LoginState
+ * @property {string} email - Die E-Mail-Adresse des Benutzers
+ * @property {string} password - Das Passwort des Benutzers
+ */
+
+/**
+ * @component Login
+ * @description Login-Komponente die das Anmeldeformular und die Navigation zur Registrierung bereitstellt.
+ * Verwaltet den Anmeldeprozess und bietet Optionen für Passwort-Reset.
+ * 
+ * @returns {JSX.Element} Die gerenderte Login-Komponente
+ */
+function Login() {
+  const navigate = useNavigate(); // Initializing navigate function to redirect users
+  const [email, setEmail] = useState(""); // State to manage the username input
+  const [password, setPassword] = useState(""); // State to manage the password input
+
+  // Handle form submission
+  /**
+ * @function handleSubmit
+ * @description Verarbeitet die Formular-Übermittlung für den Login-Prozess
+ * @param {Event} e - Das Submit-Event des Formulars
+ * @returns {void}
+ */
+  const handleSubmit = (e) => {
+    e.preventDefault(); // Preventing the default form submission behavior
+
+    // Calling the userLogin function to log in the user
+    userLogin(email, password, navigate);
+  };
+
+    return (
+
+        &lt;>
+
+            &lt;header className="header">
+                &lt;div className="header-content">
+                    &lt;div className="logo">
+                        &lt;a href="/">
+                            &lt;img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        &lt;/a>
+                    &lt;/div>
+                &lt;/div>
+            &lt;/header>
+
+        &lt;div className="signup-container">
+            &lt;div className="signup-card">
+                {/* Linke Spalte: Login */}
+                &lt;div className="signup-column">
+                    &lt;h1>Einloggen&lt;/h1>
+                    &lt;form onSubmit={handleSubmit}>
+                        
+                        &lt;input
+                            type="email"
+                            placeholder="E-Mail-Adresse"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                        &lt;input
+                            type="password"
+                            placeholder="Passwort"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                        &lt;button type="submit">Login&lt;/button>
+                        {/* Passwort zurücksetzen Button */}
+                        &lt;Link to="/Requestpassword" className="reset-password-link">
+
+                            Passwort vergessen
+                        &lt;/Link>
+                    &lt;/form>
+                &lt;/div>
+
+                {/* Rechte Spalte: Registrierung */}
+                &lt;div className="login-column">
+                    &lt;h2>Neu hier?&lt;/h2>
+                    &lt;h3>Erstelle ein neues Konto und lege sofort los!&lt;/h3>
+                    &lt;Link to="/auth/signup">Registrieren&lt;/Link>
+                &lt;/div>
+            &lt;/div>
+            &lt;/div>
+        &lt;/>
+            );
+    
+}
+
+export default Login; // Exporting the Login component for use in other parts of the application
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

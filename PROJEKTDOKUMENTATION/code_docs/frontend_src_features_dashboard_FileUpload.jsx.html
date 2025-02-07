@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/features/dashboard/FileUpload.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/features/dashboard/FileUpload.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file FileUpload.jsx - Datei-Upload-Komponente
+ * @author Farah
+ * @description Komponente zum Hochladen von Dokumenten in einen spezifischen Ordner
+ * 
+ * @requires react
+ * @requires react-icons/fi
+ * @requires ../../utils/fetchFoldersTree
+ * @requires ../../utils/helpers
+ * @requires ../../production-config
+ */
+
+/* eslint-disable no-unused-vars */
+import { useState, useEffect, Fragment } from "react";
+import { FiFile } from "react-icons/fi";
+import { fetchAndRenderFolderTree } from "../../utils/fetchFoldersTree";
+import { customFetch } from "../../utils/helpers";
+import prodconfig from "../../production-config";
+
+/**
+ * @typedef {Object} FileUploadState
+ * @property {boolean} isUploading - Status des Upload-Vorgangs
+ * @property {File|null} selectedFile - Die ausgewählte Datei für den Upload
+ */
+
+/**
+ * @component FileUpload
+ * @description Formular-Komponente zum Hochladen von Dateien mit Fortschrittsanzeige
+ * und Statusmeldungen
+ * 
+ * @param {Object} props - Komponenten-Props
+ * @param {string|number} props.folderId - ID des Zielordners für den Upload
+ * 
+ * @returns {JSX.Element} Die gerenderte FileUpload-Komponente
+ */
+const FileUpload = ({ folderId }) => {
+  const [isUploading, setIsUploading] = useState(false);
+
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // Handle form submission
+  /**
+ * @function handleSubmit
+ * @description Verarbeitet die Formular-Übermittlung für den Datei-Upload
+ * 
+ * @param {Event} e - Das Submit-Event des Formulars
+ * @throws {Error} Bei fehlgeschlagener Server-Anfrage oder fehlenden Eingaben
+ * @returns {void}
+ * 
+ * @note Verwendet FormData für den Datei-Upload und enthält:
+ * - file: Die hochzuladende Datei
+ * - folderId: Die ID des Zielordners
+ */
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsUploading(true);
+    if (!selectedFile || !folderId) {
+      alert("Bitte wähle eine Datei und einen Ordner aus.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    formData.append("folderId", folderId);
+
+    customFetch(`${prodconfig.backendUrl}/docupload`, {
+      credentials: "include",
+      method: "POST",
+      body: formData,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        //alert("Datei erfolgreich hochgeladen");
+        window.location.reload();
+      })
+      .catch((error) => {
+        alert(
+          "Beim Hochladen der Datei ist ein Fehler aufgetreten. Versuche es bitte erneut!"
+        );
+        window.location.reload();
+      })
+      .finally(() => {
+        setIsUploading(false);
+      });
+  };
+
+  return (
+    &lt;div>
+      &lt;div className="rounded-sm border border-stroke bg-white shadow-default">
+        &lt;div className="border-b border-stroke py-4 px-6.5 ">
+          &lt;h3 className="font-medium text-black">Dokument hochladen&lt;/h3>
+        &lt;/div>
+        &lt;form onSubmit={handleSubmit} className="flex flex-col gap-5.5 p-6.5">
+          &lt;div>
+            &lt;label className="mb-3 block text-black">Datei anhängen&lt;/label>
+            &lt;input
+              type="file"
+              name="datei"
+              required
+              disabled={isUploading}
+              onChange={(e) => {
+                return setSelectedFile(e.target.files[0]);
+              }}
+              className="w-full cursor-pointer rounded-lg border-[1.5px] border-stroke bg-transparent outline-none transition file:mr-5  file:cursor-pointer file:border-0 file:border-r file:border-solid file:border-stroke file:bg-whiter file:py-3 file:px-5 file:hover:bg-primary file:hover:bg-opacity-10 focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter"
+            />
+          &lt;/div>
+
+          &lt;button
+            disabled={isUploading}
+            className=" p-2 border border-stroke rounded-lg bg-primary text-white hover:bg-opacity-75 duration-200 transition-colors flex items-center gap-1 justify-center disabled:cursor-not-allowed disabled:hover:bg-primary"
+            type="submit"
+          >
+            {isUploading ? (
+              "Wird hochgeladen..."
+            ) : (
+              &lt;>
+                &lt;span> Hochladen&lt;/span>
+                &lt;FiFile />
+              &lt;/>
+            )}
+          &lt;/button>
+        &lt;/form>
+      &lt;/div>
+    &lt;/div>
+  );
+};
+
+export default FileUpload;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

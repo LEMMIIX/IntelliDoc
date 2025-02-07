@@ -13,7 +13,6 @@ const { runClustering } = require('../models/modelClustering');
  * Lauscht auf eingehende Nachrichten vom Hauptthread und führt entsprechende Aktionen aus.
  * Unterstützt Gesundheitschecks und führt Clustering-Operationen durch.
  * 
- * @event parentPort.on
  * @param {Object} task - Das empfangene Task-Objekt.
  * @param {string} task.type - Der Typ der Aufgabe (`HEALTH_CHECK` oder Clustering-Aufgabe).
  * @param {Array<number>} [task.docEmbedding] - Das Embedding des zu analysierenden Dokuments.

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/controllers/modelMailer.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/controllers/modelMailer.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview Diese Datei enthält Funktionen zum Versenden von E-Mails mit Nodemailer.
+ * Sie ermöglicht das Versenden von Bestätigungs- und Zurücksetzungs-E-Mails an Benutzer.
+ * 
+ * @author Ayoub, erweitert von Lennart
+ */
+
+const nodemailer = require('nodemailer');
+const dotenv = require("dotenv-safe");
+const path = require("path");
+
+dotenv.config({
+    allowEmptyValues: true,
+    example: path.join(__dirname, '../../frontend/.env.template')
+});
+
+let transporter = null;
+
+/**
+ * Überprüft, ob die erforderlichen E-Mail-Konfigurationswerte gesetzt sind.
+ * 
+ * @function isEmailConfigured
+ * @returns {boolean} Gibt `true` zurück, wenn die E-Mail-Konfiguration vollständig ist, andernfalls `false`.
+ * @example
+ * if (isEmailConfigured()) {
+ *   console.log("E-Mail-Versand ist konfiguriert.");
+ * }
+ */
+function isEmailConfigured() {
+   return !!(process.env.GMAIL_USER &amp;&amp; 
+       process.env.GMAIL_APP_PASSKEY &amp;&amp; 
+       process.env.SMTP_HOST &amp;&amp; 
+       process.env.SMTP_PORT);
+}
+
+/**
+ * Initialisiert den Nodemailer-Transporter für den E-Mail-Versand.
+ * Falls die Konfiguration unvollständig ist, wird der Transporter nicht erstellt.
+ * 
+ * @function initializeTransporter
+ * @throws {Error} Falls ein Fehler bei der Initialisierung des Transporters auftritt.
+ */
+function initializeTransporter() {
+   if (!isEmailConfigured()) {
+       console.warn('Email configuration incomplete - email features will be disabled');
+       return;
+   }
+   
+   try {
+       transporter = nodemailer.createTransport({
+           host: process.env.SMTP_HOST,
+           port: parseInt(process.env.SMTP_PORT),
+           secure: false,
+           auth: {
+               user: process.env.GMAIL_USER,
+               pass: process.env.GMAIL_APP_PASSKEY
+           }
+       });
+       console.log('Email transport initialized successfully');
+   } catch (error) {
+       console.error('Failed to initialize email transport:', error);
+       transporter = null;
+   }
+}
+
+/**
+ * Sendet eine Bestätigungs-E-Mail mit einem Verifizierungscode an einen Benutzer.
+ * 
+ * @async
+ * @function sendVerificationEmail
+ * @param {string} email - Die E-Mail-Adresse des Empfängers.
+ * @param {string} verification_Key - Der Verifizierungscode.
+ * @param {string} user_name - Der Name des Benutzers.
+ * @returns {Promise&lt;{success: boolean, messageId?: string, reason?: string, message?: string, error?: string}>}
+ * Ein Objekt, das den Erfolg oder Misserfolg des E-Mail-Versands angibt.
+ * @throws {Error} Falls ein Fehler beim Senden der E-Mail auftritt.
+ * @example
+ * const result = await sendVerificationEmail("test@example.com", "123456", "Max Mustermann");
+ * if (result.success) {
+ *   console.log("Bestätigungs-E-Mail gesendet:", result.messageId);
+ * } else {
+ *   console.error("Fehler beim Senden:", result.message);
+ * }
+ */
+async function sendVerificationEmail(email, verification_Key, user_name) {
+   if (!transporter) {
+       return {
+           success: false,
+           reason: 'email_not_configured',
+           message: 'Email service is not configured'
+       };
+   }
+   
+   const mailOptions = {
+       from: process.env.GMAIL_USER,
+       to: email,
+       subject: 'IntelliDoc Bestätigungscode',
+       text: `Your verification key is: ${verification_Key}`,
+       html: `&lt;html>
+               &lt;head>
+                   &lt;meta charset="UTF-8">
+                   &lt;title>Bestätigungscode&lt;/title>
+               &lt;/head>
+               &lt;body>
+                   &lt;h2>Willkommen bei Intellidoc, ${user_name}!&lt;/h2>
+                   &lt;p>Vielen Dank, dass Sie sich bei Intellidoc registriert haben.&lt;/p>
+                   &lt;p>Um Ihre E-Mail-Adresse zu bestätigen, geben Sie bitte den folgenden Bestätigungscode ein:&lt;/p>
+                   &lt;h3 style="color: blue;">${verification_Key}&lt;/h3>
+                   &lt;p>Wenn Sie sich nicht für Intellidoc registriert haben, ignorieren Sie bitte diese E-Mail.&lt;/p>
+                   &lt;br>
+                   &lt;p>Mit freundlichen Grüßen,&lt;br>Das Intellidoc-Team&lt;/p>
+               &lt;/body>
+           &lt;/html>`
+   };
+   
+   try {
+       const info = await transporter.sendMail(mailOptions);
+       console.log('Verification email sent:', info.messageId);
+       return {
+           success: true,
+           messageId: info.messageId
+       };
+   } catch (error) {
+       console.error('Error sending verification email:', error);
+       return {
+           success: false,
+           reason: 'send_failed',
+           message: 'Failed to send email',
+           error: error.message
+       };
+   }
+}
+
+/**
+ * Sendet eine E-Mail zum Zurücksetzen des Passworts mit einem Verifizierungscode.
+ * 
+ * @async
+ * @function sendResetEmail
+ * @param {string} email - Die E-Mail-Adresse des Empfängers.
+ * @param {string} verification_Key - Der Verifizierungscode.
+ * @param {string} user_name - Der Name des Benutzers.
+ * @returns {Promise&lt;{success: boolean, messageId?: string, reason?: string, message?: string, error?: string}>}
+ * Ein Objekt, das den Erfolg oder Misserfolg des E-Mail-Versands angibt.
+ * @throws {Error} Falls ein Fehler beim Senden der E-Mail auftritt.
+ * @example
+ * const result = await sendResetEmail("test@example.com", "654321", "Max Mustermann");
+ * if (result.success) {
+ *   console.log("Passwort-Reset-E-Mail gesendet:", result.messageId);
+ * } else {
+ *   console.error("Fehler beim Senden:", result.message);
+ * }
+ */
+async function sendResetEmail(email, verification_Key, user_name) {
+   if (!transporter) {
+       return {
+           success: false,
+           reason: 'email_not_configured',
+           message: 'Email service is not configured'
+       };
+   }
+
+   const mailOptions = {
+       from: process.env.GMAIL_USER,
+       to: email,
+       subject: 'IntelliDoc Passwort zurücksetzen',
+       text: `Your verification key is: ${verification_Key}`,
+       html: `&lt;html>
+               &lt;head>
+                   &lt;meta charset="UTF-8">
+                   &lt;title>Bestätigungscode&lt;/title>
+               &lt;/head>
+               &lt;body>
+                   &lt;h2>Hallo ${user_name}!&lt;/h2>
+                   &lt;p>Um Ihr Passwort zurückzusetzen, geben Sie bitte den folgenden Bestätigungscode ein:&lt;/p>
+                   &lt;h3 style="color: blue;">${verification_Key}&lt;/h3>
+                   &lt;p>Wenn Sie kein Passwort-Reset angefordert haben, ignorieren Sie bitte diese E-Mail.&lt;/p>
+                   &lt;br>
+                   &lt;p>Mit freundlichen Grüßen,&lt;br>Das Intellidoc-Team&lt;/p>
+               &lt;/body>
+           &lt;/html>`
+   };
+
+   try {
+       const info = await transporter.sendMail(mailOptions);
+       console.log('Reset email sent:', info.messageId);
+       return {
+           success: true,
+           messageId: info.messageId
+       };
+   } catch (error) {
+       console.error('Error sending reset email:', error);
+       return {
+           success: false,
+           reason: 'send_failed',
+           message: 'Failed to send email',
+           error: error.message
+       };
+   }
+}
+
+// Initialize transport on module load
+initializeTransporter();
+
+module.exports = { 
+   sendVerificationEmail, 
+   sendResetEmail,
+   isEmailConfigured 
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

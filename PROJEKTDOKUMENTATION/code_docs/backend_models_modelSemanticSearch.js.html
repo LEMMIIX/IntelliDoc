@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/models/modelSemanticSearch.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/models/modelSemanticSearch.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview Diese Datei enthält Funktionen zur Durchführung von semantischer Suche.
+ * Sie ermöglicht das Generieren von Embeddings, das Durchführen von Datenbankabfragen 
+ * und das Anwenden von Clustering-Boosts zur Verbesserung der Suchergebnisse.
+ * 
+ * @author Lennart, Miray
+ * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module modelSemanticSearch
+ */
+
+const { generateEmbedding } = require('./modelEmbedding');
+const { runClustering } = require('./modelClustering');
+const db = require('../../ConnectPostgres');
+
+/**
+ * Erstellt eine Instanz für semantische Suche mit optionaler Caching- und Clustering-Optimierung.
+ * 
+ * @function semanticSearch
+ * @param {Object} [options={}] - Konfigurationsoptionen für die Suche.
+ * @param {boolean} [options.cacheEnabled=false] - Aktiviert das Caching für schnellere Suchanfragen.
+ * @param {number} [options.maxCacheSize=1000] - Maximale Anzahl an Cache-Einträgen.
+ * @param {number} [options.cacheExpiryMs=3600000] - Ablaufzeit des Caches in Millisekunden.
+ * @param {boolean} [options.clusterBoostEnabled=true] - Aktiviert die Cluster-Optimierung für genauere Ergebnisse.
+ * @returns {Object} Ein Objekt mit der Methode `executeSearch`.
+ */
+function semanticSearch(options = {}) {
+    const {
+        cacheEnabled = false,
+        maxCacheSize = 1000,
+        cacheExpiryMs = 1000 * 60 * 60,
+        clusterBoostEnabled = true
+    } = options;
+
+    const cache = new Map();
+    const cacheTimestamps = new Map();
+
+    /**
+ * Führt eine semantische Suche für eine gegebene Abfrage aus.
+ * 
+ * @async
+ * @function executeSearch
+ * @memberof semanticSearch
+ * @param {string} query - Die Suchanfrage.
+ * @param {Object} [options={}] - Zusätzliche Suchoptionen.
+ * @param {number} [options.limit=10] - Maximale Anzahl zurückgegebener Ergebnisse.
+ * @param {Object} [options.filters={}] - Filterbedingungen für die Abfrage.
+ * @param {boolean} [options.useCache=true] - Verwendet den Cache, falls aktiviert.
+ * @param {Object} options.req - Das Request-Objekt, um den Benutzer zu identifizieren.
+ * @returns {Promise&lt;Array&lt;Object>>} Eine Liste relevanter Dokumente mit Ähnlichkeitswerten.
+ * @throws {Error} Falls der Benutzer nicht authentifiziert ist oder ein Fehler bei der Suche auftritt.
+ * @example
+ * const results = await searchInstance.executeSearch("Deep Learning", { limit: 5, req });
+ * console.log(results);
+ */
+    async function executeSearch(query, options = {}) {
+        const {
+            limit = 10,
+            filters = {},
+            useCache = cacheEnabled,
+            req
+        } = options;
+
+        if (!req?.session?.userId) {
+            throw new Error("User is not authenticated");
+        }
+
+        const userId = req.session.userId;
+
+        if (useCache) {
+            const cachedResult = getFromCache(`${userId}:${query}`);
+            if (cachedResult) return cachedResult;
+        }
+
+        try {
+            const queryEmbedding = await generateEmbedding(query);
+            let results = await dbQuery(queryEmbedding, limit, filters, userId);
+
+            if (clusterBoostEnabled &amp;&amp; results.length > 0) {
+                console.log('Starting clustering enhancement...');
+                results = await applyClusterBoost(results, queryEmbedding, userId);
+                console.log('Clustering enhancement completed successfully');
+            }
+
+            if (useCache) {
+                addToCache(`${userId}:${query}`, results);
+            }
+
+            return results;
+
+        } catch (error) {
+            console.error('Error in executeSearch:', error);
+            throw error;
+        }
+    }
+
+    /**
+ * Optimiert die Suchergebnisse durch Clustering-Analyse, um relevantere Dokumente hervorzuheben.
+ * 
+ * @async
+ * @function applyClusterBoost
+ * @memberof semanticSearch
+ * @param {Array&lt;Object>} results - Die ursprünglichen Suchergebnisse.
+ * @param {Array&lt;number>} queryEmbedding - Das Embedding der Suchanfrage.
+ * @param {number} userId - Die Benutzer-ID.
+ * @returns {Promise&lt;Array&lt;Object>>} Die optimierten Suchergebnisse mit Cluster-Boosting.
+ */
+    async function applyClusterBoost(results, queryEmbedding, userId) {
+        try {
+            const embeddings = [queryEmbedding, ...results.map(r => r.embedding)];
+            const config = {
+                minClusterSize: 2,
+                minSamples: 2,
+                clusterSelectionMethod: 'eom',
+                clusterSelectionEpsilon: 0.15
+            };
+
+            const clusterResults = await runClustering(embeddings, config, userId);
+            const clusterLabels = clusterResults.labels;
+            const queryCluster = clusterLabels[0];
+
+            results = results.map((result, index) => {
+                const documentCluster = clusterLabels[index + 1];
+                let boostAmount = 0;
+
+                if (documentCluster === queryCluster &amp;&amp; documentCluster !== -1) {
+                    boostAmount = 10;
+                }
+
+                delete result.embedding;
+
+                return {
+                    ...result,
+                    distance: Math.min(100, result.distance + boostAmount)
+                };
+            });
+
+            return results.sort((a, b) => b.distance - a.distance);
+
+        } catch (error) {
+            console.error('Error in cluster boosting:', error);
+            results.forEach(r => delete r.embedding);
+            return results;
+        }
+    }
+
+    /**
+ * Führt eine SQL-Abfrage für die semantische Suche in der Datenbank durch.
+ * 
+ * @async
+ * @function dbQuery
+ * @memberof semanticSearch
+ * @param {Array&lt;number>} queryEmbedding - Das Embedding der Suchanfrage.
+ * @param {number} limit - Maximale Anzahl zurückgegebener Ergebnisse.
+ * @param {Object} filters - Filteroptionen für die Datenbankabfrage.
+ * @param {number} userId - Die Benutzer-ID für die Abfrage.
+ * @returns {Promise&lt;Array&lt;Object>>} Eine Liste der Suchergebnisse mit Ähnlichkeitswerten.
+ */
+    async function dbQuery(queryEmbedding, limit, filters, userId) {
+        const filterConditions = buildFilterConditions(filters);
+        const vectorString = '[' + queryEmbedding.join(',') + ']';
+        const whereClause = `WHERE user_id = $3 ${filterConditions ? `AND ${filterConditions}` : ''}`;
+
+        const expandedLimit = Math.min(limit * 3, 30);
+
+        const query = `
+            WITH similarity_scores AS (
+                SELECT 
+                    file_id, 
+                    file_name, 
+                    file_type,
+                    embedding,
+                    (1 - (embedding &lt;=> $1::vector)) AS cosine_similarity,
+                    1 - (embedding &lt;-> $1::vector) / NULLIF(MAX(embedding &lt;-> $1::vector) OVER (), 1) AS normalized_euclidean_similarity,
+                    1 / (1 + EXP(-(embedding &lt;#> $1::vector))) AS sigmoid_inner_product
+                FROM main.files
+                ${whereClause}
+            )
+            SELECT 
+                file_id,
+                file_name,
+                file_type,
+                embedding,
+                (
+                    (0.6 * cosine_similarity + 
+                    0.25 * normalized_euclidean_similarity +
+                    0.15 * sigmoid_inner_product) * 100
+                ) AS similarity_score
+            FROM similarity_scores
+            ORDER BY similarity_score DESC
+            LIMIT $2
+        `;
+
+        try {
+            const result = await db.query(query, [vectorString, expandedLimit, userId]);
+
+            return result.rows.map(row => ({
+                id: row.file_id,
+                name: row.file_name,
+                type: row.file_type,
+                embedding: row.embedding,
+                distance: row.similarity_score
+            }));
+
+        } catch (error) {
+            console.error('Database query error:', error);
+            throw error;
+        }
+    }
+
+    /**
+ * Fügt ein Ergebnis zur Cache-Speicherung hinzu, wobei der älteste Eintrag entfernt wird, wenn das Limit erreicht ist.
+ * 
+ * @function addToCache
+ * @memberof semanticSearch
+ * @param {string} key - Der Schlüssel für das Cache-Element.
+ * @param {Array&lt;Object>} results - Die Suchergebnisse, die gespeichert werden sollen.
+ */
+    function addToCache(key, results) {
+        if (cache.size >= maxCacheSize) {
+            const oldestKey = cache.keys().next().value;
+            cache.delete(oldestKey);
+            cacheTimestamps.delete(oldestKey);
+        }
+        cache.set(key, results);
+        cacheTimestamps.set(key, Date.now());
+    }
+
+    /**
+ * Ruft Ergebnisse aus dem Cache ab, falls sie noch gültig sind.
+ * 
+ * @function getFromCache
+ * @memberof semanticSearch
+ * @param {string} key - Der Schlüssel für das Cache-Element.
+ * @returns {Array&lt;Object>|null} Die gespeicherten Ergebnisse oder `null`, falls sie abgelaufen sind.
+ */
+    function getFromCache(key) {
+        const timestamp = cacheTimestamps.get(key);
+        if (!timestamp) return null;
+        if (Date.now() - timestamp > cacheExpiryMs) {
+            cache.delete(key);
+            cacheTimestamps.delete(key);
+            return null;
+        }
+        return cache.get(key);
+    }
+
+    /**
+ * Erstellt eine SQL-Filterbedingung basierend auf übergebenen Filtern.
+ * 
+ * @function buildFilterConditions
+ * @memberof semanticSearch
+ * @param {Object} filters - Das Objekt mit den Filterbedingungen.
+ * @returns {string} Eine SQL-Filterklausel zur Verwendung in der Datenbankabfrage.
+ */
+    function buildFilterConditions(filters) {
+        return Object.entries(filters)
+            .map(([key, value]) => `${key} = '${value}'`)
+            .join(' AND ');
+    }
+
+    return {
+        executeSearch
+    };
+}
+
+module.exports = semanticSearch;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/features/dashboard/FolderElement.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/features/dashboard/FolderElement.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file FolderElement.jsx - Ordner-Element-Komponente
+ * @author Farah
+ * @description Komponente zur Darstellung und Verwaltung eines einzelnen Ordners
+ * mit Optionen zum Navigieren, Umbenennen und Löschen
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires react-icons/bs
+ * @requires ../../utils/helpers
+ * @requires ../../production-config
+ */
+
+import { useNavigate } from "react-router-dom";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { useState, useEffect, useRef } from "react";
+import { customFetch } from "../../utils/helpers";
+import prodconfig from "../../production-config";
+
+/**
+ * @typedef {Object} FolderElementState
+ * @property {boolean} showFolderOptions - Steuert die Anzeige des Optionsmenüs
+ * @property {boolean} isPopupVisible - Steuert die Anzeige des Umbenennen-Popups
+ * @property {string} newFolderName - Neuer Name für den Ordner
+ * @property {boolean} isLoading - Status des Umbenennungsvorgangs
+ * @property {string} inputError - Validierungsfehler für die Eingabe
+ * @property {string} errorMessage - Allgemeine Fehlermeldungen
+ */
+
+/**
+ * @component FolderElement
+ * @description Rendert ein einzelnes Ordner-Element mit Interaktionsmöglichkeiten
+ * 
+ * @param {Object} props - Komponenten-Props
+ * @param {string|number} props.folderId - Eindeutige ID des Ordners
+ * @param {string} props.folderName - Name des Ordners
+ * @param {Function} props.handleFolderDelete - Callback für das Löschen des Ordners
+ * 
+ * @returns {JSX.Element} Die gerenderte FolderElement-Komponente
+ */
+function FolderElement({ folderId, folderName, handleFolderDelete }) {
+  const navigate = useNavigate();
+  const [showFolderOptions, setShowFolderOptions] = useState(false);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [newFolderName, setNewFolderName] = useState(folderName);
+  const [isLoading, setIsLoading] = useState(false);
+  const [inputError, setInputError] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const popupRef = useRef(null);
+  const folderOptionsRef = useRef(null); // Reference for folder options
+
+  /**
+ * @function handleRenameFolder
+ * @async
+ * @description Verarbeitet die Umbenennung eines Ordners
+ * @throws {Error} Bei fehlgeschlagener Server-Anfrage
+ * @returns {Promise&lt;void>}
+ */
+  const handleRenameFolder = async () => {
+    if (inputError != "") {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      // Sende die Anfrage mit dem richtigen Content-Type
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/renameFolder`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json", // Setze den richtigen Content-Type
+          },
+          body: JSON.stringify({
+            folderId: folderId,
+            newFolderName: newFolderName,
+          }),
+        }
+      );
+      if (!response.ok) {
+        throw new Error("Fehler beim Umbenennen des Ordners");
+      }
+      // Antwort vom Backend einlesen, falls erfolgreich
+      const data = await response.json();
+      setIsPopupVisible(false);
+      setIsLoading(false);
+      //alert("Ordnername erfolgreich geändert!");
+      window.location.reload();
+    } catch (e) {
+      console.log("error: ", e);
+      setErrorMessage(
+        e.message || "Beim Umbenennen des Ordners ist etwas schiefgelaufen."
+      );
+      setIsLoading(false);
+    }
+  };
+
+  /**
+ * @function handleRenameFolderInput
+ * @description Validiert die Eingabe beim Umbenennen eines Ordners
+ * @param {Event} e - Das Change-Event des Eingabefelds
+ * @returns {void}
+ */
+  const handleRenameFolderInput = (e) => {
+    let newFileName = e.target.value;
+    setNewFolderName(newFileName);
+
+    switch (newFileName) {
+      case folderName:
+        setInputError("Bitte gib einen neuen Dateinamen an!");
+        break;
+      case "":
+        setInputError("Kein Dateiname angegeben!");
+        break;
+      default:
+        setInputError("");
+        break;
+    }
+  };
+
+  // Close popup when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (popupRef.current &amp;&amp; !popupRef.current.contains(event.target)) {
+        setIsPopupVisible(false);
+        +setInputError(""); // Clear error when popup closes
+      }
+    };
+
+    if (isPopupVisible) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isPopupVisible]);
+
+  // Close folder options when clicking outside
+  useEffect(() => {
+    const handleClickOutsideOptions = (event) => {
+      if (
+        folderOptionsRef.current &amp;&amp;
+        !folderOptionsRef.current.contains(event.target)
+      ) {
+        setShowFolderOptions(false);
+      }
+    };
+
+    if (showFolderOptions) {
+      document.addEventListener("mousedown", handleClickOutsideOptions);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideOptions);
+    };
+  }, [showFolderOptions]);
+
+  return (
+    &lt;>
+      &lt;li
+        tabIndex={0}
+        key={folderId}
+        className="bg-white border-lg p-4 flex flex-col gap-1 justify-center rounded-lg duration-200 transition-opacity shadow-sm relative "
+      >
+        &lt;svg
+          width="70"
+          height="70"
+          viewBox="0 0 98 82"
+          className="mx-auto cursor-pointer"
+          onClick={() => navigate(`/folders/${folderId}`)}
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          &lt;rect y="6.64404" width="98" height="74.7458" rx="5" fill="#3D65F2" />
+          &lt;path
+            d="M0 4C0 1.79086 1.79086 0 4 0H26.1567C27.5758 0 28.8887 0.751897 29.6068 1.9759L32.3156 6.59312C33.3141 8.29504 32.9223 10.4708 31.3929 11.7176L29.5511 13.219C28.8373 13.8009 27.9446 14.1186 27.0237 14.1186H4C1.79086 14.1186 0 12.3278 0 10.1186V4Z"
+            fill="#3D65F2"
+          />
+          &lt;rect
+            y="8.30518"
+            width="98"
+            height="73.0847"
+            rx="5"
+            fill="url(#paint0_linear_89_82)"
+          />
+          &lt;defs>
+            &lt;linearGradient
+              id="paint0_linear_89_82"
+              x1="91.3559"
+              y1="110.458"
+              x2="26.161"
+              y2="19.9323"
+              gradientUnits="userSpaceOnUse"
+            >
+              &lt;stop stopColor="#435199" />
+              &lt;stop offset="1" stopColor="#7087FF" />
+            &lt;/linearGradient>
+          &lt;/defs>
+        &lt;/svg>
+
+        &lt;div className="flex justify-between">
+          &lt;span
+            className="text-sm flex-grow text-center hover:text-primary cursor-pointer"
+            onClick={() => navigate(`/folders/${folderId}`)}
+          >
+            {folderName}
+          &lt;/span>
+          &lt;BsThreeDotsVertical
+            className={`cursor-pointer hover:text-primary ${
+              folderId === showFolderOptions &amp;&amp; "text-primary"
+            }`}
+            onClick={() => {
+              showFolderOptions === folderId
+                ? setShowFolderOptions(null)
+                : setShowFolderOptions(folderId);
+            }}
+          />
+        &lt;/div>
+        {showFolderOptions === folderId &amp;&amp; (
+          &lt;div
+            className="absolute z-99 translate-y-full -bottom-1 shadow-md right-0 flex flex-col bg-white w-2/3 sm:w-full rounded-lg p-2 gap-2"
+            ref={folderOptionsRef} // Reference to detect clicks outside
+          >
+            &lt;span
+              className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-danger items-center transition-colors duration-200"
+              onClick={() => handleFolderDelete(folderId)}
+            >
+              Löschen
+            &lt;/span>
+            &lt;span
+              className="flex gap-1 cursor-pointer px-2 py-2 rounded-md hover:bg-[#363D4410] hover:text-primary items-center transition-colors duration-200"
+              onClick={() => {
+                setIsPopupVisible(true);
+                setShowFolderOptions(false);
+              }}
+            >
+              Umbenennen
+            &lt;/span>
+          &lt;/div>
+        )}
+      &lt;/li>
+      {isPopupVisible &amp;&amp; (
+        &lt;div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+          &lt;div
+            className="bg-white rounded-md px-6 shadow-lg max-w-md w-full"
+            ref={popupRef} // Reference to detect clicks outside
+          >
+            &lt;h2 className="text-2xl font-semibold	 py-4 text-center text-[hsl(0,0%,33%)]">
+              Ordner umbenennen
+            &lt;/h2>
+            &lt;h1 className="text-sm font-normal py-4 text-center text-[hsl(0,0%,33%)]">
+              Neuer Ordnername
+            &lt;/h1>
+            &lt;div>
+              &lt;input
+                type="text"
+                value={newFolderName}
+                onChange={handleRenameFolderInput}
+                className={`rounded-md placeholder:text-md border-[1.5px] border-transparent ${
+                  inputError &amp;&amp;
+                  "border-red-500 placeholder:text-red-500 focus:border-red-500"
+                } bg-black/10 p-3 text-black/70 focus:border-primary focus-visible:outline-none w-full`}
+                placeholder="New folder name"
+                autoFocus
+              />
+              {inputError &amp;&amp; (
+                &lt;span className="text-red-500 text-sm">{inputError}&lt;/span>
+              )}
+              {errorMessage &amp;&amp; (
+                &lt;div className="error-message text-red-500 text-ms">
+                  {errorMessage}
+                &lt;/div>
+              )}
+            &lt;/div>
+            &lt;div className="flex justify-center mt-6 pb-5">
+              &lt;button
+                onClick={handleRenameFolder}
+                className={`bg-[#436BF5] text-white px-4 py-2 rounded-md hover:bg-[#426AF3] transition duration-200 ease-in-out mr-2 ${
+                  (isLoading || inputError) &amp;&amp;
+                  "cursor-not-allowed bg-opacity-50 hover:bg-opacity-50"
+                }`}
+                disabled={isLoading || inputError}
+              >
+                {isLoading ? "Wird geladen..." : "Speichern"}
+              &lt;/button>
+              &lt;button
+                onClick={() => {
+                  setIsPopupVisible(false);
+                  setInputError("");
+                }}
+                className="bg-[#6e7881] text-white px-4 py-2 rounded-md hover:bg-gray-400 transition duration-200 ease-in-out"
+              >
+                Abbrechen
+              &lt;/button>
+            &lt;/div>
+          &lt;/div>
+        &lt;/div>
+      )}
+    &lt;/>
+  );
+}
+
+export default FolderElement;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
