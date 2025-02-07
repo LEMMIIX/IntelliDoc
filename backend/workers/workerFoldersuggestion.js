@@ -1,22 +1,34 @@
 /**
- * Diese Datei enthölt den Worker zur Ordner-Vorschlagserstellung.
+ * @fileoverview Diese Datei enthält den Worker zur Ordner-Vorschlagserstellung.
  * Sie ermöglicht die Berechnung von Ähnlichkeiten und Clustering von Dokument- und Ordner-Embeddings.
- *
- * @autor Lennart 
+ * 
+ * @author Lennart
  */
+
 
 const { parentPort } = require('worker_threads');
 const { runClustering } = require('../models/modelClustering');
 
+/**
+ * Lauscht auf eingehende Nachrichten vom Hauptthread und führt entsprechende Aktionen aus.
+ * Unterstützt Gesundheitschecks und führt Clustering-Operationen durch.
+ * 
+ * @event parentPort.on
+ * @param {Object} task - Das empfangene Task-Objekt.
+ * @param {string} task.type - Der Typ der Aufgabe (`HEALTH_CHECK` oder Clustering-Aufgabe).
+ * @param {Array<number>} [task.docEmbedding] - Das Embedding des zu analysierenden Dokuments.
+ * @param {Array<Object>} [task.folderVectors] - Eine Liste von Ordnern mit ihren Embeddings.
+ * @param {Object} [task.config] - Konfiguration für das Clustering.
+ */
 parentPort.on('message', async (task) => {
     if (task.type === 'HEALTH_CHECK') {
         parentPort.postMessage({ type: 'HEALTH_CHECK', status: 'healthy' });
         return;
     }
-    
+
     try {
         const { docEmbedding, folderVectors, config } = task;
-        
+
         // Prepare clustering input
         const clusteringInput = {
             embeddings: [docEmbedding, ...folderVectors.map(f => f.embedding)],
@@ -54,15 +66,25 @@ parentPort.on('message', async (task) => {
     }
 });
 
+/**
+ * Verarbeitet die Clustering-Ergebnisse und berechnet die besten Ordner-Vorschläge.
+ * 
+ * @function processSuggestions
+ * @param {Object} clusteringResults - Das Ergebnis des Clustering-Prozesses.
+ * @param {Array<number>} docEmbedding - Das Embedding des Dokuments.
+ * @param {Array<Object>} folderVectors - Eine Liste von Ordnern mit ihren Embeddings.
+ * @param {Object} config - Konfigurationsoptionen für die Berechnung.
+ * @returns {Array<Object>} Eine sortierte Liste von Ordner-Vorschlägen mit Metadaten.
+ */
 function processSuggestions(clusteringResults, docEmbedding, folderVectors, config) {
     const documentCluster = clusteringResults.labels[0];
-    
+
     return folderVectors
         .map((folder, index) => {
             const folderCluster = clusteringResults.labels[index + 1];
             const similarity = calculateCosineSimilarity(docEmbedding, folder.embedding);
-            
-            const clusterBoost = 
+
+            const clusterBoost =
                 documentCluster === folderCluster && documentCluster !== -1
                     ? config.clusterInfluence
                     : 0;
@@ -86,6 +108,14 @@ function processSuggestions(clusteringResults, docEmbedding, folderVectors, conf
         .slice(0, config.maxSuggestions);
 }
 
+/**
+ * Berechnet die Kosinus-Ähnlichkeit zwischen zwei Vektoren.
+ * 
+ * @function calculateCosineSimilarity
+ * @param {Array<number>} vec1 - Der erste Vektor.
+ * @param {Array<number>} vec2 - Der zweite Vektor.
+ * @returns {number} Ein Wert zwischen -1 und 1, der die Ähnlichkeit der beiden Vektoren beschreibt.
+ */
 function calculateCosineSimilarity(vec1, vec2) {
     const dotProduct = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
     const norm1 = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
