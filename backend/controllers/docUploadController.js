@@ -1,10 +1,10 @@
 /**
- * Diese Datei enthält Controller-Funktionen für das Hochladen und Verarbeiten von Dokumenten.
+ * @fileoverview Diese Datei enthält Controller-Funktionen für das Hochladen und Verarbeiten von Dokumenten.
  * Sie ermöglicht das Hochladen von Dateien, die Extraktion von Textinhalten, die Generierung von Embeddings und die Durchführung von Clustering.
  * Zudem werden Ordnervorschläge basierend auf den Clustering-Ergebnissen bereitgestellt.
- *
- * @author Luca,Miray,Ayoub.
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * 
+ * @author Luca, Miray, Ayoub
+ * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
  */
 
 const db = require("../../ConnectPostgres");
@@ -19,11 +19,28 @@ const File = require("../../database/File.js");
 const sequelize = require("../../sequelize.config.js");
 const folderSuggestion = require("../models/modelFolderSuggestion");
 
+/**
+ * Rendert das Upload-Formular für Dokumente.
+ * 
+ * @function renderUploadForm
+ * @param {Object} req - Das Request-Objekt.
+ * @param {Object} res - Das Response-Objekt.
+ */
 exports.renderUploadForm = (req, res) => {
   // Liefere die statische HTML-Datei aus
   res.sendFile(path.join(__dirname, "../../frontend/html/docupload.html"));
 };
 
+/**
+ * Verarbeitet den Upload einer Datei, extrahiert Text, generiert Embeddings und führt Clustering durch.
+ * 
+ * @async
+ * @function uploadFile
+ * @param {Object} req - Das Request-Objekt mit Datei- und Benutzerinformationen.
+ * @param {Object} res - Das Response-Objekt für die Serverantwort.
+ * @returns {Promise<void>} Antwort mit Upload- und Clustering-Ergebnissen.
+ * @throws {Error} Falls ein Fehler beim Hochladen oder Verarbeiten der Datei auftritt.
+ */
 exports.uploadFile = async (req, res) => {
   try {
     // Überprüfen, ob req.file tatsächlich vorhanden ist
@@ -93,11 +110,11 @@ exports.uploadFile = async (req, res) => {
       minSamples: 2,
       clusterSelectionMethod: "eom",
       clusterSelectionEpsilon: 0.18,
-      anchorInfluence: 0.36, 
-      semanticThreshold: 0.52, 
+      anchorInfluence: 0.36,
+      semanticThreshold: 0.52,
     };
 
-    
+
     const clusteringConfig = {
       ...defaultParams,
       ...JSON.parse(clusteringParams || "{}"), // Allow overriding defaults through API
@@ -165,14 +182,14 @@ exports.uploadFile = async (req, res) => {
 };
 
 /**
- * Diese Funktion ermöglicht den SMART UPLOAD
- *
- * Die Funktion kann überall eingesetzt werden wo folgendes erreicht werden soll:
- * Nutzer lädt Datei hoch
- * -> Datei wird durch upload pipeline geschickt
- * -> vorerst mit folder id = NULL hochgeladen
- * -> 3 Ordnervorschläge werden gesucht und prösentiert, wo Datei hineinpassen kann
- * -> folder id wird entsprechend dem Ornder gesetzt, für den sich der Nutzer entschdeidet
+ * Führt den "Smart Upload" durch: Die Datei wird hochgeladen, verarbeitet und erhält anschließend Ordnervorschläge.
+ * 
+ * @async
+ * @function smartUploadFile
+ * @param {Object} req - Das Request-Objekt mit Datei- und Benutzerinformationen.
+ * @param {Object} res - Das Response-Objekt für die Serverantwort.
+ * @returns {Promise<void>} Antwort mit Upload-Ergebnissen und Ordnervorschlägen.
+ * @throws {Error} Falls ein Fehler während der Verarbeitung auftritt.
  */
 exports.smartUploadFile = async (req, res) => {
   try {
@@ -181,7 +198,7 @@ exports.smartUploadFile = async (req, res) => {
     }
 
     const { originalname, buffer, mimetype } = req.file;
-    const { clusteringParams } = req.body; 
+    const { clusteringParams } = req.body;
     const userId = req.session.userId;
 
     console.log("Extracting text content...");
@@ -212,7 +229,7 @@ exports.smartUploadFile = async (req, res) => {
       originalFileId = checkResult.rows[0].file_id;
     }
 
-      // Datei zunächst mit null für folder_id einfügen
+    // Datei zunächst mit null für folder_id einfügen
     const insertQuery = `
             INSERT INTO main.files (
                 user_id, file_name, file_type, file_data, 
@@ -226,7 +243,7 @@ exports.smartUploadFile = async (req, res) => {
       originalname,
       mimetype,
       buffer,
-        null, // folder_id ist bei Smart-Upload immer null
+      null, // folder_id ist bei Smart-Upload immer null
       formattedEmbedding,
       version,
       originalFileId,
@@ -346,7 +363,15 @@ exports.smartUploadFile = async (req, res) => {
   }
 };
 
-// Keywords im Hintergrund generiert
+/**
+ * Generiert Schlüsselwörter für eine Datei im Hintergrund und speichert sie in der Datenbank.
+ * 
+ * @async
+ * @function generateKeywordsInBackground
+ * @param {string} textContent - Der extrahierte Text aus der Datei.
+ * @param {number} file_id - Die ID der Datei.
+ * @returns {Promise<void>} Speichert die Keywords in der Datenbank.
+ */
 const generateKeywordsInBackground = async (textContent, file_id) => {
   try {
     const keywords = await generateKeywords(textContent);
@@ -368,8 +393,17 @@ const generateKeywordsInBackground = async (textContent, file_id) => {
   }
 };
 
+/**
+ * Überprüft, ob für eine Datei bereits Schlüsselwörter generiert wurden.
+ * 
+ * @async
+ * @function checkKeywordStatus
+ * @param {Object} req - Das Request-Objekt mit der Datei-ID.
+ * @param {Object} res - Das Response-Objekt mit dem Keyword-Status.
+ * @returns {Promise<void>} Antwort mit den Keywords oder Status "pending".
+ */
 exports.checkKeywordStatus = async (req, res) => {
-  const fileId = req.params.fileId; 
+  const fileId = req.params.fileId;
   try {
     // database query. um keywords für den jeweiligen fileid abzurufen
     const query = "SELECT keywords FROM main.files WHERE file_id = $1";
@@ -393,6 +427,15 @@ exports.checkKeywordStatus = async (req, res) => {
   }
 };
 
+/**
+ * Ermöglicht das Herunterladen einer Datei aus der Datenbank.
+ * 
+ * @async
+ * @function downloadFile
+ * @param {Object} req - Das Request-Objekt mit der Datei-ID.
+ * @param {Object} res - Das Response-Objekt mit der Datei als Anhang.
+ * @throws {Error} Falls die Datei nicht gefunden wird oder ein Download-Fehler auftritt.
+ */
 exports.downloadFile = async (req, res) => {
   try {
     const fileName = req.params.fileId;
@@ -421,6 +464,15 @@ exports.downloadFile = async (req, res) => {
   }
 };
 
+/**
+ * Löscht eine Datei aus der Datenbank.
+ * 
+ * @async
+ * @function deleteFile
+ * @param {Object} req - Das Request-Objekt mit der Datei-ID.
+ * @param {Object} res - Das Response-Objekt mit der Löschbestätigung.
+ * @throws {Error} Falls die Datei nicht gefunden wird oder ein Löschfehler auftritt.
+ */
 exports.deleteFile = async (req, res) => {
   try {
     const fileId = req.params.fileId;
@@ -451,6 +503,15 @@ exports.deleteFile = async (req, res) => {
   }
 };
 
+/**
+ * Zeigt eine Datei im Browser an, falls sie ein unterstütztes Format hat.
+ * 
+ * @async
+ * @function viewFile
+ * @param {Object} req - Das Request-Objekt mit der Datei-ID.
+ * @param {Object} res - Das Response-Objekt mit der Datei.
+ * @throws {Error} Falls die Datei nicht gefunden wird oder ein Anzeige-Fehler auftritt.
+ */
 exports.viewFile = async (req, res) => {
   try {
     const fileName = req.params.fileId;
@@ -552,30 +613,34 @@ exports.viewFile = async (req, res) => {
 //          V
 
 /**
- * Retrieves the complete version history for a document based on any version's fileId.
+ * Ruft die komplette Versionshistorie eines Dokuments basierend auf einer beliebigen Version ab.
  *
- * The function works by:
- * 1. Finding the original document using the provided fileId
- * 2. Using the file name to retrieve all versions
- * 3. Returning a sorted list of all versions with metadata
+ * Die Funktion arbeitet folgendermaßen:
+ * 1. Sucht das ursprüngliche Dokument anhand der bereitgestellten fileId.
+ * 2. Verwendet den Dateinamen, um alle Versionen des Dokuments zu ermitteln.
+ * 3. Gibt eine sortierte Liste aller Versionen mit Metadaten zurück.
  *
+ * @async
+ * @function getVersionHistory
  * @route GET /versions/:fileId
- * @param {string} req.params.fileId - The ID of any version of the file
- * @param {string} req.session.userId - User ID from session (for authorization)
- *
- * @returns {Object} Response object
- * @returns {string} Response.fileName - The original name of the file
- * @returns {Array<Object>} Response.versions - Array of version objects
- * @returns {string} Response.versions[].file_id - Unique identifier for each version
- * @returns {number} Response.versions[].version - Version number (starts at 1)
- * @returns {Date} Response.versions[].created_at - Timestamp of version creation
+ * @param {Object} req - Das Request-Objekt.
+ * @param {string} req.params.fileId - Die ID einer beliebigen Version der Datei.
+ * @param {Object} req.session - Sitzungsinformationen des Benutzers.
+ * @param {string} req.session.userId - Benutzer-ID für die Autorisierung.
+ * @param {Object} res - Das Response-Objekt.
+ * @returns {Promise<Object>} Ein Objekt mit der Versionshistorie.
+ * @property {string} fileName - Der ursprüngliche Name der Datei.
+ * @property {Array<Object>} versions - Eine Liste von Versionen des Dokuments.
+ * @property {string} versions[].file_id - Eindeutiger Bezeichner für jede Version.
+ * @property {number} versions[].version - Versionsnummer (beginnend bei 1).
+ * @property {Date} versions[].created_at - Zeitstempel der Versionserstellung.
  *
  * @example
- * // Frontend API call
+ * // API-Aufruf im Frontend
  * const response = await fetch(`/api/versions/${fileId}`);
  * const versionHistory = await response.json();
  *
- * // Response example:
+ * // Beispielhafte API-Antwort:
  * {
  *   fileName: "document.pdf",
  *   versions: [
@@ -592,11 +657,10 @@ exports.viewFile = async (req, res) => {
  *   ]
  * }
  *
- * @errorResponse {404} File not found
- * @errorResponse {500} Server error during retrieval
- * 
+ * @throws {Error} Falls die Datei nicht gefunden wird oder ein Serverfehler auftritt.
  * @author Lennart
  */
+
 exports.getVersionHistory = async (req, res) => {
   try {
     const fileId = req.params.fileId;
@@ -647,20 +711,15 @@ exports.getVersionHistory = async (req, res) => {
 };
 
 /**
-Datenbankschema-Referenz (Tabelle main.files)
-Relevante Spalten für die Versionierung:
-
-    file_id (PK): Eindeutiger Bezeichner für jede Dateiversion
-
-    file_name: Name der Datei (wird verwendet, um Versionen zu gruppieren)
-
-    version: Automatisch inkrementierende Versionsnummer für Dateien mit demselben Namen
-
-    created_at: Zeitstempel des Uploads
-
-    user_id (FK): Referenz auf den Benutzer, dem die Datei gehört
+ * Berechnet Vorschläge für Ordner basierend auf dem hochgeladenen Dokument.
+ * 
+ * @async
+ * @function getFolderSuggestions
+ * @param {Object} req - Das Request-Objekt mit Text- und Embedding-Daten.
+ * @param {Object} res - Das Response-Objekt mit den Ordner-Vorschlägen.
+ * @returns {Promise<void>} Antwort mit passenden Ordnern oder ähnlichen existierenden Ordnern.
+ * @throws {Error} Falls die Berechnung fehlschlägt.
  */
-
 exports.getFolderSuggestions = async (req, res) => {
   try {
     const { textContent, embedding } = req.body;
@@ -710,6 +769,16 @@ exports.getFolderSuggestions = async (req, res) => {
   }
 };
 
+/**
+ * Weist einer hochgeladenen Datei einen Ordner zu.
+ * 
+ * @async
+ * @function assignFolder
+ * @param {Object} req - Das Request-Objekt mit Datei- und Ordner-ID.
+ * @param {Object} res - Das Response-Objekt mit der Bestätigung der Ordnerzuweisung.
+ * @returns {Promise<void>} Antwort mit der erfolgreichen Zuweisung.
+ * @throws {Error} Falls ein Fehler beim Zuweisen des Ordners auftritt.
+ */
 exports.assignFolder = async (req, res) => {
   try {
     const { fileId, folderId } = req.body;
@@ -734,7 +803,7 @@ exports.assignFolder = async (req, res) => {
       });
     }
 
-      // Datei mit ausgewählter folder_id aktualisieren
+    // Datei mit ausgewählter folder_id aktualisieren
     const updateQuery = `
             UPDATE main.files 
             SET folder_id = $1
@@ -743,7 +812,7 @@ exports.assignFolder = async (req, res) => {
         `;
     await db.query(updateQuery, [folderId, fileId, userId]);
 
-      // Run clustering nach der Ordnerzuweisung
+    // Run clustering nach der Ordnerzuweisung
     const allEmbeddings = await modelEmbedding.getAllEmbeddings(userId);
     const clusteringResult = await modelClustering.runClustering(
       allEmbeddings.map((item) => {
