@@ -1,9 +1,11 @@
 /**
- * Diese Datei enthalt die Routen für die Authentifizierung.
+ * @fileoverview Diese Datei enthält die Routen für die Authentifizierung.
  * Sie ermöglicht die Registrierung, Anmeldung und Abmeldung von Benutzern.
- *
- * @autor Ayoub. 
+ * 
+ * @module authRoutes
+ * @author Ayoub
  */
+
 const express = require('express');
 const router = express.Router();
 const { registerUser } = require('../models/userRegistrationToDB');
@@ -12,7 +14,20 @@ const User = require('../../database/User');
 const UserRole = require('../../database/UserRole');
 const UserRoleMapping = require('../../database/UserRoleMapping');
 
-// Registration Route
+/**
+ * Registriert einen neuen Benutzer in der Datenbank.
+ * 
+ * @async
+ * @function
+ * @route POST /register
+ * @param {Object} req - Das Request-Objekt mit Benutzername, E-Mail und Passwort.
+ * @param {string} req.body.username - Der Benutzername des neuen Nutzers.
+ * @param {string} req.body.email - Die E-Mail-Adresse des neuen Nutzers.
+ * @param {string} req.body.password - Das Passwort des neuen Nutzers.
+ * @param {Object} res - Das Response-Objekt.
+ * @returns {Promise<void>} Antwort mit der Benutzer-ID oder einer Fehlermeldung.
+ * @throws {Error} Falls der Benutzer bereits existiert oder ein Serverfehler auftritt.
+ */
 router.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -38,7 +53,19 @@ router.post("/register", async (req, res) => {
   }
 });
 
-// Login Route
+/**
+ * Meldet einen Benutzer an und speichert die Sitzung.
+ * 
+ * @async
+ * @function
+ * @route POST /login
+ * @param {Object} req - Das Request-Objekt mit Anmeldeinformationen.
+ * @param {string} req.body.username - Der Benutzername des Nutzers.
+ * @param {string} req.body.password - Das Passwort des Nutzers.
+ * @param {Object} res - Das Response-Objekt.
+ * @returns {Promise<void>} Antwort mit der Benutzer-ID und Admin-Status.
+ * @throws {Error} Falls die Anmeldeinformationen ungültig sind oder ein Serverfehler auftritt.
+ */
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -56,7 +83,7 @@ router.post("/login", async (req, res) => {
           },
         ],
       });
-      
+
       req.session.isAdmin = isAdmin?.UserRole?.role_name === 'admin';
 
       res.status(200).json({
@@ -73,7 +100,16 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Logout Route
+/**
+ * Meldet einen Benutzer ab, indem die Sitzung zerstört wird.
+ * 
+ * @function
+ * @route POST /logout
+ * @param {Object} req - Das Request-Objekt mit der aktiven Benutzersitzung.
+ * @param {Object} res - Das Response-Objekt.
+ * @returns {void} Antwort mit einer Bestätigung der Abmeldung.
+ * @throws {Error} Falls ein Fehler beim Beenden der Sitzung auftritt.
+ */
 router.post("/logout", (req, res) => {
   req.session.destroy((err) => {
     if (err) {

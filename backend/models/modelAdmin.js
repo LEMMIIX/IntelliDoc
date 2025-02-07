@@ -1,14 +1,25 @@
 /**
- * Diese Datei enthält Middleware-Funktionen zur Überprüfung von Administratorrechten.
- * Sie ermöglicht die Überprüfung, ob ein Benutzer die Admin-Rolle besitzt, bevor er auf bestimmte Routen zugreifen darf.
- *
- * @author Miray
+ * @fileoverview Middleware zur Überprüfung von Administratorrechten.
+ * Diese Datei stellt sicher, dass nur Benutzer mit Admin-Rechten auf bestimmte Routen zugreifen können.
  * 
+ * @author Miray
+ * @module modelAdmin
  */
 
 const User = require('../../database/User');
 const UserRole = require('../../database/UserRole');
 
+/**
+ * Middleware zur Überprüfung von Administratorrechten.
+ * 
+ * @async
+ * @function adminMiddleware
+ * @param {Object} req - Das Request-Objekt, das die Benutzersitzung enthält.
+ * @param {Object} res - Das Response-Objekt zum Senden von HTTP-Antworten.
+ * @param {Function} next - Die nächste Middleware-Funktion im Stack.
+ * @returns {void} Sendet eine HTTP-Antwort, wenn der Zugriff verweigert wird.
+ * @throws {Error} Falls ein Serverfehler bei der Admin-Überprüfung auftritt.
+ */
 async function adminMiddleware(req, res, next) {
   const userId = req.session?.userId; // Benutzer-ID aus der Session holen
 

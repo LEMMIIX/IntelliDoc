@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/models/modelFileReader.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/models/modelFileReader.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview Diese Datei enthält Funktionen zum Extrahieren von Textinhalten 
+ * aus verschiedenen Dateiformaten. Sie unterstützt PDF, DOCX, Textdateien und Bilder (mittels OCR).
+ * 
+ * @author Miray
+ * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module modelFileReader
+ */
+
+const { PythonShell } = require('python-shell');
+const fs = require('fs').promises;
+const path = require('path');
+const mammoth = require('mammoth');
+const { performOCR } = require('./modelOcr');
+const { performance } = require('perf_hooks');
+
+const pythonScriptPath = path.join(__dirname, 'pdf_extractor.py');
+
+/**
+ * Extrahiert Text aus einer PDF-Datei mithilfe eines externen Python-Skripts.
+ * Führt mehrere Versuche durch, falls ein Fehler auftritt.
+ *
+ * @async
+ * @function extractTextFromPDF
+ * @param {Buffer} buffer - Der Dateiinhalt als Buffer.
+ * @returns {Promise&lt;string>} Der extrahierte Text aus dem PDF.
+ * @throws {Error} Falls die Extraktion fehlschlägt oder das Python-Skript einen Fehler zurückgibt.
+ * @example
+ * const pdfBuffer = fs.readFileSync('document.pdf');
+ * const text = await extractTextFromPDF(pdfBuffer);
+ * console.log(text);
+ */
+async function extractTextFromPDF(buffer) {
+    const maxRetries = 3;
+    const retryDelay = 1000;
+
+    for (let attempt = 1; attempt &lt;= maxRetries; attempt++) {
+        try {
+            //console.log(`Attempt ${attempt} to extract text from PDF`);
+            const pyshell = new PythonShell(pythonScriptPath, {
+                mode: 'text',
+                pythonOptions: ['-u'],
+                stdinWithAck: true,
+                encoding: 'utf-8'
+            });
+
+            const extractedText = await new Promise((resolve, reject) => {
+                let textContent = '';
+                pyshell.stdin.write(buffer.toString('base64'));
+                pyshell.stdin.end();
+
+                pyshell.on('message', (message) => {
+                    textContent += message;
+                });
+
+                pyshell.end((err) => {
+                    if (err) {
+                        console.error(`Attempt ${attempt} failed:`, err);
+                        reject(err);
+                    } else {
+                        resolve(textContent);
+                    }
+                });
+            });
+
+            if (extractedText.startsWith('ERROR:')) {
+                throw new Error(extractedText);
+            }
+
+            return extractedText;
+        } catch (error) {
+            if (attempt === maxRetries) throw error;
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+        }
+    }
+}
+
+/**
+ * Extrahiert reinen Text aus einer DOCX-Datei.
+ *
+ * @async
+ * @function extractTextFromDOCX
+ * @param {Buffer} buffer - Der Dateiinhalt als Buffer.
+ * @returns {Promise&lt;string>} Der extrahierte Text aus dem DOCX-Dokument.
+ * @example
+ * const docxBuffer = fs.readFileSync('document.docx');
+ * const text = await extractTextFromDOCX(docxBuffer);
+ * console.log(text);
+ */
+async function extractTextFromDOCX(buffer) {
+    const { value } = await mammoth.extractRawText({ buffer });
+    return value;
+}
+
+const extractors = {
+    'application/pdf': extractTextFromPDF,
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': extractTextFromDOCX,
+    'text/plain': (buffer) => buffer.toString('utf-8'),
+    'image/png': performOCR,
+    'image/jpeg': performOCR
+};
+
+/**
+ * Extrahiert den Textinhalt einer Datei basierend auf ihrem MIME-Typ.
+ * Unterstützt PDF, DOCX, Textdateien und Bilder (OCR).
+ *
+ * @async
+ * @function extractTextContent
+ * @param {Buffer} buffer - Der Dateiinhalt als Buffer.
+ * @param {string} mimetype - Der MIME-Typ der Datei.
+ * @param {string} filename - Der Name der Datei (optional für Logging und OCR).
+ * @returns {Promise&lt;string>} Der extrahierte Textinhalt der Datei.
+ * @throws {Error} Falls das Dateiformat nicht unterstützt wird oder die Extraktion fehlschlägt.
+ * @example
+ * const buffer = fs.readFileSync('image.png');
+ * const text = await extractTextContent(buffer, 'image/png', 'image.png');
+ * console.log(text);
+ */
+async function extractTextContent(buffer, mimetype, filename) {
+    const startTime = performance.now();
+
+    console.log(`Processing file: ${filename} (${mimetype})`);
+
+    const extractor = extractors[mimetype];
+    if (!extractor) {
+        throw new Error('Unsupported file type');
+    }
+
+    let textContent;
+    if (mimetype.startsWith('image/')) {
+        const result = await extractor(buffer, filename);
+        if (result.success) {
+            textContent = result.text;
+        } else {
+            throw new Error(`OCR failed: ${result.error}`);
+        }
+    } else {
+        textContent = await extractor(buffer, filename);
+    }
+
+    if (typeof textContent !== 'string') {
+        throw new Error(`Unexpected result type from extractor: ${typeof textContent}`);
+    }
+
+    console.log(`Successfully extracted text from ${filename}`);
+    console.log(`Preview of extracted text (first 1000 characters):`);
+    console.log(textContent.substring(0, 1000));
+    //console.log(`... (${textContent.length} total characters extracted)`);
+
+    const endTime = performance.now();
+    const processingTime = (endTime - startTime).toFixed(2);
+    console.log(`Reading file time: ${processingTime} ms`);
+
+    return textContent;
+}
+
+module.exports = { extractTextContent };</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

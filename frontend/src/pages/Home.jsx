@@ -1,9 +1,12 @@
 ﻿/**
- * Diese Datei enthält die Home-Komponente.
- * Sie stellt die Startseite der Anwendung dar und bietet Navigation zu Registrierung und Anmeldung.
- *
- * @autor Lennart (Logo), Ayoub
+ * @file Home.jsx - Startseite der Anwendung
+ * @author Lennart (Logo), Ayoub
+ * @description Diese Komponente stellt die Startseite der Anwendung dar und bietet Navigation zu Registrierung und Anmeldung.
  * 
+ * @requires react-router-dom
+ * @requires ../styles/home.css
+ * @requires ../assets/intellimann.webp
+ * @requires ../assets/intellidoc_logo.webp
  */
 
 import { Link } from "react-router-dom";
@@ -11,6 +14,37 @@ import "../styles/home.css";
 import intellimann from "../assets/intellimann.webp";
 import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
+/**
+ * @component Home
+ * @description Hauptkomponente für die Startseite
+ * @returns {JSX.Element} Die gerenderte Home-Komponente mit Navigation, Hero-Section, Features und Footer
+ * 
+ * @example
+ * return (
+ *   <Home />
+ * )
+ */
+/**
+ * @typedef {Object} PageSections
+ * @property {JSX.Element} header - Enthält Navigation und Logo
+ * @property {JSX.Element} heroSection - Hauptbereich mit Call-to-Action
+ * @property {JSX.Element} featuresSection - Bereich für Produktmerkmale
+ * @property {JSX.Element} footer - Fußbereich mit Kontaktinformationen
+ */
+
+/**
+ * @typedef {Object} NavigationLinks
+ * @property {string} signup - Link zur Registrierungsseite
+ * @property {string} login - Link zur Anmeldeseite
+ * @property {string} impressum - Link zum Impressum
+ */
+
+/**
+ * Fehlerbehandlung für Bildladung
+ * @function
+ * @param {Event} e - Das Error-Event beim Bildladen
+ * @description Behandelt Fehler beim Laden des Hero-Bildes
+ */
 function Home() {
     return (
         <div className="homepage">

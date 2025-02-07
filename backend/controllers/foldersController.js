@@ -1,17 +1,27 @@
 /**
- * Diese Datei enthält Controller-Funktionen für die Verwaltung von Ordnern.
+ * @fileoverview Diese Datei enthält Controller-Funktionen für die Verwaltung von Ordnern.
  * Sie ermöglicht das Abrufen, Erstellen, Umbenennen und Löschen von Ordnern sowie das Abrufen der Ordnerstruktur eines Benutzers.
- *
- * @author Luca,Miray
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * 
+ * @author Luca, Miray
+ * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
  */
+
 const Folder = require("../../database/Folder.js");
 const File = require("../../database/File.js");
 const sequelize = require("../../sequelize.config.js");
 const { Op } = require("sequelize");
 const db = require("../../ConnectPostgres.js");
 
-// Funktion um Ordnerstruktur auszugeben
+/**
+ * Ruft die vollständige Ordnerstruktur eines Benutzers ab, einschließlich untergeordneter Ordner und enthaltener Dateien.
+ * 
+ * @async
+ * @function getFolderTree
+ * @param {Object} req - Das Request-Objekt mit der Benutzer-Session.
+ * @param {Object} res - Das Response-Objekt für die Serverantwort.
+ * @returns {Promise<void>} Antwort mit der hierarchischen Ordnerstruktur und nicht zugewiesenen Dateien.
+ * @throws {Error} Falls ein Fehler beim Abrufen der Ordner auftritt.
+ */
 exports.getFolderTree = async (req, res) => {
   if (!req.session.userId) {
     return res
@@ -69,11 +79,11 @@ exports.getFolderTree = async (req, res) => {
           name: folder.folder_name,
           files: folder.files[0]
             ? folder.files
-                .filter((file) => file !== null) // Überprüfe, ob der Eintrag nicht null ist
-                .map((file) => {
-                  const [id, name] = file.split(":");
-                  return { id, name };
-                })
+              .filter((file) => file !== null) // Überprüfe, ob der Eintrag nicht null ist
+              .map((file) => {
+                const [id, name] = file.split(":");
+                return { id, name };
+              })
             : [],
           children: buildTree(folders, folder.folder_id),
         }));
@@ -97,6 +107,16 @@ exports.getFolderTree = async (req, res) => {
 // Funktion zum Erstellen eines neuen Ordners
 const { generateEmbedding } = require("../models/modelEmbedding"); // Importiere die Funktion zum Generieren von Embeddings
 
+/**
+ * Erstellt einen neuen Ordner für den Benutzer.
+ * 
+ * @async
+ * @function createFolder
+ * @param {Object} req - Das Request-Objekt mit dem neuen Ordnernamen und optional einer Parent-Folder-ID.
+ * @param {Object} res - Das Response-Objekt für die Serverantwort.
+ * @returns {Promise<void>} Antwort mit der ID des neu erstellten Ordners.
+ * @throws {Error} Falls die Erstellung fehlschlägt.
+ */
 exports.createFolder = async (req, res) => {
   if (!req.session.userId) {
     return res
@@ -138,7 +158,16 @@ exports.createFolder = async (req, res) => {
   }
 };
 
-// Funktion zum Abrufen aller Ordner des Benutzers
+/**
+ * Ruft alle Ordner eines Benutzers ab.
+ * 
+ * @async
+ * @function getFolders
+ * @param {Object} req - Das Request-Objekt mit der Benutzer-Session.
+ * @param {Object} res - Das Response-Objekt für die Serverantwort.
+ * @returns {Promise<void>} Antwort mit einer Liste der Ordner.
+ * @throws {Error} Falls das Abrufen der Ordner fehlschlägt.
+ */
 exports.getFolders = async (req, res) => {
   if (!req.session.userId) {
     return res
@@ -167,7 +196,16 @@ exports.getFolders = async (req, res) => {
   }
 };
 
-// Funktion zum Löschen eines Ordners und seiner Unterordner inklusive der enthaltenen Datein
+/**
+ * Löscht einen Ordner und alle untergeordneten Ordner sowie die darin enthaltenen Dateien.
+ * 
+ * @async
+ * @function deleteFolder
+ * @param {Object} req - Das Request-Objekt mit der ID des zu löschenden Ordners.
+ * @param {Object} res - Das Response-Objekt für die Serverantwort.
+ * @returns {Promise<void>} Antwort mit einer Erfolgsmeldung oder einer Fehlermeldung.
+ * @throws {Error} Falls das Löschen des Ordners fehlschlägt.
+ */
 exports.deleteFolder = async (req, res) => {
   if (!req.session.userId) {
     return res
@@ -246,7 +284,16 @@ exports.deleteFolder = async (req, res) => {
   }
 };
 
-// Funktion zum Umbenennen eines Ordners
+/**
+ * Ändert den Namen eines vorhandenen Ordners.
+ * 
+ * @async
+ * @function renameFolder
+ * @param {Object} req - Das Request-Objekt mit der Ordner-ID und dem neuen Namen.
+ * @param {Object} res - Das Response-Objekt für die Serverantwort.
+ * @returns {Promise<void>} Antwort mit der aktualisierten Ordnerinformation.
+ * @throws {Error} Falls das Umbenennen fehlschlägt.
+ */
 exports.renameFolder = async (req, res) => {
   if (!req.session.userId) {
     return res

@@ -1,10 +1,29 @@
 /**
- * Die `userLogout`-Funktion führt die Abmeldung eines Benutzers durch und navigiert zur Login-Seite.
- * @Author Farah.
+ * @file userLogout.js - Benutzerabmeldungs-Funktionalität
+ * @author Farah
+ * @description Behandelt den Abmeldeprozess und das Bereinigen der Session-Daten
+ * 
+ * @requires ../production-config
  */
 
 import prodconfig from "../production-config";
 
+/**
+ * @function userLogout
+ * @async
+ * @description Führt die Benutzerabmeldung durch, bereinigt Session-Informationen
+ * und leitet zur Login-Seite weiter
+ * 
+ * @param {Function} navigate - React Router Navigate-Funktion für die Weiterleitung
+ * @throws {Error} Bei fehlgeschlagener Abmeldung am Server
+ * 
+ * @example
+ * await userLogout(navigate);
+ * 
+ * @note Bereinigt folgende Daten aus dem localStorage:
+ * - currentUserId
+ * - currentUserName
+ */
 export async function userLogout(navigate) {
   try {
     const response = await fetch(`${prodconfig.backendUrl}/auth/logout`, {

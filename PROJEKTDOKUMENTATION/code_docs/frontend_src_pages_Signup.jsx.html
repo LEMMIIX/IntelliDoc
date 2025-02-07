@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/pages/Signup.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/pages/Signup.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file Signup.jsx - Benutzerregistrierungs-Komponente
+ * @author Ayoub
+ * @description Komponente zur Registrierung neuer Benutzer mit 
+ * Formularvalidierung und Weiterleitung zur Verifizierung.
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires ../utils/userRegister
+ * @requires ../styles/Signup.css
+ * @requires ../assets/intellidoc_logo.webp
+ */
+
+import { useState } from "react";
+import { userRegister } from "../utils/userRegister";
+import { Link, useNavigate } from "react-router-dom";
+import "../styles/Signup.css"
+import intellidoc_logo from "../assets/intellidoc_logo.webp";
+
+/**
+ * @typedef {Object} SignupState
+ * @property {string} username - Benutzername
+ * @property {string} email - E-Mail-Adresse
+ * @property {string} password - Passwort
+ * @property {string} password2 - Passwort-Bestätigung
+ */
+
+/**
+ * @typedef {Object} PasswordRequirements
+ * @property {number} minLength - Minimale Passwortlänge (8 Zeichen)
+ * @property {RegExp} uppercase - Regex für Großbuchstaben-Validierung
+ */
+
+/**
+ * @component Signup
+ * @description Registrierungskomponente mit Formularvalidierung.
+ * Prüft Passwortanforderungen und Übereinstimmung der Eingaben.
+ * Nach erfolgreicher Registrierung erfolgt Weiterleitung zur Verifizierung.
+ * 
+ * @returns {JSX.Element} Die gerenderte Signup-Komponente
+ */
+function Signup() {
+   
+   const navigate = useNavigate(); // Initialisierung der navigate-Funktion, um Benutzer weiterzuleiten
+   const [username, setUsername] = useState(""); // Status zur Verwaltung der Benutzernamen-Eingabe
+   const [email, setEmail] = useState(""); // Status zur Verwaltung der E-Mail-Adresse
+   const [password, setPassword] = useState(""); // Status zur Verwaltung der Passworteingabe
+   const [password2, setPassword2] = useState(""); // Status zur Verwaltung der Bestätigung des Passworts
+
+  
+   // Formularübermittlung behandeln
+   /**
+ * @function handleSubmit
+ * @description Verarbeitet die Formular-Übermittlung mit Validierung
+ * @param {Event} e - Das Submit-Event des Formulars
+ * @returns {void}
+ * 
+ * @throws {Alert} Bei nicht erfüllten Passwortanforderungen
+ * @throws {Alert} Bei nicht übereinstimmenden Passwörtern
+ */
+   const handleSubmit = (e) => {
+       e.preventDefault();
+       // Passwortanforderungen im Frontend
+       const passwordMinLength = 8;
+       const passwordRegex = /[A-Z]/; // muss mindestens einen Großbuchstaben enthalten
+       if (password.length &lt; passwordMinLength) { // Überprüfen, ob das Passwort die Mindestlänge erfüllt
+           alert(`Das Passwort muss mindestens ${passwordMinLength} Zeichen lang sein.`);
+           return;
+       }
+       if (!password.match(passwordRegex)) { // Überprüfen, ob das Passwort mindestens einen Großbuchstaben enthält
+           alert("Das Passwort muss mindestens einen Großbuchstaben enthalten.");
+           return;
+       }
+
+      if (password !== password2) { // Überprüfen, ob die Passwörter übereinstimmen
+         alert("Passwörter stimmen nicht überein!"); // Warnung bei nicht übereinstimmenden Passwörtern
+         return;
+      }
+       userRegister(username, email, password, () => {
+           // Nach erfolgreicher Registrierung den Benutzer zur Verifizierungsseite weiterleiten
+           navigate('/Verification', { state: { email } });
+       }); // Aufruf der Funktion userRegister, um den Benutzer zu registrieren
+   };
+
+    return (
+        &lt;>
+        
+            &lt;header className="header">
+                &lt;div className="header-content">
+                    &lt;div className="logo">
+                        &lt;a href="/">
+                            &lt;img src={intellidoc_logo} alt="IntelliDoc Logo" />
+                        &lt;/a>
+                    &lt;/div>
+                &lt;/div>
+            &lt;/header>
+            {/* Hauptinhalt */}
+        &lt;div className="signup-container">
+            &lt;div className="signup-card">
+                {/* Linke Spalte: Registrierung */}
+                &lt;div className="signup-column">
+                    &lt;h1>Registrieren&lt;/h1>
+                    &lt;h3>Bitte alle Felder ausfüllen&lt;/h3>
+                    &lt;form onSubmit={handleSubmit}>
+                        
+                        &lt;input
+                            type="text"
+                                placeholder="E-Mail-Adresse"
+                            value={username}
+                            onChange={(e) => setUsername(e.target.value)}
+                        />
+                        &lt;input
+                            type="email"
+                            placeholder="E-Mail-Adresse bestätigen"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        &lt;input
+                            type="password"
+                            placeholder="Passwort"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                        &lt;input
+                            type="password"
+                            placeholder="Passwort bestätigen"
+                            value={password2}
+                            onChange={(e) => setPassword2(e.target.value)}
+                        />
+                        &lt;button type="submit">Registrieren&lt;/button>
+                    &lt;/form>
+                &lt;/div>
+
+                {/* Rechte Spalte: Login */}
+                &lt;div className="login-column">
+                    &lt;h2>Willkommen zurück!&lt;/h2>
+                    &lt;h3>Schön, wieder da zu sein!&lt;/h3>
+                    &lt;Link to="/auth/login">Einloggen&lt;/Link>
+                &lt;/div>
+            &lt;/div>
+            
+            &lt;/div>
+        &lt;/>
+    );
+}
+
+export default Signup;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

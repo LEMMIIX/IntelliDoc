@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: backend/workers/workerFoldersuggestion.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: backend/workers/workerFoldersuggestion.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @fileoverview Diese Datei enthält den Worker zur Ordner-Vorschlagserstellung.
+ * Sie ermöglicht die Berechnung von Ähnlichkeiten und Clustering von Dokument- und Ordner-Embeddings.
+ * 
+ * @author Lennart
+ */
+
+
+const { parentPort } = require('worker_threads');
+const { runClustering } = require('../models/modelClustering');
+
+/**
+ * Lauscht auf eingehende Nachrichten vom Hauptthread und führt entsprechende Aktionen aus.
+ * Unterstützt Gesundheitschecks und führt Clustering-Operationen durch.
+ * 
+ * @param {Object} task - Das empfangene Task-Objekt.
+ * @param {string} task.type - Der Typ der Aufgabe (`HEALTH_CHECK` oder Clustering-Aufgabe).
+ * @param {Array&lt;number>} [task.docEmbedding] - Das Embedding des zu analysierenden Dokuments.
+ * @param {Array&lt;Object>} [task.folderVectors] - Eine Liste von Ordnern mit ihren Embeddings.
+ * @param {Object} [task.config] - Konfiguration für das Clustering.
+ */
+parentPort.on('message', async (task) => {
+    if (task.type === 'HEALTH_CHECK') {
+        parentPort.postMessage({ type: 'HEALTH_CHECK', status: 'healthy' });
+        return;
+    }
+
+    try {
+        const { docEmbedding, folderVectors, config } = task;
+
+        // Prepare clustering input
+        const clusteringInput = {
+            embeddings: [docEmbedding, ...folderVectors.map(f => f.embedding)],
+            documentIndex: 0
+        };
+
+        // Run clustering in worker
+        const clusteringResults = await runClustering(
+            clusteringInput.embeddings,
+            {
+                minClusterSize: 2,
+                semanticThreshold: config.similarityThreshold,
+                anchorInfluence: config.clusterInfluence
+            }
+        );
+
+        // Process results
+        const suggestions = processSuggestions(
+            clusteringResults,
+            docEmbedding,
+            folderVectors,
+            config
+        );
+
+        parentPort.postMessage({
+            success: true,
+            suggestions
+        });
+
+    } catch (error) {
+        parentPort.postMessage({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+/**
+ * Verarbeitet die Clustering-Ergebnisse und berechnet die besten Ordner-Vorschläge.
+ * 
+ * @function processSuggestions
+ * @param {Object} clusteringResults - Das Ergebnis des Clustering-Prozesses.
+ * @param {Array&lt;number>} docEmbedding - Das Embedding des Dokuments.
+ * @param {Array&lt;Object>} folderVectors - Eine Liste von Ordnern mit ihren Embeddings.
+ * @param {Object} config - Konfigurationsoptionen für die Berechnung.
+ * @returns {Array&lt;Object>} Eine sortierte Liste von Ordner-Vorschlägen mit Metadaten.
+ */
+function processSuggestions(clusteringResults, docEmbedding, folderVectors, config) {
+    const documentCluster = clusteringResults.labels[0];
+
+    return folderVectors
+        .map((folder, index) => {
+            const folderCluster = clusteringResults.labels[index + 1];
+            const similarity = calculateCosineSimilarity(docEmbedding, folder.embedding);
+
+            const clusterBoost =
+                documentCluster === folderCluster &amp;&amp; documentCluster !== -1
+                    ? config.clusterInfluence
+                    : 0;
+
+            return {
+                folderId: folder.folder_id,
+                folderName: folder.folder_name,
+                similarity: similarity * (1 + clusterBoost),
+                fileCount: folder.file_count,
+                recentFiles: folder.recent_files,
+                parentId: folder.parent_folder_id,
+                hasChildren: folder.has_children,
+                avgFileSimilarity: folder.avg_file_similarity,
+                clusterContext: {
+                    inSameCluster: documentCluster === folderCluster,
+                    clusterLabel: folderCluster
+                }
+            };
+        })
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, config.maxSuggestions);
+}
+
+/**
+ * Berechnet die Kosinus-Ähnlichkeit zwischen zwei Vektoren.
+ * 
+ * @function calculateCosineSimilarity
+ * @param {Array&lt;number>} vec1 - Der erste Vektor.
+ * @param {Array&lt;number>} vec2 - Der zweite Vektor.
+ * @returns {number} Ein Wert zwischen -1 und 1, der die Ähnlichkeit der beiden Vektoren beschreibt.
+ */
+function calculateCosineSimilarity(vec1, vec2) {
+    const dotProduct = vec1.reduce((sum, val, i) => sum + val * vec2[i], 0);
+    const norm1 = Math.sqrt(vec1.reduce((sum, val) => sum + val * val, 0));
+    const norm2 = Math.sqrt(vec2.reduce((sum, val) => sum + val * val, 0));
+    return dotProduct / (norm1 * norm2);
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

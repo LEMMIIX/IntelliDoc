@@ -1,15 +1,64 @@
 /**
- * Diese Datei enthält die AdminDashboard-Komponente.
- * Sie ermöglicht Administratoren die Verwaltung von Benutzern und das Überwachen von Datenbank-Sitzungen und -Statistiken.
- *
- * @autor Miray. 
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @file AdminDashboard.jsx - Administrator-Verwaltungsoberfläche
+ * @author Miray
+ * @description Diese Komponente stellt die Hauptverwaltungsoberfläche für Administratoren dar.
+ * Sie ermöglicht die Verwaltung von Benutzern und das Monitoring von Datenbank-Aktivitäten.
+ * 
+ * @requires react
+ * @requires sweetalert2
+ * @requires ../../production-config
  */
 
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import prodconfig from "../../production-config";
 
+/**
+ * @component AdminDashboard
+ * @description Hauptkomponente für die Administrator-Verwaltungsoberfläche
+ * 
+ * @example
+ * return (
+ *   <AdminDashboard />
+ * )
+ */
+/**
+ * @typedef {Object} User
+ * @property {number} user_id - Eindeutige Benutzer-ID
+ * @property {string} user_name - Benutzername
+ * @property {string} email - E-Mail-Adresse des Benutzers
+ * @property {boolean} is_verified - Verifizierungsstatus
+ * @property {Date} registered_at - Registrierungsdatum
+ */
+/**
+ * @typedef {Object} DBSession
+ * @property {string} datname - Name der Datenbank
+ * @property {string} usename - Datenbankbenutzer
+ * @property {string} state - Aktueller Status
+ * @property {string} query - Aktuelle Abfrage
+ * @property {string} query_start - Startzeitpunkt der Abfrage
+ */
+/**
+ * @typedef {Object} DBStats
+ * @property {string} datname - Name der Datenbank
+ * @property {number} active_connections - Anzahl aktiver Verbindungen
+ * @property {number} committed_transactions - Anzahl erfolgreich abgeschlossener Transaktionen
+ * @property {number} rolledback_transactions - Anzahl zurückgerollter Transaktionen
+ * @property {number} blocks_read - Anzahl gelesener Blöcke
+ * @property {number} blocks_hit - Cache-Treffer
+ */
+/**
+ * State-Hooks der Komponente
+ * @type {Object}
+ * @property {User[]} users - Liste aller Benutzer
+ * @property {User|null} editingUser - Aktuell bearbeiteter Benutzer
+ * @property {string} newEmail - Neue E-Mail-Adresse bei Bearbeitung
+ * @property {string} newPassword - Neues Passwort bei Bearbeitung
+ * @property {DBSession[]} dbSessions - Aktive Datenbank-Sitzungen
+ * @property {DBStats[]} dbStats - Datenbankstatistiken
+ * @property {boolean} isMonitoringLoading - Ladezustand des Monitorings
+ * @property {Set<number>} adminUserIds - Set der Admin-Benutzer-IDs
+ */
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
@@ -24,6 +73,12 @@ const AdminDashboard = () => {
     fetchAdminUserIds();
   }, []);
   
+/**
+ * @function fetchAdminUserIds
+ * @async
+ * @description Ruft die IDs aller Admin-Benutzer vom Server ab
+ * @throws {Error} Wenn die Anfrage fehlschlägt
+ */
   const fetchAdminUserIds = async () => {
     try {
       const response = await fetch(
@@ -47,6 +102,12 @@ const AdminDashboard = () => {
     fetchDbStats();
   }, []);
 
+  /**
+ * @function fetchDbSessions
+ * @async
+ * @description Ruft aktuelle Datenbank-Sitzungsinformationen ab
+ * @throws {Error} Wenn die Abfrage fehlschlägt
+ */
   const fetchDbSessions = async () => {
     setIsMonitoringLoading(true);
     try {
@@ -60,6 +121,12 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+ * @function fetchDbStats
+ * @async
+ * @description Ruft Datenbankstatistiken ab
+ * @throws {Error} Wenn die Abfrage fehlschlägt
+ */
   const fetchDbStats = async () => {
     setIsMonitoringLoading(true);
     try {
@@ -73,6 +140,13 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+ * @function deleteUser
+ * @async
+ * @param {number} id - ID des zu löschenden Benutzers
+ * @description Löscht einen Benutzer nach Bestätigung
+ * @throws {Error} Wenn das Löschen fehlschlägt
+ */
   const deleteUser = async (id) => {
     const confirmed = await Swal.fire({
       title: "Benutzer löschen?",
@@ -95,6 +169,13 @@ const AdminDashboard = () => {
     }
   };
 
+  /**
+ * @function assignAdmin
+ * @async
+ * @param {number} id - ID des Benutzers, der Admin-Rechte erhalten soll
+ * @description Weist einem Benutzer Admin-Rechte zu
+ * @throws {Error} Wenn die Rechtezuweisung fehlschlägt
+ */
   const assignAdmin = async (id) => {
     const user = users.find(u => u.user_id === id);
   
@@ -135,7 +216,12 @@ const AdminDashboard = () => {
     }
   };
   
-
+/**
+ * @function updateUser
+ * @async
+ * @description Aktualisiert die Benutzerdaten des ausgewählten Benutzers
+ * @throws {Error} Wenn die Aktualisierung fehlschlägt
+ */
   const updateUser = async () => {
     try {
       const response = await fetch(`${prodconfig.backendUrl}/api/admin/users/${editingUser.user_id}`, {

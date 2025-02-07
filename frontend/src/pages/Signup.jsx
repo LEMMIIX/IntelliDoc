@@ -1,9 +1,14 @@
 /**
- * Diese Datei enthält die Signup-Komponente und route.
- * Sie ermöglicht die Registrierung neuer Benutzer und leitet sie nach erfolgreicher Registrierung weiter.
- *
- * @autor Ayoub
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @file Signup.jsx - Benutzerregistrierungs-Komponente
+ * @author Ayoub
+ * @description Komponente zur Registrierung neuer Benutzer mit 
+ * Formularvalidierung und Weiterleitung zur Verifizierung.
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires ../utils/userRegister
+ * @requires ../styles/Signup.css
+ * @requires ../assets/intellidoc_logo.webp
  */
 
 import { useState } from "react";
@@ -12,7 +17,28 @@ import { Link, useNavigate } from "react-router-dom";
 import "../styles/Signup.css"
 import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
+/**
+ * @typedef {Object} SignupState
+ * @property {string} username - Benutzername
+ * @property {string} email - E-Mail-Adresse
+ * @property {string} password - Passwort
+ * @property {string} password2 - Passwort-Bestätigung
+ */
 
+/**
+ * @typedef {Object} PasswordRequirements
+ * @property {number} minLength - Minimale Passwortlänge (8 Zeichen)
+ * @property {RegExp} uppercase - Regex für Großbuchstaben-Validierung
+ */
+
+/**
+ * @component Signup
+ * @description Registrierungskomponente mit Formularvalidierung.
+ * Prüft Passwortanforderungen und Übereinstimmung der Eingaben.
+ * Nach erfolgreicher Registrierung erfolgt Weiterleitung zur Verifizierung.
+ * 
+ * @returns {JSX.Element} Die gerenderte Signup-Komponente
+ */
 function Signup() {
    
    const navigate = useNavigate(); // Initialisierung der navigate-Funktion, um Benutzer weiterzuleiten
@@ -23,6 +49,15 @@ function Signup() {
 
   
    // Formularübermittlung behandeln
+   /**
+ * @function handleSubmit
+ * @description Verarbeitet die Formular-Übermittlung mit Validierung
+ * @param {Event} e - Das Submit-Event des Formulars
+ * @returns {void}
+ * 
+ * @throws {Alert} Bei nicht erfüllten Passwortanforderungen
+ * @throws {Alert} Bei nicht übereinstimmenden Passwörtern
+ */
    const handleSubmit = (e) => {
        e.preventDefault();
        // Passwortanforderungen im Frontend

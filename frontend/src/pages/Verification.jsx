@@ -1,9 +1,14 @@
 /**
- * Diese Datei enthält die Verification-Komponente.
- * Sie ermöglicht die Verifizierung der E-Mail-Adresse eines Benutzers nach der Registrierung.
- *
- * @autor Ayoub
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @file Verification.jsx - E-Mail-Verifizierungs-Komponente
+ * @author Ayoub
+ * @description Komponente zur Verifizierung der E-Mail-Adresse nach der Registrierung
+ * durch Eingabe eines zugesendeten Verifizierungscodes.
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires ../production-config
+ * @requires ../styles/verification.css
+ * @requires ../assets/intellidoc_logo.webp
  */
 
 import { useState } from "react";
@@ -13,12 +18,33 @@ import prodconfig from "../production-config";
 import "../styles/verification.css";
 import intellidoc_logo from "../assets/intellidoc_logo.webp";
 
+/**
+ * @typedef {Object} VerificationState
+ * @property {string} email - E-Mail-Adresse aus dem Router-State
+ * @property {string} verificationCode - Eingabewert des Verifizierungscodes
+ */
+
+/**
+ * @component Verification
+ * @description Komponente zur E-Mail-Verifizierung. Verarbeitet den über
+ * react-router-dom übergebenen Location-State für die E-Mail-Adresse und
+ * ermöglicht die Eingabe des Verifizierungscodes.
+ * 
+ * @returns {JSX.Element} Die gerenderte Verification-Komponente
+ */
 function Verification() {
     const location = useLocation(); // Verwendet die location-API von react-router-dom
     const email = location.state?.email || ""; 
     const [verificationCode, setVerificationCode] = useState("");
     const navigate = useNavigate();
 
+    /**
+ * @function handleVerification
+ * @description Verarbeitet die Verifizierung des eingegebenen Codes
+ * @async
+ * @throws {Error} Bei fehlgeschlagener API-Anfrage
+ * @returns {Promise<void>}
+ */
     const handleVerification = async () => {
         try {
             const response = await fetch(`${prodconfig.backendUrl}/api/verify-code`, { 

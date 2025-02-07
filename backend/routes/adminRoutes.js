@@ -1,17 +1,29 @@
 /**
- * Diese Datei enthält die Routen für die Admin-Funktionen.
- * Sie ermöglicht das Abrufen, Löschen und Bearbeiten von Benutzern.
- *
- * @autor Miray
+ * @fileoverview Diese Datei enthält die Routen für die Admin-Funktionen.
+ * Sie ermöglicht das Abrufen, Löschen und Bearbeiten von Benutzern sowie das Verwalten von Admin-Rollen.
+ * 
+ * @module adminRoutes
+ * @author Miray
  */
+
 const express = require('express');
 const router = express.Router();
 const adminMiddleware = require('../models/modelAdmin');
 const User = require('../../database/User');
-const UserRoleMapping = require('../../database/UserRoleMapping'); 
+const UserRoleMapping = require('../../database/UserRoleMapping');
 const bcrypt = require('bcrypt');
 
-// Admin-Endpunkt: Liste aller Benutzer abrufen
+/**
+ * Gibt eine Liste aller registrierten Benutzer zurück.
+ * 
+ * @async
+ * @function
+ * @route GET /users
+ * @param {Object} req - Das Request-Objekt.
+ * @param {Object} res - Das Response-Objekt.
+ * @returns {Promise<void>} Eine JSON-Liste aller Benutzer.
+ * @throws {Error} Falls ein Serverfehler auftritt.
+ */
 router.get('/users', adminMiddleware, async (req, res) => {
   try {
     const users = await User.findAll({
@@ -24,7 +36,17 @@ router.get('/users', adminMiddleware, async (req, res) => {
   }
 });
 
-// Admin-Endpunkt: Benutzer löschen
+/**
+ * Löscht einen Benutzer basierend auf der angegebenen Benutzer-ID.
+ * 
+ * @async
+ * @function
+ * @route DELETE /users/:id
+ * @param {Object} req - Das Request-Objekt mit der Benutzer-ID in `params`.
+ * @param {Object} res - Das Response-Objekt.
+ * @returns {Promise<void>} Eine Bestätigung über das Löschen des Benutzers.
+ * @throws {Error} Falls der Benutzer nicht gefunden wird oder ein Serverfehler auftritt.
+ */
 router.delete('/users/:id', adminMiddleware, async (req, res) => {
   const userId = req.params.id;
 
@@ -43,9 +65,19 @@ router.delete('/users/:id', adminMiddleware, async (req, res) => {
   }
 });
 
-// Admin-Endpunkt: Benutzer bearbeiten
+/**
+ * Aktualisiert die Daten eines Benutzers basierend auf der Benutzer-ID.
+ * 
+ * @async
+ * @function
+ * @route PUT /users/:id
+ * @param {Object} req - Das Request-Objekt mit `params.id` (Benutzer-ID) und `body` (Benutzerdaten).
+ * @param {Object} res - Das Response-Objekt.
+ * @returns {Promise<void>} Eine Bestätigung über die Aktualisierung des Benutzers.
+ * @throws {Error} Falls der Benutzer nicht gefunden wird oder ein Serverfehler auftritt.
+ */
 router.put('/users/:id', adminMiddleware, async (req, res) => {
-  const userId = req.params.id; 
+  const userId = req.params.id;
   console.log("Received userId:", userId);
 
   const { user_name, email, password } = req.body;
@@ -78,11 +110,22 @@ router.put('/users/:id', adminMiddleware, async (req, res) => {
   }
 });
 
+/**
+ * Weist einem Benutzer die Admin-Rolle zu.
+ * 
+ * @async
+ * @function
+ * @route POST /users/:id/assign-admin
+ * @param {Object} req - Das Request-Objekt mit der Benutzer-ID in `params`.
+ * @param {Object} res - Das Response-Objekt.
+ * @returns {Promise<void>} Eine Bestätigung über die erfolgreiche Zuweisung der Admin-Rolle.
+ * @throws {Error} Falls der Benutzer bereits Admin ist oder ein Serverfehler auftritt.
+ */
 router.post('/users/:id/assign-admin', adminMiddleware, async (req, res) => {
   const userId = req.params.id;
 
   try {
-    const adminRoleId = 1; 
+    const adminRoleId = 1;
 
     const existingMapping = await UserRoleMapping.findOne({
       where: { user_id: userId, role_id: adminRoleId },
@@ -92,7 +135,7 @@ router.post('/users/:id/assign-admin', adminMiddleware, async (req, res) => {
       return res.status(400).json({ message: 'Benutzer hat bereits Admin-Rechte.' });
     }
 
-    
+
     await UserRoleMapping.create({
       user_id: userId,
       role_id: adminRoleId,
@@ -105,7 +148,17 @@ router.post('/users/:id/assign-admin', adminMiddleware, async (req, res) => {
   }
 });
 
-// Admin-Endpunkt: Abrufen aller Admin-Benutzer-IDs
+/**
+ * Gibt eine Liste aller Benutzer zurück, die die Admin-Rolle besitzen.
+ * 
+ * @async
+ * @function
+ * @route GET /admin-roles
+ * @param {Object} req - Das Request-Objekt.
+ * @param {Object} res - Das Response-Objekt mit einer Liste von Admin-Benutzer-IDs.
+ * @returns {Promise<void>} Eine JSON-Liste mit den IDs aller Admin-Benutzer.
+ * @throws {Error} Falls ein Serverfehler auftritt.
+ */
 router.get('/admin-roles', adminMiddleware, async (req, res) => {
   try {
     const adminRoleId = 1;

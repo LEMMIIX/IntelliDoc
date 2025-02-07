@@ -1,6 +1,13 @@
 /**
- * Die `FileUpload`-Komponente ermöglicht das Hochladen von Dateien in einen bestimmten Ordner.
- * @autor Farah
+ * @file FileUpload.jsx - Datei-Upload-Komponente
+ * @author Farah
+ * @description Komponente zum Hochladen von Dokumenten in einen spezifischen Ordner
+ * 
+ * @requires react
+ * @requires react-icons/fi
+ * @requires ../../utils/fetchFoldersTree
+ * @requires ../../utils/helpers
+ * @requires ../../production-config
  */
 
 /* eslint-disable no-unused-vars */
@@ -10,12 +17,40 @@ import { fetchAndRenderFolderTree } from "../../utils/fetchFoldersTree";
 import { customFetch } from "../../utils/helpers";
 import prodconfig from "../../production-config";
 
+/**
+ * @typedef {Object} FileUploadState
+ * @property {boolean} isUploading - Status des Upload-Vorgangs
+ * @property {File|null} selectedFile - Die ausgewählte Datei für den Upload
+ */
+
+/**
+ * @component FileUpload
+ * @description Formular-Komponente zum Hochladen von Dateien mit Fortschrittsanzeige
+ * und Statusmeldungen
+ * 
+ * @param {Object} props - Komponenten-Props
+ * @param {string|number} props.folderId - ID des Zielordners für den Upload
+ * 
+ * @returns {JSX.Element} Die gerenderte FileUpload-Komponente
+ */
 const FileUpload = ({ folderId }) => {
   const [isUploading, setIsUploading] = useState(false);
 
   const [selectedFile, setSelectedFile] = useState(null);
 
   // Handle form submission
+  /**
+ * @function handleSubmit
+ * @description Verarbeitet die Formular-Übermittlung für den Datei-Upload
+ * 
+ * @param {Event} e - Das Submit-Event des Formulars
+ * @throws {Error} Bei fehlgeschlagener Server-Anfrage oder fehlenden Eingaben
+ * @returns {void}
+ * 
+ * @note Verwendet FormData für den Datei-Upload und enthält:
+ * - file: Die hochzuladende Datei
+ * - folderId: Die ID des Zielordners
+ */
   const handleSubmit = (e) => {
     e.preventDefault();
     setIsUploading(true);

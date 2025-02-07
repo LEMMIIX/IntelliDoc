@@ -1,9 +1,10 @@
 /**
- * Diese Datei enthält Funktionen zum Extrahieren von Textinhalten aus verschiedenen Dateiformaten.
- * Sie unterstützt PDF, DOCX, Textdateien und Bilder (mittels OCR).
- *
+ * @fileoverview Diese Datei enthält Funktionen zum Extrahieren von Textinhalten 
+ * aus verschiedenen Dateiformaten. Sie unterstützt PDF, DOCX, Textdateien und Bilder (mittels OCR).
+ * 
  * @author Miray
- * Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * Die Funktionen wurden mit Unterstützung von KI-Tools angepasst und optimiert.
+ * @module modelFileReader
  */
 
 const { PythonShell } = require('python-shell');
@@ -15,6 +16,20 @@ const { performance } = require('perf_hooks');
 
 const pythonScriptPath = path.join(__dirname, 'pdf_extractor.py');
 
+/**
+ * Extrahiert Text aus einer PDF-Datei mithilfe eines externen Python-Skripts.
+ * Führt mehrere Versuche durch, falls ein Fehler auftritt.
+ *
+ * @async
+ * @function extractTextFromPDF
+ * @param {Buffer} buffer - Der Dateiinhalt als Buffer.
+ * @returns {Promise<string>} Der extrahierte Text aus dem PDF.
+ * @throws {Error} Falls die Extraktion fehlschlägt oder das Python-Skript einen Fehler zurückgibt.
+ * @example
+ * const pdfBuffer = fs.readFileSync('document.pdf');
+ * const text = await extractTextFromPDF(pdfBuffer);
+ * console.log(text);
+ */
 async function extractTextFromPDF(buffer) {
     const maxRetries = 3;
     const retryDelay = 1000;
@@ -60,6 +75,18 @@ async function extractTextFromPDF(buffer) {
     }
 }
 
+/**
+ * Extrahiert reinen Text aus einer DOCX-Datei.
+ *
+ * @async
+ * @function extractTextFromDOCX
+ * @param {Buffer} buffer - Der Dateiinhalt als Buffer.
+ * @returns {Promise<string>} Der extrahierte Text aus dem DOCX-Dokument.
+ * @example
+ * const docxBuffer = fs.readFileSync('document.docx');
+ * const text = await extractTextFromDOCX(docxBuffer);
+ * console.log(text);
+ */
 async function extractTextFromDOCX(buffer) {
     const { value } = await mammoth.extractRawText({ buffer });
     return value;
@@ -73,9 +100,25 @@ const extractors = {
     'image/jpeg': performOCR
 };
 
+/**
+ * Extrahiert den Textinhalt einer Datei basierend auf ihrem MIME-Typ.
+ * Unterstützt PDF, DOCX, Textdateien und Bilder (OCR).
+ *
+ * @async
+ * @function extractTextContent
+ * @param {Buffer} buffer - Der Dateiinhalt als Buffer.
+ * @param {string} mimetype - Der MIME-Typ der Datei.
+ * @param {string} filename - Der Name der Datei (optional für Logging und OCR).
+ * @returns {Promise<string>} Der extrahierte Textinhalt der Datei.
+ * @throws {Error} Falls das Dateiformat nicht unterstützt wird oder die Extraktion fehlschlägt.
+ * @example
+ * const buffer = fs.readFileSync('image.png');
+ * const text = await extractTextContent(buffer, 'image/png', 'image.png');
+ * console.log(text);
+ */
 async function extractTextContent(buffer, mimetype, filename) {
     const startTime = performance.now();
-    
+
     console.log(`Processing file: ${filename} (${mimetype})`);
 
     const extractor = extractors[mimetype];

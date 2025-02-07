@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: frontend/src/features/dashboard/CreateFolder.jsx</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: frontend/src/features/dashboard/CreateFolder.jsx</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @file CreateFolder.jsx - Ordnererstellungs-Komponente
+ * @author Farah
+ * @description Komponente zur Erstellung neuer Ordner innerhalb einer bestehenden Ordnerstruktur
+ * 
+ * @requires react
+ * @requires react-icons/fa
+ * @requires ../../utils/helpers
+ * @requires ../../production-config
+ */
+
+/* eslint-disable react/prop-types */
+import { useState } from "react";
+import { FaFolder } from "react-icons/fa";
+import { customFetch } from "../../utils/helpers";
+import prodconfig from "../../production-config";
+
+/**
+ * @typedef {Object} CreateFolderState
+ * @property {boolean} isCreating - Status des Erstellungsvorgangs
+ * @property {string} folderName - Name des zu erstellenden Ordners
+ * @property {string} message - Statusnachricht für den Benutzer
+ */
+
+/**
+ * @component CreateFolderForm
+ * @description Formular-Komponente zum Erstellen eines neuen Ordners
+ * 
+ * @param {Object} props - Komponenten-Props
+ * @param {string|number} props.parentFolderId - ID des übergeordneten Ordners
+ * 
+ * @returns {JSX.Element} Die gerenderte CreateFolderForm-Komponente
+ */
+const CreateFolderForm = ({ parentFolderId }) => {
+  console.log("parentFolderId", parentFolderId);
+  const [isCreating, setIsCreating] = useState(false);
+
+  const [folderName, setFolderName] = useState("");
+
+  const [message, setMessage] = useState("");
+
+  /**
+ * @function handleCreateFolder
+ * @async
+ * @description Verarbeitet die Formular-Übermittlung zum Erstellen eines neuen Ordners
+ * 
+ * @param {Event} e - Das Submit-Event des Formulars
+ * @throws {Error} Bei fehlgeschlagener Server-Anfrage
+ * @returns {Promise&lt;void>}
+ */
+  const handleCreateFolder = async (e) => {
+    e.preventDefault();
+    setIsCreating(true);
+    try {
+      const response = await customFetch(
+        `${prodconfig.backendUrl}/folders/create`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ folderName, parentFolderId }),
+        }
+      );
+      const data = await response.json();
+      if (data.folderId) {
+        setMessage("Ordner erfolgreich erstellt");
+        // fetchParentFolders()
+        window.location.reload();
+      } else {
+        setMessage(data?.message || "Fehler beim Erstellen des Ordners");
+      }
+    } catch (error) {
+      console.error("Fehler beim Erstellen des Ordners:", error);
+      setMessage("Es ist ein Fehler beim Erstellen des Ordners aufgetreten.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
+  return (
+    &lt;div className="my-4">
+      {message &amp;&amp; (
+        &lt;div className="text-center mb-4 text-xl bg-success/20 text-success p-2 rounded-lg">
+          {message}
+        &lt;/div>
+      )}
+      &lt;form
+        onSubmit={handleCreateFolder}
+        className="bg-white shadow-sm p-4 rounded-xl border border-stroke mb-7 flex flex-wrap items-center gap-4"
+      >
+        &lt;input
+          type="text"
+          disabled={isCreating}
+          value={folderName}
+          onChange={(e) => {
+            setMessage("");
+
+            setFolderName(e.target.value);
+          }}
+          placeholder="Ordnername"
+          className="rounded-md flex-grow border border-stroke bg-white p-3 pr-4.5 text-black focus:border-primary focus-visible:outline-none "
+          required
+        />
+
+        &lt;button
+          disabled={isCreating}
+          type="submit"
+          className=" bg-success text-white p-2 rounded-lg flex items-center gap-2 mx-auto focus:border-success/20 focus-visible:outline-none"
+        >
+          {isCreating ? (
+            "Erstellen"
+          ) : (
+            &lt;>
+              &lt;span>Erstellen&lt;/span>
+              &lt;FaFolder />
+            &lt;/>
+          )}
+        &lt;/button>
+      &lt;/form>
+    &lt;/div>
+  );
+};
+
+export default CreateFolderForm;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-documentModels.html">documentModels</a></li><li><a href="module-modelAdmin.html">modelAdmin</a></li><li><a href="module-modelClustering.html">modelClustering</a></li><li><a href="module-modelEmbedding.html">modelEmbedding</a></li><li><a href="module-modelFileReader.html">modelFileReader</a></li><li><a href="module-modelFolderSuggestion.html">modelFolderSuggestion</a></li><li><a href="module-modelKeywords.html">modelKeywords</a></li><li><a href="module-modelOcr.html">modelOcr</a></li><li><a href="module-modelSemanticSearch.html">modelSemanticSearch</a></li><li><a href="module-modelUser.html">modelUser</a></li><li><a href="module-modelVectorOperations.html">modelVectorOperations</a></li><li><a href="module-passwordReset.html">passwordReset</a></li><li><a href="module-userAuthenticationToDB.html">userAuthenticationToDB</a></li><li><a href="module-userRegister.html">userRegister</a></li><li><a href="module-userRegistrationToDB.html">userRegistrationToDB</a></li></ul><h3>Namespaces</h3><ul><li><a href="Routes.html">Routes</a></li></ul><h3>Classes</h3><ul><li><a href="module-modelFolderSuggestion-FolderSuggestionEngine.html">FolderSuggestionEngine</a></li><li><a href="module-modelUser-User.html">User</a></li><li><a href="module-modelVectorOperations-VectorOperations.html">VectorOperations</a></li></ul><h3>Global</h3><ul><li><a href="global.html#AdminDashboard">AdminDashboard</a></li><li><a href="global.html#CreateFolderForm">CreateFolderForm</a></li><li><a href="global.html#Dashboard">Dashboard</a></li><li><a href="global.html#DatabaseSetup">DatabaseSetup</a></li><li><a href="global.html#FileUpload">FileUpload</a></li><li><a href="global.html#Folder">Folder</a></li><li><a href="global.html#FolderElement">FolderElement</a></li><li><a href="global.html#Home">Home</a></li><li><a href="global.html#Impressum">Impressum</a></li><li><a href="global.html#Login">Login</a></li><li><a href="global.html#Requestpassword">Requestpassword</a></li><li><a href="global.html#ServerStart">ServerStart</a></li><li><a href="global.html#Setpassword">Setpassword</a></li><li><a href="global.html#Signup">Signup</a></li><li><a href="global.html#Verification">Verification</a></li><li><a href="global.html#assignAdmin">assignAdmin</a></li><li><a href="global.html#assignFolder">assignFolder</a></li><li><a href="global.html#authenticateMiddleware">authenticateMiddleware</a></li><li><a href="global.html#calculateCosineSimilarity">calculateCosineSimilarity</a></li><li><a href="global.html#checkKeywordStatus">checkKeywordStatus</a></li><li><a href="global.html#createFolder">createFolder</a></li><li><a href="global.html#deleteFile">deleteFile</a></li><li><a href="global.html#deleteFolder">deleteFolder</a></li><li><a href="global.html#deleteUser">deleteUser</a></li><li><a href="global.html#downloadFile">downloadFile</a></li><li><a href="global.html#fetchAdminUserIds">fetchAdminUserIds</a></li><li><a href="global.html#fetchDbSessions">fetchDbSessions</a></li><li><a href="global.html#fetchDbStats">fetchDbStats</a></li><li><a href="global.html#fetchVersionHistory">fetchVersionHistory</a></li><li><a href="global.html#generateKeywordsInBackground">generateKeywordsInBackground</a></li><li><a href="global.html#get/*">get/*</a></li><li><a href="global.html#get/api/current-user">get/api/current-user</a></li><li><a href="global.html#getFolderSuggestions">getFolderSuggestions</a></li><li><a href="global.html#getFolderTree">getFolderTree</a></li><li><a href="global.html#getFolders">getFolders</a></li><li><a href="global.html#getVersionHistory">getVersionHistory</a></li><li><a href="global.html#handleCloseContextMenu">handleCloseContextMenu</a></li><li><a href="global.html#handleContextMenu">handleContextMenu</a></li><li><a href="global.html#handleCreateFolder">handleCreateFolder</a></li><li><a href="global.html#handleCreateFolderSwal">handleCreateFolderSwal</a></li><li><a href="global.html#handleFileClick">handleFileClick</a></li><li><a href="global.html#handleFileDelete">handleFileDelete</a></li><li><a href="global.html#handleFileDownload">handleFileDownload</a></li><li><a href="global.html#handleFilePreview">handleFilePreview</a></li><li><a href="global.html#handleFileUploadSwal">handleFileUploadSwal</a></li><li><a href="global.html#handleFolderClick">handleFolderClick</a></li><li><a href="global.html#handleFolderClickbg">handleFolderClickbg</a></li><li><a href="global.html#handleFolderDelete">handleFolderDelete</a></li><li><a href="global.html#handleFolderSelect">handleFolderSelect</a></li><li><a href="global.html#handleGoBack">handleGoBack</a></li><li><a href="global.html#handleGoBackClick">handleGoBackClick</a></li><li><a href="global.html#handlePathClick">handlePathClick</a></li><li><a href="global.html#handlePopoverToggle">handlePopoverToggle</a></li><li><a href="global.html#handleRenameFolder">handleRenameFolder</a></li><li><a href="global.html#handleRenameFolderInput">handleRenameFolderInput</a></li><li><a href="global.html#handleRenameSubmit">handleRenameSubmit</a></li><li><a href="global.html#handleSubmit">handleSubmit</a></li><li><a href="global.html#handleVerification">handleVerification</a></li><li><a href="global.html#initializeApp">initializeApp</a></li><li><a href="global.html#initializeTransporter">initializeTransporter</a></li><li><a href="global.html#isEmailConfigured">isEmailConfigured</a></li><li><a href="global.html#post/api/verify-code">post/api/verify-code</a></li><li><a href="global.html#post/register">post/register</a></li><li><a href="global.html#processSuggestions">processSuggestions</a></li><li><a href="global.html#renameFolder">renameFolder</a></li><li><a href="global.html#renderUploadForm">renderUploadForm</a></li><li><a href="global.html#sendResetEmail">sendResetEmail</a></li><li><a href="global.html#sendVerificationEmail">sendVerificationEmail</a></li><li><a href="global.html#smartUploadFile">smartUploadFile</a></li><li><a href="global.html#toggleView">toggleView</a></li><li><a href="global.html#updateUser">updateUser</a></li><li><a href="global.html#uploadFile">uploadFile</a></li><li><a href="global.html#useQuery">useQuery</a></li><li><a href="global.html#viewFile">viewFile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Fri Feb 07 2025 15:19:49 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

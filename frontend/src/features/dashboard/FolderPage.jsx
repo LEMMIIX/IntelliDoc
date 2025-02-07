@@ -1,10 +1,16 @@
 /**
- * Die `Folder`-Komponente stellt eine Benutzeroberfläche zur Verwaltung von Ordnern und Dateien dar.
- * Sie ermöglicht das Anzeigen, Erstellen, Umbenennen, Löschen und Hochladen von Dateien und Ordnern.
- * Zudem bietet sie eine Vorschau für verschiedene Dateitypen. das ist hauptseite unsere Programm und es werden (fast) 
- * alle Kompontenten hier dargestellt. 
- * @Author Farah. 
- * // Die Funktionen wurden mit Unterstützung von KI tools angepasst und optimiert
+ * @file Folder.jsx - Hauptkomponente für das Datei- und Ordnermanagement
+ * @author Farah
+ * @description Zentrale Komponente zur Verwaltung und Anzeige der Datei- und 
+ * Ordnerstruktur. Bietet umfangreiche Funktionen für das Dokumentenmanagement.
+ * 
+ * @requires react
+ * @requires react-router-dom
+ * @requires react-icons/*
+ * @requires sweetalert2
+ * @requires axios
+ * @requires ../../utils/*
+ * @requires ../../components/ui/*
  */
 
 /* eslint-disable no-unused-vars */
@@ -42,6 +48,34 @@ import {
 } from "../../components/ui/context-menu";
 import prodconfig from "../../production-config";
 
+/**
+ * @typedef {Object} FolderState
+ * @property {boolean} loading - Ladezustand der Komponente
+ * @property {Array} folders - Array der Ordnerstruktur
+ * @property {string} keywords - Suchbegriffe für Filterung
+ * @property {Array} selectedFolders - Ausgewählte Ordner für Navigation
+ * @property {boolean} isDeleting - Status des Löschvorgangs
+ * @property {boolean} isDownloading - Status des Downloads
+ * @property {Object} contextMenu - Zustand des Kontextmenüs
+ * @property {string|null} selectedFolderId - ID des ausgewählten Ordners
+ * @property {string|null} selectedFileId - ID der ausgewählten Datei
+ */
+
+/**
+ * @typedef {Object} FilePreviewState
+ * @property {Object|null} currentlyPreviewedFile - Aktuell angezeigte Datei
+ * @property {string} filePreviewContent - Inhalt der Vorschau
+ * @property {Array} versionHistory - Versionsverlauf der Datei
+ * @property {Object} popoverOpen - Zustand der Popover-Anzeigen
+ */
+
+/**
+ * @component Folder
+ * @description Hauptkomponente für die Dateiverwaltung mit Ordnerstruktur,
+ * Dateivorschau, Upload-Funktionalität und Versionskontrolle
+ * 
+ * @returns {JSX.Element} Die gerenderte Folder-Komponente
+ */
 function Folder() {
   const { folderId } = useParams();
   const [loading, setLoading] = useState(true);
@@ -74,6 +108,13 @@ function Folder() {
   const [popoverOpen, setPopoverOpen] = useState({});
   const [loadingg, setLoadingg] = useState(false); // You can use this to track loading state
 
+  /**
+ * @function handlePopoverToggle
+ * @description Schaltet die Sichtbarkeit des Popovers für eine spezifische Datei um
+ * 
+ * @param {string|number} fileId - ID der Datei, für die das Popover angezeigt werden soll
+ * @returns {void}
+ */
   const handlePopoverToggle = (fileId) => {
     setPopoverOpen((prevState) => ({
       ...prevState,
@@ -102,6 +143,15 @@ function Folder() {
     });
   }, [popoverOpen]);
 
+  /**
+ * @function fetchVersionHistory
+ * @async
+ * @description Ruft den Versionsverlauf einer Datei vom Server ab
+ * 
+ * @param {string|number} fileId - ID der Datei
+ * @throws {Error} Bei fehlgeschlagener Server-Anfrage
+ * @returns {Promise<void>} Aktualisiert den versionHistory-State
+ */
   const fetchVersionHistory = async (fileId) => {
     // fetch version history for a file
     try {
@@ -170,6 +220,13 @@ function Folder() {
     };
   }, [isPopupVisible]);
 
+  /**
+ * @function handleRenameFolderInput
+ * @description Validiert die Eingabe beim Umbenennen und setzt entsprechende Fehlermeldungen
+ * 
+ * @param {Event} e - Change-Event des Input-Feldes
+ * @returns {void}
+ */
   const handleRenameFolderInput = (e) => {
     let newFileName = e.target.value;
     setNewFolderName(newFileName);
@@ -185,6 +242,8 @@ function Folder() {
         break;
     }
   };
+
+  
   const handleRenameFolder = async () => {
     console.log("Klicke, um zu speichern!");
     if (inputError != "") {
@@ -228,6 +287,15 @@ function Folder() {
   const [isFileExplorerView, setIsFileExplorerView] = useState(true);
   const [cont, setCont] = useState(1);
   const [selectedFolderIds, setSelectedFolderIds] = useState([]);
+
+  /**
+ * @function handleFolderSelect
+ * @description Verarbeitet die Auswahl eines Ordners und aktualisiert die Navigation
+ * 
+ * @param {Object} folder - Der ausgewählte Ordner
+ * @param {number} level - Die Ebene in der Ordnerhierarchie
+ * @returns {void}
+ */
   const handleFolderSelect = (folder, level) => {
     const newSelectedFolders = [...selectedFolders];
     newSelectedFolders[level] = folder; // Update the selected folder at this level
@@ -274,6 +342,13 @@ function Folder() {
     );
   };
 
+  /**
+ * @function handleFileClick
+ * @description Verarbeitet Klicks auf Dateien und zeigt Vorschau an
+ * 
+ * @param {Object} file - Die angeklickte Datei
+ * @returns {void}
+ */
   const handleFileClick = (file) => {
     setSelectedFileId(file.id); // Die ID der ausgewählten Datei aktualisieren
     handleFilePreview(file.id); // Datei in der Vorschau anzeigen
@@ -310,6 +385,16 @@ function Folder() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [uploadRef]);
+
+  /**
+ * @function handleFolderDelete
+ * @async
+ * @description Verarbeitet das Löschen eines Ordners mit Bestätigung
+ * 
+ * @param {string|number} folderId - ID des zu löschenden Ordners
+ * @throws {Error} Bei fehlgeschlagener Server-Anfrage
+ * @returns {Promise<void>}
+ */
   const handleFolderDelete = async (folderId) => {
     if (confirm("Bist du sicher, dass du diesen Ordner löschen möchtest?")) {
       setIsDeleting(true);
@@ -356,9 +441,21 @@ function Folder() {
     return <div>Wird geladen...</div>;
   }
 
+    /**
+ * Navigiert zurück zur vorherigen Seite.
+ * 
+ * @function handleGoBack
+ */
   const handleGoBack = () => {
     navigate(-1); // Zurück zur vorherigen Seite
   };
+
+  /**
+ * Navigiert zu einem bestimmten Ordner in der Breadcrumb-Navigation.
+ * 
+ * @function handlePathClick
+ * @param {number} index - Der Index des Ordners im Pfad.
+ */
   const handlePathClick = (index) => {
     // Get the folder path up to the clicked index
     const newPath = folderContent?.folderPath.split("/");
@@ -367,6 +464,15 @@ function Folder() {
     console.log(newPath.length, index); // For demonstration, logging the new path
     // You can update your state or call a function to fetch the new folder content based on newPath
   };
+
+  /**
+ * Zeigt eine Vorschau für verschiedene Dateiformate an.
+ * 
+ * @async
+ * @function handleFilePreview
+ * @param {string} fileName - Der Name der Datei, die angezeigt werden soll.
+ * @throws {Error} Falls die Datei nicht geladen werden kann.
+ */
   const handleFilePreview = async (fileName) => {
     // Überprüfen, ob die Vorschau gerade die Datei anzeigt, auf die geklickt wurde
     if (currentlyPreviewedFile === fileName) {
@@ -454,6 +560,15 @@ function Folder() {
       console.error("Fehler beim Laden der Datei:", error);
     }
   };
+
+  /**
+ * Lädt eine Datei vom Server herunter.
+ * 
+ * @async
+ * @function handleFileDownload
+ * @param {string} fileName - Der Name der Datei, die heruntergeladen werden soll.
+ * @throws {Error} Falls ein Fehler beim Download auftritt.
+ */
   const handleFileDownload = async (fileName) => {
     try {
       const response = await customFetch(
@@ -483,6 +598,15 @@ function Folder() {
       console.error("Download-Fehler:", error);
     }
   };
+
+  /**
+ * Löscht eine Datei nach Bestätigung durch den Benutzer.
+ * 
+ * @async
+ * @function handleFileDelete
+ * @param {string} fileId - Die ID der zu löschenden Datei.
+ * @throws {Error} Falls die Datei nicht gelöscht werden kann.
+ */
 
   const handleFileDelete = async (fileId) => {
     if (
@@ -527,22 +651,50 @@ function Folder() {
     }
   };
 
+  /**
+ * Navigiert zu einem angeklickten Unterordner.
+ * 
+ * @function handleFolderClick
+ * @param {Object} folder - Das angeklickte Ordner-Objekt.
+ * @param {number} levelIndex - Der Index des Ordners in der Hierarchie.
+ */
+
   const handleFolderClick = (folder, levelIndex) => {
     const newStack = folderStack.slice(0, levelIndex + 1); // Keep only the levels up to the clicked level
     newStack.push(folder.children); // Add the clicked folder's subfolders
     setFolderStack(newStack); // Update the stack to re-render
   };
+
+  /**
+ * Setzt den aktuell ausgewählten Ordner.
+ * 
+ * @function handleFolderClickbg
+ * @param {Object} folder - Der ausgewählte Ordner.
+ */
   const handleFolderClickbg = (folder) => {
     // Fügt den ausgewählten Ordner zum Verlauf hinzu
 
     setSelectedFolderIdBg(folder.id); // Aktualisiert die ID des ausgewählten Ordners
   };
+
+  /**
+ * Entfernt den letzten Eintrag aus dem Ordnerverlauf.
+ * 
+ * @function handleGoBackClick
+ */
   const handleGoBackClick = () => {
     // Den letzten Ordner aus dem Verlauf entfernen
     setSelectedFolders(selectedFolders.slice(0, -1));
   };
   console.log("prev", filePreviewContent);
 
+  /**
+ * Öffnet das Kontextmenü für einen Ordner.
+ * 
+ * @function handleContextMenu
+ * @param {Event} event - Das Kontextmenü-Event.
+ * @param {Object} folder - Das Ordner-Objekt für das Kontextmenü.
+ */
   const handleContextMenu = (event, folder) => {
     event.preventDefault(); // Prevent default right-click menu
     const rect = event.currentTarget.getBoundingClientRect(); // Get the folder's position
@@ -555,11 +707,24 @@ function Folder() {
     });
   };
 
-  // Function to close the context menu
+  /**
+ * Schließt das Kontextmenü.
+ * 
+ * @function handleCloseContextMenu
+ */
   const handleCloseContextMenu = () => {
     setContextMenu({ visible: false, folderId: null, x: 0, y: 0 });
   };
 
+  /**
+ * Sendet eine Anfrage zum Umbenennen eines Ordners.
+ * 
+ * @async
+ * @function handleRenameSubmit
+ * @param {string} folderId - Die ID des umzubenennenden Ordners.
+ * @param {string} newFolderName - Der neue Name des Ordners.
+ * @throws {Error} Falls ein Fehler beim Umbenennen auftritt.
+ */
   const handleRenameSubmit = async (folderId, newFolderName) => {
     try {
       const response = await customFetch(
@@ -587,7 +752,12 @@ function Folder() {
     }
   };
 
-  // Funktion zur Anzeige des Formulars zum Erstellen eines Ordners mit SweetAlert
+  /**
+ * Öffnet eine SweetAlert-Eingabe zum Erstellen eines neuen Ordners.
+ * 
+ * @async
+ * @function handleCreateFolderSwal
+ */
   const handleCreateFolderSwal = async () => {
     const { value: folderName } = await Swal.fire({
       title: "Neuen Ordner erstellen",
@@ -609,7 +779,14 @@ function Folder() {
     }
   };
 
-  // Funktion zum Erstellen eines Ordners
+ /**
+ * Erstellt einen neuen Ordner mit dem angegebenen Namen.
+ * 
+ * @async
+ * @function createFolder
+ * @param {string} folderName - Der Name des neuen Ordners.
+ * @throws {Error} Falls das Erstellen des Ordners fehlschlägt.
+ */
   const createFolder = async (folderName) => {
     setIsCreating(true);
     try {
@@ -656,6 +833,13 @@ function Folder() {
     }
   };
 
+  /**
+ * Öffnet eine SweetAlert-Eingabe zum Hochladen einer Datei.
+ * 
+ * @async
+ * @function handleFileUploadSwal
+ * @param {string} id - Die ID des Zielordners für den Upload.
+ */
   const handleFileUploadSwal = async (id) => {
     const { value: formValues } = await Swal.fire({
       title: "Datei hochladen",
