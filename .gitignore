@@ -97,7 +97,7 @@ pnpm-lock.yaml
 # Projektspezifische Ignores
 /embed_models/
 backend/embed_models/
-ConnectPostgres.js
+#ConnectPostgres.js
 .meld/*
 .meld/
 model_visualize.py
